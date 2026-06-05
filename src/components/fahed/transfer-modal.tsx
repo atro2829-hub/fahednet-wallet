@@ -17,6 +17,9 @@ import {
   Calendar,
   Receipt,
   Copy,
+  UserCheck,
+  ShieldCheck,
+  ArrowRight,
 } from 'lucide-react';
 import { useAppStore } from '@/lib/store';
 import { currencySymbols, currencyNames, currencyFlags, currencyBadgeColors, generateReference } from '@/lib/utils';
@@ -26,6 +29,7 @@ import { ref, get, update, push } from 'firebase/database';
 
 type Currency = 'YER' | 'SAR' | 'USD';
 type TransferMode = 'userId' | 'phone';
+type TransferStep = 'form' | 'confirm' | 'success';
 
 // Yemen flag indicator component
 function YemenFlagIndicator() {
@@ -51,6 +55,14 @@ function CurrencyBadge({ currency }: { currency: string }) {
   );
 }
 
+interface RecipientInfo {
+  uid: string;
+  name: string;
+  userId: string;
+  phone: string;
+  avatar: string;
+}
+
 export default function TransferModal() {
   const { theme } = useTheme();
   const isDark = theme === 'dark';
@@ -72,6 +84,11 @@ export default function TransferModal() {
   const [showSchedule, setShowSchedule] = useState(false);
   const [showReceipt, setShowReceipt] = useState(false);
   const [transferRef, setTransferRef] = useState('');
+
+  // Confirmation step
+  const [step, setStep] = useState<TransferStep>('form');
+  const [recipientInfo, setRecipientInfo] = useState<RecipientInfo | null>(null);
+  const [isVerifying, setIsVerifying] = useState(false);
 
   const currencies: Currency[] = ['YER', 'SAR', 'USD'];
 
@@ -119,6 +136,9 @@ export default function TransferModal() {
       setShowSchedule(false);
       setShowReceipt(false);
       setTransferRef('');
+      setStep('form');
+      setRecipientInfo(null);
+      setIsVerifying(false);
     }, 300);
   };
 
@@ -132,13 +152,15 @@ export default function TransferModal() {
     setToUserId(cleaned);
   };
 
-  const handleTransfer = async () => {
+  // Step 1: Verify recipient and show confirmation
+  const handleVerifyRecipient = async () => {
     if (!user) return;
     if (transferMode === 'userId' && !toUserId) return;
     if (transferMode === 'phone' && !toPhone) return;
     if (!amount) return;
 
-    setIsLoading(true);
+    setIsVerifying(true);
+    setErrorMsg('');
     setStatus('idle');
 
     const effectiveAmount = parseFloat(amount);
@@ -147,16 +169,14 @@ export default function TransferModal() {
       // ---- Find recipient in Firebase ----
       let recipientUid = '';
       const fullPhone = `+967${toPhone}`;
-      const fullUserId = `10${toUserId}`; // prepend "10" prefix
+      const fullUserId = `10${toUserId}`;
 
       if (transferMode === 'userId') {
-        // Try userIds index first
         const userIdIndexRef = ref(database, `userIds/${fullUserId}`);
         const userIdIndexSnapshot = await get(userIdIndexRef);
         if (userIdIndexSnapshot.exists()) {
           recipientUid = userIdIndexSnapshot.val();
         } else {
-          // Fallback: query users by userId field
           const usersRef = ref(database, 'users');
           const usersSnapshot = await get(usersRef);
           if (usersSnapshot.exists()) {
@@ -169,18 +189,16 @@ export default function TransferModal() {
           if (!recipientUid) {
             setStatus('error');
             setErrorMsg('رقم الحساب غير موجود');
-            setIsLoading(false);
+            setIsVerifying(false);
             return;
           }
         }
       } else {
-        // Try phones index first
         const phoneIndexRef = ref(database, `phones/${fullPhone.replace('+', 'P')}`);
         const phoneIndexSnapshot = await get(phoneIndexRef);
         if (phoneIndexSnapshot.exists()) {
           recipientUid = phoneIndexSnapshot.val();
         } else {
-          // Fallback: query users by phone field
           const usersRef = ref(database, 'users');
           const usersSnapshot = await get(usersRef);
           if (usersSnapshot.exists()) {
@@ -193,7 +211,7 @@ export default function TransferModal() {
           if (!recipientUid) {
             setStatus('error');
             setErrorMsg('رقم الهاتف غير مسجل');
-            setIsLoading(false);
+            setIsVerifying(false);
             return;
           }
         }
@@ -203,33 +221,76 @@ export default function TransferModal() {
       if (user.id === recipientUid) {
         setStatus('error');
         setErrorMsg('لا يمكن التحويل لنفس الحساب');
-        setIsLoading(false);
+        setIsVerifying(false);
         return;
       }
 
-      // ---- Read sender & recipient data from Firebase ----
-      const senderRef = ref(database, `users/${user.id}`);
-      const senderSnapshot = await get(senderRef);
-      const senderData = senderSnapshot.val();
-
+      // ---- Read recipient data from Firebase ----
       const recipientRef = ref(database, `users/${recipientUid}`);
       const recipientSnapshot = await get(recipientRef);
       const recipientData = recipientSnapshot.val();
 
-      if (!senderData) {
-        setStatus('error');
-        setErrorMsg('المستخدم المرسل غير موجود');
-        setIsLoading(false);
-        return;
-      }
       if (!recipientData) {
         setStatus('error');
         setErrorMsg('المستخدم المستلم غير موجود');
-        setIsLoading(false);
+        setIsVerifying(false);
         return;
       }
 
       // ---- Check balance ----
+      const balanceField = `balance${currency}`;
+      const currentBalance = getBalance(currency);
+      if (currentBalance < effectiveAmount) {
+        setStatus('error');
+        setErrorMsg('رصيد غير كافي');
+        setIsVerifying(false);
+        return;
+      }
+
+      // Store recipient info and go to confirmation step
+      setRecipientInfo({
+        uid: recipientUid,
+        name: recipientData.name || 'مستخدم',
+        userId: recipientData.userId || '',
+        phone: recipientData.phone || '',
+        avatar: recipientData.avatar || '',
+      });
+      setStep('confirm');
+    } catch {
+      setStatus('error');
+      setErrorMsg('حدث خطأ في الاتصال');
+    } finally {
+      setIsVerifying(false);
+    }
+  };
+
+  // Step 2: Execute the confirmed transfer
+  const handleConfirmTransfer = async () => {
+    if (!user || !recipientInfo) return;
+
+    setIsLoading(true);
+    setStatus('idle');
+
+    const effectiveAmount = parseFloat(amount);
+
+    try {
+      // ---- Read sender & recipient fresh data from Firebase ----
+      const senderRef = ref(database, `users/${user.id}`);
+      const senderSnapshot = await get(senderRef);
+      const senderData = senderSnapshot.val();
+
+      const recipientRef = ref(database, `users/${recipientInfo.uid}`);
+      const recipientSnapshot = await get(recipientRef);
+      const recipientData = recipientSnapshot.val();
+
+      if (!senderData || !recipientData) {
+        setStatus('error');
+        setErrorMsg('حدث خطأ، حاول مرة أخرى');
+        setIsLoading(false);
+        return;
+      }
+
+      // ---- Double-check balance ----
       const balanceField = `balance${currency}`;
       const currentBalance = senderData[balanceField] || 0;
       if (currentBalance < effectiveAmount) {
@@ -248,14 +309,11 @@ export default function TransferModal() {
       const recipientBalance = recipientData[balanceField] || 0;
 
       const updates: Record<string, unknown> = {};
-      // Update sender balance
       updates[`users/${user.id}/${balanceField}`] = currentBalance - effectiveAmount;
-      // Update recipient balance
-      updates[`users/${recipientUid}/${balanceField}`] = recipientBalance + effectiveAmount;
-      // Create transaction record
+      updates[`users/${recipientInfo.uid}/${balanceField}`] = recipientBalance + effectiveAmount;
       updates[`transactions/${transactionId}`] = {
         fromUserId: user.id,
-        toUserId: recipientUid,
+        toUserId: recipientInfo.uid,
         amount: effectiveAmount,
         currency,
         type: 'transfer',
@@ -264,15 +322,13 @@ export default function TransferModal() {
         reference: txRef,
         createdAt: new Date().toISOString(),
       };
-      // Create notification for recipient
-      updates[`notifications/${recipientUid}/${notif1Id}`] = {
+      updates[`notifications/${recipientInfo.uid}/${notif1Id}`] = {
         title: 'تحويل وارد',
         body: `تم استلام ${effectiveAmount.toLocaleString()} ${currency} من ${senderData.name || ''}`,
         type: 'transaction',
         isRead: false,
         createdAt: new Date().toISOString(),
       };
-      // Create notification for sender
       updates[`notifications/${user.id}/${notif2Id}`] = {
         title: 'تحويل صادر',
         body: `تم تحويل ${effectiveAmount.toLocaleString()} ${currency} إلى ${recipientData.name || ''}`,
@@ -285,6 +341,7 @@ export default function TransferModal() {
 
       setStatus('success');
       setTransferRef(txRef);
+      setStep('success');
 
       // Update user balance in local store
       const updatedUser = { ...user };
@@ -356,7 +413,7 @@ export default function TransferModal() {
                 className="text-lg font-bold"
                 style={{ color: isDark ? '#FFF' : '#1a1a1a' }}
               >
-                تحويل أموال
+                {step === 'confirm' ? 'تأكيد التحويل' : step === 'success' ? 'تم التحويل' : 'تحويل أموال'}
               </h2>
               <button
                 onClick={handleClose}
@@ -367,7 +424,167 @@ export default function TransferModal() {
               </button>
             </div>
 
-            {/* Receipt */}
+            {/* ============ CONFIRMATION STEP ============ */}
+            {step === 'confirm' && recipientInfo && (
+              <motion.div
+                initial={{ opacity: 0, x: -30 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 30 }}
+                className="px-6 pb-8"
+              >
+                {/* Recipient Card */}
+                <div
+                  className="rounded-3xl p-5 mb-4"
+                  style={{
+                    background: isDark
+                      ? 'rgba(255,255,255,0.04)'
+                      : 'rgba(0,0,0,0.02)',
+                    backdropFilter: 'blur(20px)',
+                    WebkitBackdropFilter: 'blur(20px)',
+                    border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'}`,
+                  }}
+                >
+                  {/* Verified badge */}
+                  <div className="flex items-center justify-center mb-4">
+                    <div
+                      className="flex items-center gap-2 px-4 py-1.5 rounded-full"
+                      style={{ background: 'rgba(16,185,129,0.1)' }}
+                    >
+                      <ShieldCheck size={14} strokeWidth={2} color="#10B981" />
+                      <span className="text-xs font-bold" style={{ color: '#10B981' }}>
+                        تم التحقق من المستلم
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Avatar & Name */}
+                  <div className="flex flex-col items-center mb-4">
+                    <div
+                      className="w-16 h-16 rounded-full flex items-center justify-center mb-3"
+                      style={{
+                        background: 'linear-gradient(135deg, #E60000 0%, #8B0000 100%)',
+                        boxShadow: '0 4px 16px rgba(230,0,0,0.3)',
+                      }}
+                    >
+                      {recipientInfo.avatar ? (
+                        <img
+                          src={recipientInfo.avatar}
+                          alt={recipientInfo.name}
+                          className="w-full h-full rounded-full object-cover"
+                        />
+                      ) : (
+                        <UserCheck size={28} strokeWidth={1.5} color="#FFF" />
+                      )}
+                    </div>
+                    <p
+                      className="text-lg font-bold"
+                      style={{ color: isDark ? '#FFF' : '#1a1a1a' }}
+                    >
+                      {recipientInfo.name}
+                    </p>
+                    <p
+                      className="text-xs mt-1 font-mono"
+                      style={{ color: isDark ? '#888' : '#AAA' }}
+                      dir="ltr"
+                    >
+                      {transferMode === 'userId'
+                        ? `10${toUserId}`
+                        : `+967${toPhone}`}
+                    </p>
+                  </div>
+
+                  {/* Transfer Details */}
+                  <div
+                    className="rounded-2xl p-4 space-y-3"
+                    style={{
+                      background: isDark ? 'rgba(0,0,0,0.3)' : 'rgba(0,0,0,0.03)',
+                    }}
+                  >
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs" style={{ color: isDark ? '#888' : '#AAA' }}>المبلغ</span>
+                      <span className="text-base font-bold" style={{ color: '#E60000' }}>
+                        {parseFloat(amount).toLocaleString('ar-SA')} {currencySymbols[currency]}
+                      </span>
+                    </div>
+                    {description && (
+                      <div className="flex justify-between items-center">
+                        <span className="text-xs" style={{ color: isDark ? '#888' : '#AAA' }}>الوصف</span>
+                        <span className="text-xs font-medium" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>
+                          {description}
+                        </span>
+                      </div>
+                    )}
+                    <div className="h-px" style={{ background: isDark ? '#333' : '#EEE' }} />
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs" style={{ color: isDark ? '#888' : '#AAA' }}>رصيدك بعد التحويل</span>
+                      <span
+                        className="text-sm font-bold"
+                        style={{ color: balanceAfter >= 0 ? '#10B981' : '#E60000' }}
+                      >
+                        {balanceAfter.toLocaleString('ar-SA')} {currencySymbols[currency]}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Warning */}
+                <div
+                  className="flex items-start gap-2 px-4 py-3 rounded-2xl mb-4"
+                  style={{ background: 'rgba(245,158,11,0.08)' }}
+                >
+                  <AlertCircle size={16} strokeWidth={1.5} color="#F59E0B" className="shrink-0 mt-0.5" />
+                  <p className="text-[11px] leading-relaxed" style={{ color: '#F59E0B' }}>
+                    تأكد من صحة اسم المستلم والمبلغ قبل التحويل. لا يمكن التراجع عن العملية بعد تنفيذها.
+                  </p>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex gap-3">
+                  {/* Cancel */}
+                  <button
+                    onClick={() => {
+                      setStep('form');
+                      setRecipientInfo(null);
+                    }}
+                    className="flex-1 py-4 rounded-2xl flex items-center justify-center gap-2 font-bold transition-all active:scale-[0.98]"
+                    style={{
+                      background: isDark ? '#2D2D2D' : '#F0F0F0',
+                      color: isDark ? '#FFF' : '#1a1a1a',
+                      border: isDark ? '1px solid #444' : '1px solid #DDD',
+                    }}
+                  >
+                    <span>إلغاء</span>
+                  </button>
+                  {/* Confirm */}
+                  <button
+                    onClick={handleConfirmTransfer}
+                    disabled={isLoading}
+                    className="flex-[2] py-4 rounded-2xl flex items-center justify-center gap-2 font-bold text-white transition-all active:scale-[0.98] disabled:opacity-50"
+                    style={{
+                      background: isLoading
+                        ? '#999'
+                        : 'linear-gradient(135deg, #E60000 0%, #CC0000 100%)',
+                      boxShadow: isLoading ? 'none' : '0 4px 16px rgba(230,0,0,0.3)',
+                    }}
+                  >
+                    {isLoading ? (
+                      <motion.div
+                        animate={{ rotate: 360 }}
+                        transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
+                        className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full"
+                      />
+                    ) : (
+                      <>
+                        <Send size={18} strokeWidth={1.5} />
+                        <span>تأكيد التحويل</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </motion.div>
+            )}
+
+            {/* ============ RECEIPT ============ */}
             {showReceipt && status === 'success' && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -416,8 +633,8 @@ export default function TransferModal() {
                     </div>
                     <div className="flex justify-between">
                       <span className="text-xs" style={{ color: isDark ? '#888' : '#AAA' }}>إلى</span>
-                      <span className="text-xs font-medium" style={{ color: isDark ? '#FFF' : '#1a1a1a' }} dir="ltr">
-                        {transferMode === 'userId' ? toUserId : `+967${toPhone}`}
+                      <span className="text-xs font-medium" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>
+                        {recipientInfo?.name} ({recipientInfo?.userId})
                       </span>
                     </div>
                     <div className="h-px" style={{ background: isDark ? '#333' : '#EEE' }} />
@@ -432,8 +649,8 @@ export default function TransferModal() {
               </motion.div>
             )}
 
-            {/* Success State (before receipt) */}
-            {status === 'success' && !showReceipt && (
+            {/* ============ SUCCESS STATE ============ */}
+            {status === 'success' && !showReceipt && step === 'success' && (
               <motion.div
                 initial={{ scale: 0.8, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
@@ -444,7 +661,7 @@ export default function TransferModal() {
                   {scheduledDate ? 'تم جدولة التحويل!' : 'تم التحويل بنجاح!'}
                 </p>
                 <p className="text-sm mt-1" style={{ color: isDark ? '#AAA' : '#888' }}>
-                  {parseFloat(amount).toLocaleString('ar-SA')} {currencySymbols[currency]} إلى {transferMode === 'userId' ? toUserId : `+967${toPhone}`}
+                  {parseFloat(amount).toLocaleString('ar-SA')} {currencySymbols[currency]} إلى {recipientInfo?.name}
                 </p>
                 {scheduledDate && (
                   <p className="text-xs mt-1" style={{ color: '#F59E0B' }}>
@@ -454,7 +671,7 @@ export default function TransferModal() {
               </motion.div>
             )}
 
-            {/* Error State */}
+            {/* ============ ERROR STATE ============ */}
             {status === 'error' && (
               <motion.div
                 initial={{ scale: 0.8, opacity: 0 }}
@@ -470,8 +687,8 @@ export default function TransferModal() {
               </motion.div>
             )}
 
-            {/* Form */}
-            {status !== 'success' && (
+            {/* ============ FORM STEP ============ */}
+            {step === 'form' && status !== 'success' && (
               <div className="px-6 pb-8 space-y-4 max-h-[65vh] overflow-y-auto scrollbar-thin">
                 {/* Transfer Mode Toggle */}
                 <div
@@ -616,7 +833,7 @@ export default function TransferModal() {
                         key={qa.value}
                         onClick={() => {
                           setAmount(qa.value.toString());
-                      }}
+                        }}
                         className="flex-1 py-2 rounded-xl text-[11px] font-medium transition-all"
                         style={{
                           background: amount === qa.value.toString()
@@ -844,19 +1061,19 @@ export default function TransferModal() {
                   </div>
                 )}
 
-                {/* Send Button */}
+                {/* Verify / Continue Button */}
                 <button
-                  onClick={handleTransfer}
-                  disabled={!canSend() || isLoading}
+                  onClick={handleVerifyRecipient}
+                  disabled={!canSend() || isVerifying}
                   className="w-full py-4 rounded-2xl flex items-center justify-center gap-2 font-bold text-white transition-all active:scale-[0.98] disabled:opacity-50"
                   style={{
-                    background: isLoading
+                    background: (isVerifying || !canSend())
                       ? '#999'
                       : 'linear-gradient(135deg, #E60000 0%, #CC0000 100%)',
-                    boxShadow: isLoading ? 'none' : '0 4px 16px rgba(230,0,0,0.3)',
+                    boxShadow: (isVerifying || !canSend()) ? 'none' : '0 4px 16px rgba(230,0,0,0.3)',
                   }}
                 >
-                  {isLoading ? (
+                  {isVerifying ? (
                     <motion.div
                       animate={{ rotate: 360 }}
                       transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
@@ -864,8 +1081,9 @@ export default function TransferModal() {
                     />
                   ) : (
                     <>
-                      <Send size={18} strokeWidth={1.5} />
-                      <span>{scheduledDate ? 'جدولة التحويل' : 'إرسال'}</span>
+                      <UserCheck size={18} strokeWidth={1.5} />
+                      <span>متابعة</span>
+                      <ArrowRight size={16} strokeWidth={1.5} />
                     </>
                   )}
                 </button>
