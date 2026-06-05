@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useRef } from 'react';
-import { motion, AnimatePresence, PanInfo } from 'framer-motion';
+import { useState, useCallback } from 'react';
+import { motion, AnimatePresence, PanInfo, useMotionValue, useTransform, useSpring } from 'framer-motion';
 import {
   Bell,
   Headphones,
@@ -20,6 +20,7 @@ import {
   ArrowDownRight,
   ChevronLeft,
   Trophy,
+  Sparkles,
 } from 'lucide-react';
 
 const services = [
@@ -49,8 +50,12 @@ const balanceCards = [
     currencyAr: 'ر.ي',
     currencyName: 'الريال اليمني',
     balance: 0,
-    gradient: 'from-[#E63946] via-[#D62839] to-[#B91C2B]',
+    gradientFrom: '#E63946',
+    gradientVia: '#D62839',
+    gradientTo: '#B91C2B',
     flagEmoji: '🇾🇪',
+    glowColor: 'rgba(230, 57, 70, 0.4)',
+    sparkleColor: 'rgba(255, 200, 200, 0.8)',
   },
   {
     id: 1,
@@ -58,8 +63,12 @@ const balanceCards = [
     currencyAr: 'ر.س',
     currencyName: 'الريال السعودي',
     balance: 0,
-    gradient: 'from-[#1B5E20] via-[#2E7D32] to-[#388E3C]',
+    gradientFrom: '#1B5E20',
+    gradientVia: '#2E7D32',
+    gradientTo: '#388E3C',
     flagEmoji: '🇸🇦',
+    glowColor: 'rgba(46, 125, 50, 0.4)',
+    sparkleColor: 'rgba(200, 255, 200, 0.8)',
   },
   {
     id: 2,
@@ -67,28 +76,213 @@ const balanceCards = [
     currencyAr: '$',
     currencyName: 'الدولار الأمريكي',
     balance: 0,
-    gradient: 'from-[#1565C0] via-[#1976D2] to-[#1E88E5]',
+    gradientFrom: '#1565C0',
+    gradientVia: '#1976D2',
+    gradientTo: '#1E88E5',
     flagEmoji: '🇺🇸',
+    glowColor: 'rgba(21, 101, 192, 0.4)',
+    sparkleColor: 'rgba(200, 220, 255, 0.8)',
   },
 ];
+
+// Floating sparkle component
+function FloatingSparkle({ delay, x, y, color }: { delay: number; x: string; y: string; color: string }) {
+  return (
+    <motion.div
+      className="absolute pointer-events-none"
+      style={{ left: x, top: y }}
+      initial={{ opacity: 0, scale: 0, rotate: 0 }}
+      animate={{
+        opacity: [0, 1, 1, 0],
+        scale: [0, 1.2, 1, 0],
+        rotate: [0, 90, 180, 270],
+        y: [0, -15, -30],
+      }}
+      transition={{
+        duration: 2.5,
+        delay,
+        repeat: Infinity,
+        repeatDelay: Math.random() * 3 + 1,
+        ease: 'easeInOut',
+      }}
+    >
+      <Sparkles className="w-3 h-3" style={{ color }} />
+    </motion.div>
+  );
+}
+
+// Individual Balance Card Component
+function BalanceCard({
+  card,
+  balanceVisible,
+  onToggleBalance,
+  isActive,
+}: {
+  card: typeof balanceCards[0];
+  balanceVisible: boolean;
+  onToggleBalance: () => void;
+  isActive: boolean;
+}) {
+  return (
+    <div className="relative w-full h-full rounded-2xl overflow-hidden">
+      {/* Main gradient */}
+      <div
+        className="absolute inset-0"
+        style={{
+          background: `linear-gradient(135deg, ${card.gradientFrom}, ${card.gradientVia}, ${card.gradientTo})`,
+        }}
+      />
+
+      {/* Animated mesh pattern */}
+      <motion.div
+        className="absolute inset-0 opacity-[0.04]"
+        style={{
+          backgroundImage: `
+            radial-gradient(circle at 20% 50%, white 1px, transparent 1px),
+            radial-gradient(circle at 80% 20%, white 1px, transparent 1px),
+            radial-gradient(circle at 50% 80%, white 1px, transparent 1px)
+          `,
+          backgroundSize: '60px 60px, 80px 80px, 70px 70px',
+        }}
+        animate={{ backgroundPosition: ['0% 0%', '100% 100%'] }}
+        transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
+      />
+
+      {/* Decorative floating circles */}
+      <motion.div
+        className="absolute -top-10 -left-10 w-48 h-48 rounded-full"
+        style={{ background: 'rgba(255,255,255,0.06)' }}
+        animate={{ scale: [1, 1.1, 1], rotate: [0, 5, 0] }}
+        transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
+      />
+      <motion.div
+        className="absolute -bottom-8 -right-8 w-40 h-40 rounded-full"
+        style={{ background: 'rgba(255,255,255,0.05)' }}
+        animate={{ scale: [1, 1.15, 1], rotate: [0, -5, 0] }}
+        transition={{ duration: 7, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
+      />
+      <motion.div
+        className="absolute top-1/3 left-1/4 w-20 h-20 rounded-full"
+        style={{ background: 'rgba(255,255,255,0.03)' }}
+        animate={{ y: [0, -8, 0], x: [0, 5, 0] }}
+        transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut', delay: 2 }}
+      />
+
+      {/* Animated diagonal lines */}
+      <div className="absolute inset-0 opacity-[0.025]" style={{
+        backgroundImage: 'repeating-linear-gradient(45deg, transparent, transparent 8px, white 8px, white 9px)',
+      }} />
+
+      {/* Glowing border effect */}
+      <motion.div
+        className="absolute inset-0 rounded-2xl"
+        style={{
+          boxShadow: `inset 0 0 30px ${card.glowColor}, 0 0 40px ${card.glowColor}`,
+        }}
+        animate={{ opacity: [0.3, 0.6, 0.3] }}
+        transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+      />
+
+      {/* Sparkles */}
+      <FloatingSparkle delay={0} x="15%" y="20%" color={card.sparkleColor} />
+      <FloatingSparkle delay={1.5} x="75%" y="15%" color={card.sparkleColor} />
+      <FloatingSparkle delay={3} x="85%" y="65%" color={card.sparkleColor} />
+      <FloatingSparkle delay={0.8} x="25%" y="75%" color={card.sparkleColor} />
+      <FloatingSparkle delay={2.2} x="55%" y="40%" color={card.sparkleColor} />
+
+      {/* Content */}
+      <div className="relative z-10 p-6 h-full flex flex-col">
+        {/* Top row */}
+        <div className="flex items-center justify-between mb-5">
+          <div className="flex items-center gap-2">
+            <motion.div
+              className="w-9 h-9 bg-white/20 rounded-lg flex items-center justify-center backdrop-blur-sm"
+              animate={{ rotateY: [0, 360] }}
+              transition={{ duration: 8, repeat: Infinity, ease: 'linear' }}
+            >
+              <Wallet className="w-5 h-5 text-white" />
+            </motion.div>
+            <motion.span
+              className="text-white/90 font-bold text-lg"
+              animate={{ opacity: [0.9, 1, 0.9] }}
+              transition={{ duration: 2, repeat: Infinity }}
+            >
+              جيب
+            </motion.span>
+          </div>
+          <motion.div
+            className="flex items-center gap-1.5 bg-white/10 rounded-full px-3 py-1.5 backdrop-blur-sm"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <span className="text-lg">{card.flagEmoji}</span>
+            <span className="text-white/80 text-xs font-semibold">{card.currency}</span>
+          </motion.div>
+        </div>
+
+        {/* Balance label */}
+        <p className="text-white/60 text-sm mb-1">رصيدك الحالي</p>
+
+        {/* Balance amount */}
+        <motion.div
+          className="flex items-center gap-3 mb-auto"
+          key={`bal-${balanceVisible}-${card.currency}`}
+          initial={{ opacity: 0, y: 10, filter: 'blur(10px)' }}
+          animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+          transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
+        >
+          <span className="text-white text-5xl font-bold tracking-tight">
+            {balanceVisible ? card.balance.toLocaleString('ar-SA') : '••••'}
+          </span>
+          <span className="text-white/40 text-lg font-semibold mt-auto mb-2">{card.currencyAr}</span>
+        </motion.div>
+
+        {/* Currency name & toggle */}
+        <div className="flex items-center justify-between mt-4">
+          <motion.span
+            className="text-white/50 text-xs"
+            animate={{ opacity: [0.5, 0.7, 0.5] }}
+            transition={{ duration: 3, repeat: Infinity }}
+          >
+            {card.currencyName}
+          </motion.span>
+          <motion.button
+            onClick={onToggleBalance}
+            className="p-2 rounded-full bg-white/15 backdrop-blur-sm"
+            whileTap={{ scale: 0.85, rotate: 15 }}
+            whileHover={{ scale: 1.1, backgroundColor: 'rgba(255,255,255,0.25)' }}
+          >
+            {balanceVisible ? (
+              <Eye className="w-4 h-4 text-white/80" />
+            ) : (
+              <EyeOff className="w-4 h-4 text-white/80" />
+            )}
+          </motion.button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function HomeScreen() {
   const [balanceVisible, setBalanceVisible] = useState(true);
   const [activeCard, setActiveCard] = useState(0);
-  const [dragDirection, setDragDirection] = useState(0);
+  const dragX = useMotionValue(0);
 
-  const handleDragEnd = (_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
-    const threshold = 50;
-    if (info.offset.x > threshold) {
-      // Swiped right (in RTL means previous)
-      setActiveCard((prev) => Math.max(0, prev - 1));
-    } else if (info.offset.x < -threshold) {
-      // Swiped left (in RTL means next)
+  const handleDragEnd = useCallback((_event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+    const threshold = 40;
+    // RTL: swiping left (negative x) means going to next card
+    if (info.offset.x < -threshold) {
       setActiveCard((prev) => Math.min(balanceCards.length - 1, prev + 1));
+    } else if (info.offset.x > threshold) {
+      // RTL: swiping right (positive x) means going to previous card
+      setActiveCard((prev) => Math.max(0, prev - 1));
     }
-  };
+  }, []);
 
-  const currentBalance = balanceCards[activeCard];
+  const goToCard = useCallback((index: number) => {
+    setActiveCard(index);
+  }, []);
 
   return (
     <div className="pb-4">
@@ -109,114 +303,153 @@ export default function HomeScreen() {
         </div>
       </div>
 
-      {/* Balance Card Carousel */}
+      {/* Balance Card Carousel - EPIC ANIMATION */}
       <div className="px-4 py-3">
-        <div className="relative overflow-hidden">
-          <AnimatePresence mode="wait">
+        <div
+          className="relative"
+          style={{ height: '220px', perspective: '1200px' }}
+        >
+          <AnimatePresence mode="popLayout">
             <motion.div
               key={activeCard}
-              className="relative rounded-2xl p-6 overflow-hidden shadow-lg cursor-grab active:cursor-grabbing"
-              initial={{ opacity: 0, x: dragDirection >= 0 ? 80 : -80, scale: 0.95 }}
-              animate={{ opacity: 1, x: 0, scale: 1 }}
-              exit={{ opacity: 0, x: dragDirection >= 0 ? -80 : 80, scale: 0.95 }}
-              transition={{ duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] }}
+              className="absolute inset-0 rounded-2xl shadow-2xl cursor-grab active:cursor-grabbing"
+              initial={{
+                x: 300,
+                opacity: 0,
+                scale: 0.6,
+                rotateY: -45,
+                rotateZ: -8,
+                filter: 'blur(8px) brightness(0.5)',
+              }}
+              animate={{
+                x: 0,
+                opacity: 1,
+                scale: 1,
+                rotateY: 0,
+                rotateZ: 0,
+                filter: 'blur(0px) brightness(1)',
+              }}
+              exit={{
+                x: -300,
+                opacity: 0,
+                scale: 0.6,
+                rotateY: 45,
+                rotateZ: 8,
+                filter: 'blur(8px) brightness(0.5)',
+              }}
+              transition={{
+                type: 'spring',
+                stiffness: 200,
+                damping: 25,
+                mass: 0.8,
+              }}
               drag="x"
               dragConstraints={{ left: 0, right: 0 }}
-              dragElastic={0.15}
+              dragElastic={0.2}
               onDragEnd={handleDragEnd}
-              onDragStart={(_, info) => {
-                setDragDirection(info.offset.x > 0 ? 1 : -1);
+              style={{ dragX }}
+              whileDrag={{
+                scale: 0.97,
+                rotateZ: 0,
+                boxShadow: '0 25px 60px rgba(0,0,0,0.3)',
               }}
             >
-              {/* Dynamic gradient based on currency */}
-              <div className={`absolute inset-0 bg-gradient-to-bl ${currentBalance.gradient}`}></div>
-
-              {/* Decorative pattern */}
-              <div className="absolute top-0 left-0 w-48 h-48 bg-white/5 rounded-full -translate-x-1/3 -translate-y-1/3"></div>
-              <div className="absolute bottom-0 right-0 w-36 h-36 bg-white/5 rounded-full translate-x-1/4 translate-y-1/4"></div>
-              <div className="absolute top-1/3 left-1/4 w-24 h-24 bg-white/[0.03] rounded-full"></div>
-              <div className="absolute bottom-1/4 right-1/3 w-16 h-16 bg-white/[0.04] rounded-full"></div>
-              {/* Subtle diagonal lines pattern */}
-              <div className="absolute inset-0 opacity-[0.03]" style={{
-                backgroundImage: 'repeating-linear-gradient(45deg, transparent, transparent 10px, white 10px, white 11px)',
-              }}></div>
-
-              <div className="relative z-10">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center backdrop-blur-sm">
-                      <Wallet className="w-4 h-4 text-white" />
-                    </div>
-                    <span className="text-white/90 font-bold text-lg">جيب</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-xl">{currentBalance.flagEmoji}</span>
-                    <span className="text-white/70 text-xs font-medium">{currentBalance.currencyName}</span>
-                  </div>
-                </div>
-                <p className="text-white/70 text-sm mb-2">رصيدك الحالي</p>
-                <div className="flex items-center gap-3 mb-5">
-                  <span className="text-white text-5xl font-bold tracking-tight">
-                    {balanceVisible ? currentBalance.balance.toLocaleString('ar-SA') : '••••'}
-                  </span>
-                  <span className="text-white/50 text-lg mt-auto mb-2 font-semibold">{currentBalance.currencyAr}</span>
-                </div>
-
-                {/* All 3 balances mini display */}
-                <div className="flex gap-2 mb-4">
-                  {balanceCards.map((card, i) => (
-                    <button
-                      key={card.id}
-                      onClick={() => {
-                        setDragDirection(i > activeCard ? -1 : 1);
-                        setActiveCard(i);
-                      }}
-                      className={`flex-1 rounded-xl px-2.5 py-2 transition-all duration-300 ${
-                        i === activeCard
-                          ? 'bg-white/20 backdrop-blur-sm'
-                          : 'bg-white/[0.06] hover:bg-white/10'
-                      }`}
-                    >
-                      <div className="flex items-center justify-center gap-1.5">
-                        <span className="text-sm">{card.flagEmoji}</span>
-                        <span className="text-white/60 text-[10px] font-medium">{card.currency}</span>
-                      </div>
-                      <p className="text-white text-xs font-bold text-center mt-0.5">
-                        {balanceVisible ? card.balance.toLocaleString('ar-SA') : '••••'}
-                      </p>
-                    </button>
-                  ))}
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <div className="flex gap-1.5">
-                    {balanceCards.map((_, i) => (
-                      <button
-                        key={i}
-                        onClick={() => {
-                          setDragDirection(i > activeCard ? -1 : 1);
-                          setActiveCard(i);
-                        }}
-                        className={`rounded-full transition-all duration-300 ${
-                          i === activeCard ? 'bg-white w-6 h-2' : 'bg-white/30 w-2 h-2'
-                        }`}
-                      />
-                    ))}
-                  </div>
-                  <button
-                    onClick={() => setBalanceVisible(!balanceVisible)}
-                    className="p-2 rounded-full bg-white/15 backdrop-blur-sm active:scale-90 transition-transform"
-                  >
-                    {balanceVisible ? (
-                      <Eye className="w-4 h-4 text-white/80" />
-                    ) : (
-                      <EyeOff className="w-4 h-4 text-white/80" />
-                    )}
-                  </button>
-                </div>
-              </div>
+              <BalanceCard
+                card={balanceCards[activeCard]}
+                balanceVisible={balanceVisible}
+                onToggleBalance={() => setBalanceVisible(!balanceVisible)}
+                isActive={true}
+              />
             </motion.div>
           </AnimatePresence>
+
+          {/* Side peek cards (ghost effect) */}
+          {activeCard > 0 && (
+            <motion.div
+              className="absolute inset-0 rounded-2xl opacity-20 pointer-events-none"
+              initial={{ x: -100, scale: 0.85, opacity: 0 }}
+              animate={{ x: -30, scale: 0.88, opacity: 0.15 }}
+              style={{
+                background: `linear-gradient(135deg, ${balanceCards[activeCard - 1].gradientFrom}, ${balanceCards[activeCard - 1].gradientTo})`,
+                filter: 'blur(2px)',
+              }}
+            />
+          )}
+          {activeCard < balanceCards.length - 1 && (
+            <motion.div
+              className="absolute inset-0 rounded-2xl opacity-20 pointer-events-none"
+              initial={{ x: 100, scale: 0.85, opacity: 0 }}
+              animate={{ x: 30, scale: 0.88, opacity: 0.15 }}
+              style={{
+                background: `linear-gradient(135deg, ${balanceCards[activeCard + 1].gradientFrom}, ${balanceCards[activeCard + 1].gradientTo})`,
+                filter: 'blur(2px)',
+              }}
+            />
+          )}
+        </div>
+
+        {/* Dots Indicator */}
+        <div className="flex items-center justify-center gap-3 mt-4">
+          {balanceCards.map((card, i) => (
+            <motion.button
+              key={i}
+              onClick={() => goToCard(i)}
+              className="relative"
+              whileTap={{ scale: 0.8 }}
+              whileHover={{ scale: 1.2 }}
+            >
+              <motion.div
+                className="rounded-full"
+                animate={{
+                  width: i === activeCard ? 32 : 10,
+                  height: 10,
+                  backgroundColor: i === activeCard ? card.gradientFrom : '#d1d5db',
+                }}
+                transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+              />
+              {/* Active dot glow */}
+              {i === activeCard && (
+                <motion.div
+                  className="absolute inset-0 rounded-full"
+                  style={{ backgroundColor: card.glowColor }}
+                  animate={{ scale: [1, 1.5, 1], opacity: [0.5, 0, 0.5] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                />
+              )}
+            </motion.button>
+          ))}
+        </div>
+
+        {/* Currency Quick Switch Pills */}
+        <div className="flex items-center justify-center gap-2 mt-3">
+          {balanceCards.map((card, i) => (
+            <motion.button
+              key={card.id}
+              onClick={() => goToCard(i)}
+              className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 transition-all ${
+                i === activeCard
+                  ? 'bg-white shadow-md'
+                  : 'bg-white/60'
+              }`}
+              whileTap={{ scale: 0.9 }}
+              whileHover={{ scale: 1.05 }}
+            >
+              <span className="text-sm">{card.flagEmoji}</span>
+              <span className={`text-xs font-bold ${
+                i === activeCard ? 'text-gray-800' : 'text-gray-500'
+              }`}>
+                {card.currency}
+              </span>
+              {i === activeCard && (
+                <motion.div
+                  className="w-1.5 h-1.5 rounded-full"
+                  style={{ backgroundColor: card.gradientFrom }}
+                  layoutId="activeIndicator"
+                  transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+                />
+              )}
+            </motion.button>
+          ))}
         </div>
       </div>
 
@@ -251,8 +484,6 @@ export default function HomeScreen() {
         >
           <div className="absolute top-0 left-0 w-32 h-32 bg-white/10 rounded-full -translate-x-1/2 -translate-y-1/2"></div>
           <div className="absolute bottom-0 right-0 w-20 h-20 bg-white/5 rounded-full translate-x-1/3 translate-y-1/3"></div>
-          <div className="absolute top-3 left-1/3 w-2 h-2 bg-white/10 rounded-full"></div>
-          <div className="absolute bottom-4 left-1/4 w-3 h-3 bg-white/5 rounded-full"></div>
           <div className="relative z-10">
             <div className="flex items-center justify-between">
               <div>
