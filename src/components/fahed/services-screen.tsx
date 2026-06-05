@@ -21,6 +21,7 @@ import {
   ArrowLeft,
   Heart,
   Search,
+  Wifi,
 } from 'lucide-react';
 import { useAppStore } from '@/lib/store';
 
@@ -44,6 +45,7 @@ const menuSections = [
       { id: 'yo', label: 'يو', icon: Phone, color: '#FF6B00' },
       { id: 'sabafon', label: 'سبأفون', icon: Phone, color: '#2563EB' },
       { id: 'y', label: 'واي', icon: Phone, color: '#059669' },
+      { id: 'yemen-net', label: 'يمن نت', icon: Wifi, color: '#8B5CF6' },
     ],
   },
   {
@@ -72,6 +74,16 @@ export default function ServicesScreen() {
   const [searchQuery, setSearchQuery] = useState('');
 
   const handleItemClick = (itemId: string) => {
+    // Telecom companies go to unified recharge screen
+    if (['yemen-mobile', 'yo', 'sabafon', 'y', 'yemen-net'].includes(itemId)) {
+      useAppStore.getState().setActiveScreen('recharge');
+      return;
+    }
+    // Recharge service also goes to recharge screen
+    if (itemId === 'recharge') {
+      useAppStore.getState().setActiveScreen('recharge');
+      return;
+    }
     const provider = providers.find(p => p.id === itemId);
     if (provider) {
       setSelectedProvider(provider);

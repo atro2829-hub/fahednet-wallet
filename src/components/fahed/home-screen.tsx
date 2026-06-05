@@ -42,20 +42,20 @@ import { LOGO_BASE64 } from '@/lib/logo';
 interface BalanceCard {
   currency: 'YER' | 'SAR' | 'USD';
   accentColor: string;
+  accentColorEnd: string;
+  glowColor: string;
   patternColor: string;
 }
 
-// Active card gradient (red)
-const ACTIVE_GRADIENT = '#E60000';
-const ACTIVE_GRADIENT_END = '#8B0000';
-// Inactive card gradient (black)
-const INACTIVE_GRADIENT = '#1A1A1A';
-const INACTIVE_GRADIENT_END = '#0F0F0F';
+function hexToRgb(hex: string): string {
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  return result ? `${parseInt(result[1], 16)},${parseInt(result[2], 16)},${parseInt(result[3], 16)}` : '255,255,255';
+}
 
 const balanceCards: BalanceCard[] = [
-  { currency: 'YER', accentColor: '#E60000', patternColor: 'rgba(255,255,255,0.04)' },
-  { currency: 'SAR', accentColor: '#E60000', patternColor: 'rgba(255,255,255,0.04)' },
-  { currency: 'USD', accentColor: '#E60000', patternColor: 'rgba(255,255,255,0.04)' },
+  { currency: 'YER', accentColor: '#E60000', accentColorEnd: '#8B0000', glowColor: 'rgba(230,0,0,0.35)', patternColor: 'rgba(255,255,255,0.06)' },
+  { currency: 'SAR', accentColor: '#0D5A1F', accentColorEnd: '#1B7A2B', glowColor: 'rgba(13,90,31,0.35)', patternColor: 'rgba(255,255,255,0.06)' },
+  { currency: 'USD', accentColor: '#0D47A1', accentColorEnd: '#1565C0', glowColor: 'rgba(13,71,161,0.35)', patternColor: 'rgba(255,255,255,0.06)' },
 ];
 
 // Jaib-style services - 9 items matching exactly what Jaib shows
@@ -353,7 +353,8 @@ export default function HomeScreen() {
         setTransferOpen(true);
         break;
       case 'recharge':
-        useAppStore.getState().setActiveTab('services');
+      case 'instant-charge':
+        setActiveScreen('recharge');
         break;
       case 'wallet-transfer':
         setTransferOpen(true);
@@ -457,18 +458,18 @@ export default function HomeScreen() {
                   height: 190,
                   borderRadius: 20,
                   background: index === activeCardIndex
-                    ? 'rgba(230, 0, 0, 0.15)'
-                    : 'rgba(255, 255, 255, 0.05)',
-                  backdropFilter: 'blur(20px)',
-                  WebkitBackdropFilter: 'blur(20px)',
+                    ? `linear-gradient(145deg, ${card.accentColor}DD, ${card.accentColorEnd}CC)`
+                    : 'rgba(255, 255, 255, 0.03)',
+                  backdropFilter: index === activeCardIndex ? 'blur(30px)' : 'blur(20px)',
+                  WebkitBackdropFilter: index === activeCardIndex ? 'blur(30px)' : 'blur(20px)',
                   border: index === activeCardIndex
-                    ? '1px solid rgba(230, 0, 0, 0.3)'
-                    : '1px solid rgba(255, 255, 255, 0.1)',
+                    ? `1px solid rgba(${hexToRgb(card.accentColor)}, 0.5)`
+                    : '1px solid rgba(255, 255, 255, 0.06)',
                   boxShadow: index === activeCardIndex
-                    ? '0 8px 32px rgba(230, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1), inset 0 -1px 0 rgba(230, 0, 0, 0.1)'
+                    ? `0 12px 40px ${card.glowColor}, inset 0 1px 0 rgba(255,255,255,0.2)`
                     : '0 4px 16px rgba(0, 0, 0, 0.1)',
-                  transform: index === activeCardIndex ? 'scale(1)' : 'scale(0.93)',
-                  opacity: index === activeCardIndex ? 1 : 0.6,
+                  transform: index === activeCardIndex ? 'scale(1)' : 'scale(0.92)',
+                  opacity: index === activeCardIndex ? 1 : 0.5,
                   transition: 'transform 0.4s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.4s ease, box-shadow 0.4s ease, background 0.4s ease, border 0.4s ease',
                 }}
                 onClick={() => snapToCard(index)}
@@ -485,11 +486,23 @@ export default function HomeScreen() {
                   </defs>
                   <rect width="100%" height="100%" fill={`url(#grid-${card.currency})`} />
                 </svg>
-                <div className="absolute -top-16 -right-16 w-40 h-40 rounded-full" style={{ background: 'rgba(255,255,255,0.03)' }} />
-                <div className="absolute -bottom-10 -left-10 w-32 h-32 rounded-full" style={{ background: 'rgba(255,255,255,0.02)' }} />
+                <div className="absolute -top-16 -right-16 w-40 h-40 rounded-full" style={{ background: index === activeCardIndex ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.03)' }} />
+                <div className="absolute -bottom-10 -left-10 w-32 h-32 rounded-full" style={{ background: index === activeCardIndex ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.02)' }} />
                 <svg className="absolute bottom-0 left-0 w-full" viewBox="0 0 300 40" preserveAspectRatio="none" style={{ height: '35px' }}>
-                  <path d="M0,30 C50,10 100,40 150,25 C200,10 250,35 300,20 L300,40 L0,40 Z" fill="rgba(255,255,255,0.02)" />
+                  <path d="M0,30 C50,10 100,40 150,25 C200,10 250,35 300,20 L300,40 L0,40 Z" fill={index === activeCardIndex ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.02)'} />
                 </svg>
+                {/* Animated gradient border glow for active card */}
+                {index === activeCardIndex && (
+                  <div
+                    className="absolute inset-0 pointer-events-none"
+                    style={{
+                      borderRadius: 20,
+                      border: `1px solid rgba(${hexToRgb(card.accentColor)}, 0.15)`,
+                      boxShadow: `inset 0 0 20px rgba(${hexToRgb(card.accentColor)}, 0.1), 0 0 30px rgba(${hexToRgb(card.accentColor)}, 0.08)`,
+                      animation: 'pulse 3s ease-in-out infinite',
+                    }}
+                  />
+                )}
 
                 {/* Card Content - Jaib Style: Logo + Branding + Balance */}
                 <div className="relative z-10 h-full flex flex-col justify-between p-5">
@@ -562,7 +575,7 @@ export default function HomeScreen() {
                 className="rounded-full"
                 animate={{
                   width: activeCardIndex === index ? 14 : 6,
-                  backgroundColor: activeCardIndex === index ? '#E60000' : (isDark ? '#333' : '#D4D4D4'),
+                  backgroundColor: activeCardIndex === index ? balanceCards[index].accentColor : (isDark ? '#333' : '#D4D4D4'),
                 }}
                 transition={{ duration: 0.3, ease: 'easeInOut' }}
                 style={{ height: 6 }}

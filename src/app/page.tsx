@@ -26,6 +26,7 @@ import EditProfileScreen from '@/components/fahed/edit-profile-screen';
 import SplitScreen from '@/components/fahed/split-screen';
 import SubscriptionsScreen from '@/components/fahed/subscriptions-screen';
 import ChargingCompaniesScreen from '@/components/fahed/charging-companies-screen';
+import RechargeScreen from '@/components/fahed/recharge-screen';
 import SettingsScreen from '@/components/fahed/settings-screen';
 import BottomNav from '@/components/fahed/bottom-nav';
 import QuickActionDrawer from '@/components/fahed/quick-action-drawer';
@@ -139,6 +140,7 @@ function AppContent() {
     split: SplitScreen,
     subscriptions: SubscriptionsScreen,
     'charging-companies': ChargingCompaniesScreen,
+    recharge: RechargeScreen,
     settings: SettingsScreen,
   };
 
