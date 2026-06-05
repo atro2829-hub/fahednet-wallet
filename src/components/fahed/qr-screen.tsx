@@ -11,7 +11,7 @@ import {
   Share2,
   UserPlus,
   HandCoins,
-  CreditCard,
+
   CheckCircle2,
   Clipboard,
 } from 'lucide-react';
@@ -21,7 +21,7 @@ import { LOGO_BASE64 } from '@/lib/logo';
 import { useToast } from '@/components/fahed/toast-provider';
 
 type QRTab = 'scan' | 'generate';
-type GenerateType = 'receive' | 'request' | 'card';
+type GenerateType = 'receive' | 'request';
 
 // Simple deterministic QR-like pattern generator based on data
 function QRPattern({ data, size = 200 }: { data: string; size?: number }) {
@@ -105,8 +105,6 @@ export default function QRScreen() {
         return `FAHED:RECEIVE:${user.userId}${amount ? `:AMT:${amount}:${currency}` : ''}`;
       case 'request':
         return `FAHED:REQUEST:${user.userId}:AMT:${amount || '0'}:${currency}`;
-      case 'card':
-        return `FAHED:CARD:${user.userId}:${user.name}:${user.phone}`;
       default:
         return '';
     }
@@ -147,7 +145,6 @@ export default function QRScreen() {
   const generateTypes: { key: GenerateType; label: string; icon: typeof UserPlus }[] = [
     { key: 'receive', label: 'استقبال تحويل', icon: UserPlus },
     { key: 'request', label: 'طلب أموال', icon: HandCoins },
-    { key: 'card', label: 'بطاقة حسابي', icon: CreditCard },
   ];
 
   return (
@@ -491,7 +488,7 @@ export default function QRScreen() {
                   >
                     {user?.userId || '100000'}
                   </p>
-                  {(amount || generateType === 'card') && amount && (
+                  {amount && (
                     <p
                       className="text-sm mt-2"
                       style={{ color: isDark ? '#AAA' : '#888' }}
@@ -543,48 +540,7 @@ export default function QRScreen() {
                 </div>
               </motion.div>
 
-              {/* My QR Card */}
-              {generateType === 'card' && (
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="relative rounded-3xl overflow-hidden"
-                  style={{
-                    background: 'linear-gradient(135deg, #E60000 0%, #8B0000 50%, #0F0F0F 100%)',
-                    boxShadow: '0 8px 32px rgba(230,0,0,0.2)',
-                  }}
-                >
-                  {/* Decorative circles */}
-                  <div className="absolute top-4 left-4 w-20 h-20 rounded-full opacity-10" style={{ background: '#FFF' }} />
-                  <div className="absolute bottom-4 right-4 w-16 h-16 rounded-full opacity-10" style={{ background: '#FFF' }} />
 
-                  <div className="relative z-10 p-6">
-                    <div className="flex items-center justify-between mb-6">
-                      <div>
-                        <p className="text-white/60 text-[10px] font-medium">محفظة الجنوب</p>
-                        <p className="text-white text-lg font-bold mt-0.5">{user?.name}</p>
-                      </div>
-                      <img src={LOGO_BASE64} alt="الجنوب" className="w-10 h-10 rounded-xl opacity-80" />
-                    </div>
-
-                    <div className="text-center my-6">
-                      <p className="text-white/50 text-[10px] mb-1">رقم الحساب</p>
-                      <p className="text-white text-4xl font-bold tracking-[0.2em]" dir="ltr">
-                        {user?.userId || '100000'}
-                      </p>
-                    </div>
-
-                    <div className="flex items-center justify-between mt-6">
-                      <div className="flex items-center gap-1">
-                        <span className="text-[10px] font-bold text-white/80 px-2 py-0.5 rounded-full" style={{ background: 'rgba(255,255,255,0.15)' }}>
-                          الجنوب
-                        </span>
-                      </div>
-                      <p className="text-white/40 text-[10px]">{user?.phone || ''}</p>
-                    </div>
-                  </div>
-                </motion.div>
-              )}
             </motion.div>
           )}
         </AnimatePresence>

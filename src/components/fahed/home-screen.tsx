@@ -29,16 +29,21 @@ import { LOGO_BASE64 } from '@/lib/logo';
 
 interface BalanceCard {
   currency: 'YER' | 'SAR' | 'USD';
-  gradient: string;
-  gradientEnd: string;
   accentColor: string;
   patternColor: string;
 }
 
+// Active card gradient (red)
+const ACTIVE_GRADIENT = '#E60000';
+const ACTIVE_GRADIENT_END = '#8B0000';
+// Inactive card gradient (black)
+const INACTIVE_GRADIENT = '#1A1A1A';
+const INACTIVE_GRADIENT_END = '#0F0F0F';
+
 const balanceCards: BalanceCard[] = [
-  { currency: 'YER', gradient: '#E60000', gradientEnd: '#8B0000', accentColor: '#E60000', patternColor: 'rgba(255,255,255,0.08)' },
-  { currency: 'SAR', gradient: '#059669', gradientEnd: '#064E3B', accentColor: '#10B981', patternColor: 'rgba(255,255,255,0.08)' },
-  { currency: 'USD', gradient: '#2563EB', gradientEnd: '#1E3A8A', accentColor: '#3B82F6', patternColor: 'rgba(255,255,255,0.08)' },
+  { currency: 'YER', accentColor: '#E60000', patternColor: 'rgba(255,255,255,0.08)' },
+  { currency: 'SAR', accentColor: '#E60000', patternColor: 'rgba(255,255,255,0.08)' },
+  { currency: 'USD', accentColor: '#E60000', patternColor: 'rgba(255,255,255,0.08)' },
 ];
 
 const quickActions = [
@@ -447,13 +452,15 @@ export default function HomeScreen() {
                   width: getCardWidth(),
                   height: 200,
                   borderRadius: 20,
-                  background: `linear-gradient(145deg, ${card.gradient} 0%, ${card.gradientEnd} 100%)`,
+                  background: index === activeCardIndex
+                    ? `linear-gradient(145deg, ${ACTIVE_GRADIENT} 0%, ${ACTIVE_GRADIENT_END} 100%)`
+                    : `linear-gradient(145deg, ${INACTIVE_GRADIENT} 0%, ${INACTIVE_GRADIENT_END} 100%)`,
                   boxShadow: index === activeCardIndex
-                    ? `0 4px 12px rgba(0,0,0,0.1), 0 12px 32px ${card.accentColor}30`
-                    : '0 2px 8px rgba(0,0,0,0.08)',
+                    ? '0 4px 12px rgba(0,0,0,0.1), 0 12px 32px rgba(230,0,0,0.3)'
+                    : '0 2px 8px rgba(0,0,0,0.15)',
                   transform: index === activeCardIndex ? 'scale(1)' : 'scale(0.93)',
-                  opacity: index === activeCardIndex ? 1 : 0.5,
-                  transition: 'transform 0.4s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.4s ease, box-shadow 0.4s ease',
+                  opacity: index === activeCardIndex ? 1 : 0.6,
+                  transition: 'transform 0.4s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.4s ease, box-shadow 0.4s ease, background 0.4s ease',
                 }}
                 onClick={() => snapToCard(index)}
                 dir="rtl"
@@ -548,7 +555,7 @@ export default function HomeScreen() {
                 className="rounded-full"
                 animate={{
                   width: activeCardIndex === index ? 14 : 6,
-                  backgroundColor: activeCardIndex === index ? balanceCards[index].accentColor : (isDark ? '#333' : '#D4D4D4'),
+                  backgroundColor: activeCardIndex === index ? '#E60000' : (isDark ? '#333' : '#D4D4D4'),
                 }}
                 transition={{ duration: 0.3, ease: 'easeInOut' }}
                 style={{ height: 6 }}

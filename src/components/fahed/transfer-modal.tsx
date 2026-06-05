@@ -13,7 +13,6 @@ import {
   ChevronDown,
   CheckCircle2,
   AlertCircle,
-  Tag,
   Split,
   Calendar,
   Receipt,
@@ -53,7 +52,7 @@ function CurrencyBadge({ currency }: { currency: string }) {
 export default function TransferModal() {
   const { theme } = useTheme();
   const isDark = theme === 'dark';
-  const { isTransferOpen, setTransferOpen, user, setActiveScreen, applyPromoCode } = useAppStore();
+  const { isTransferOpen, setTransferOpen, user, setActiveScreen } = useAppStore();
   const { showToast } = useToast();
 
   const [transferMode, setTransferMode] = useState<TransferMode>('userId');
@@ -67,10 +66,6 @@ export default function TransferModal() {
   const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [errorMsg, setErrorMsg] = useState('');
 
-  // New features
-  const [promoCode, setPromoCode] = useState('');
-  const [promoApplied, setPromoApplied] = useState(false);
-  const [promoDiscount, setPromoDiscount] = useState(0);
   const [scheduledDate, setScheduledDate] = useState('');
   const [showSchedule, setShowSchedule] = useState(false);
   const [showReceipt, setShowReceipt] = useState(false);
@@ -105,11 +100,7 @@ export default function TransferModal() {
     return (user[field] as number) || 0;
   };
 
-  const effectiveAmount = promoApplied
-    ? Math.max(0, parseFloat(amount) - promoDiscount)
-    : parseFloat(amount);
-
-  const balanceAfter = getBalance(currency) - effectiveAmount;
+  const balanceAfter = getBalance(currency) - parseFloat(amount);
 
   const handleClose = () => {
     setTransferOpen(false);
@@ -122,9 +113,6 @@ export default function TransferModal() {
       setStatus('idle');
       setErrorMsg('');
       setTransferMode('userId');
-      setPromoCode('');
-      setPromoApplied(false);
-      setPromoDiscount(0);
       setScheduledDate('');
       setShowSchedule(false);
       setShowReceipt(false);
@@ -142,21 +130,6 @@ export default function TransferModal() {
     setToUserId(cleaned);
   };
 
-  const handleApplyPromo = () => {
-    if (!promoCode.trim()) return;
-    const promo = applyPromoCode(promoCode.trim().toUpperCase());
-    if (promo) {
-      const discount = promo.type === 'percentage'
-        ? Math.round((parseFloat(amount) || 0) * promo.discount / 100)
-        : promo.discount;
-      setPromoApplied(true);
-      setPromoDiscount(discount);
-      showToast('success', 'تم تطبيق الكود', `خصم ${discount.toLocaleString('ar-SA')} ${currencySymbols[currency]}`);
-    } else {
-      showToast('error', 'كود غير صالح', 'الكود الترويجي غير صالح أو منتهي الصلاحية');
-    }
-  };
-
   const handleTransfer = async () => {
     if (!user) return;
     if (transferMode === 'userId' && !toUserId) return;
@@ -165,6 +138,8 @@ export default function TransferModal() {
 
     setIsLoading(true);
     setStatus('idle');
+
+    const effectiveAmount = parseFloat(amount);
 
     try {
       const body: Record<string, unknown> = {
@@ -339,17 +314,9 @@ export default function TransferModal() {
                     <div className="flex justify-between">
                       <span className="text-xs font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>المبلغ</span>
                       <span className="text-sm font-bold" style={{ color: '#E60000' }}>
-                        {effectiveAmount.toLocaleString('ar-SA')} {currencySymbols[currency]}
+                        {parseFloat(amount).toLocaleString('ar-SA')} {currencySymbols[currency]}
                       </span>
                     </div>
-                    {promoApplied && promoDiscount > 0 && (
-                      <div className="flex justify-between">
-                        <span className="text-xs" style={{ color: '#10B981' }}>الخصم</span>
-                        <span className="text-xs font-medium" style={{ color: '#10B981' }}>
-                          -{promoDiscount.toLocaleString('ar-SA')} {currencySymbols[currency]}
-                        </span>
-                      </div>
-                    )}
                   </div>
                 </div>
               </motion.div>
@@ -367,7 +334,7 @@ export default function TransferModal() {
                   {scheduledDate ? 'تم جدولة التحويل!' : 'تم التحويل بنجاح!'}
                 </p>
                 <p className="text-sm mt-1" style={{ color: isDark ? '#AAA' : '#888' }}>
-                  {effectiveAmount.toLocaleString('ar-SA')} {currencySymbols[currency]} إلى {transferMode === 'userId' ? toUserId : `+967${toPhone}`}
+                  {parseFloat(amount).toLocaleString('ar-SA')} {currencySymbols[currency]} إلى {transferMode === 'userId' ? toUserId : `+967${toPhone}`}
                 </p>
                 {scheduledDate && (
                   <p className="text-xs mt-1" style={{ color: '#F59E0B' }}>
@@ -519,8 +486,6 @@ export default function TransferModal() {
                       value={amount}
                       onChange={(e) => {
                         setAmount(e.target.value);
-                        setPromoApplied(false);
-                        setPromoDiscount(0);
                       }}
                       className="flex-1 bg-transparent outline-none text-sm"
                       style={{ color: isDark ? '#FFF' : '#1a1a1a' }}
@@ -541,9 +506,7 @@ export default function TransferModal() {
                         key={qa.value}
                         onClick={() => {
                           setAmount(qa.value.toString());
-                          setPromoApplied(false);
-                          setPromoDiscount(0);
-                        }}
+                      }}
                         className="flex-1 py-2 rounded-xl text-[11px] font-medium transition-all"
                         style={{
                           background: amount === qa.value.toString()
@@ -612,8 +575,6 @@ export default function TransferModal() {
                               onClick={() => {
                                 setCurrency(c);
                                 setShowCurrencySelect(false);
-                                setPromoApplied(false);
-                                setPromoDiscount(0);
                               }}
                               className="w-full flex items-center gap-3 px-4 py-3 hover:bg-[#E60000]/5 transition-colors"
                               style={{
@@ -668,48 +629,6 @@ export default function TransferModal() {
                       className="flex-1 bg-transparent outline-none text-sm"
                       style={{ color: isDark ? '#FFF' : '#1a1a1a' }}
                     />
-                  </div>
-                </div>
-
-                {/* Promo Code */}
-                <div>
-                  <label
-                    className="text-xs font-medium mb-1.5 block"
-                    style={{ color: isDark ? '#AAA' : '#888' }}
-                  >
-                    كود ترويجي
-                  </label>
-                  <div className="flex gap-2">
-                    <div
-                      className="flex items-center gap-2 px-4 py-3 rounded-2xl flex-1"
-                      style={{
-                        background: isDark ? '#222' : '#F8F8F8',
-                        border: promoApplied ? '1px solid #10B981' : isDark ? '1px solid #333' : '1px solid #EEE',
-                      }}
-                    >
-                      <Tag size={18} strokeWidth={1.5} color={promoApplied ? '#10B981' : '#E60000'} />
-                      <input
-                        type="text"
-                        placeholder="أدخل الكود"
-                        value={promoCode}
-                        onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
-                        disabled={promoApplied}
-                        className="flex-1 bg-transparent outline-none text-sm"
-                        style={{ color: promoApplied ? '#10B981' : isDark ? '#FFF' : '#1a1a1a' }}
-                        dir="ltr"
-                      />
-                      {promoApplied && <CheckCircle2 size={16} color="#10B981" strokeWidth={1.5} />}
-                    </div>
-                    <button
-                      onClick={handleApplyPromo}
-                      disabled={promoApplied || !promoCode.trim()}
-                      className="px-4 rounded-2xl text-xs font-medium text-white disabled:opacity-40"
-                      style={{
-                        background: promoApplied ? '#10B981' : '#E60000',
-                      }}
-                    >
-                      {promoApplied ? 'مطبق' : 'تطبيق'}
-                    </button>
                   </div>
                 </div>
 
@@ -799,17 +718,9 @@ export default function TransferModal() {
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-xs" style={{ color: isDark ? '#888' : '#AAA' }}>المبلغ</span>
                       <span className="text-xs font-bold" style={{ color: '#E60000' }}>
-                        -{effectiveAmount.toLocaleString('ar-SA')} {currencySymbols[currency]}
+                        -{parseFloat(amount).toLocaleString('ar-SA')} {currencySymbols[currency]}
                       </span>
                     </div>
-                    {promoApplied && promoDiscount > 0 && (
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-xs" style={{ color: '#10B981' }}>الخصم</span>
-                        <span className="text-xs font-bold" style={{ color: '#10B981' }}>
-                          +{promoDiscount.toLocaleString('ar-SA')} {currencySymbols[currency]}
-                        </span>
-                      </div>
-                    )}
                     <div className="h-px my-2" style={{ background: isDark ? '#333' : '#EEE' }} />
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-medium" style={{ color: isDark ? '#AAA' : '#888' }}>الرصيد بعد التحويل</span>
