@@ -34,6 +34,7 @@ import RequestMoneyModal from '@/components/fahed/request-money-modal';
 import OrderBottomSheet from '@/components/fahed/order-bottom-sheet';
 import SplashScreen from '@/components/fahed/splash-screen';
 import PinScreen from '@/components/fahed/pin-screen';
+import { useFirebaseSync } from '@/lib/use-firebase-sync';
 
 type AppPhase = 'splash' | 'pin' | 'main';
 
@@ -43,6 +44,9 @@ function AppContent() {
   const mountedRef = useRef(false);
   const [showUI, setShowUI] = useState(false);
   const [phase, setPhase] = useState<AppPhase>('splash');
+
+  // Sync user data from Firebase (real-time + on focus + on mount)
+  useFirebaseSync();
 
   useEffect(() => {
     mountedRef.current = true;
