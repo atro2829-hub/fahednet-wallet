@@ -182,14 +182,17 @@ html, body {
   transition: none !important;
 }
 
-/* Responsive container - works on all phone sizes */
+/* ================================
+   Responsive Grid - Jaib spec
+   3 columns always for services
+   ================================ */
 @media (max-width: 360px) {
   .grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
   .grid-cols-4 { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
 }
 
 @media (min-width: 361px) and (max-width: 400px) {
-  .grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; }
+  .grid-cols-4 { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
 }
 
 /* Touch-friendly button sizes for mobile */
@@ -311,9 +314,9 @@ input, textarea, select {
 }
 
 .shimmer {
-  background: linear-gradient(90deg, transparent 25%, rgba(255, 255, 255, 0.1) 50%, transparent 75%);
+  background: linear-gradient(90deg, transparent 25%, rgba(255, 255, 255, 0.08) 50%, transparent 75%);
   background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
+  animation: shimmer 2s infinite;
 }
 
 /* ================================
@@ -351,10 +354,14 @@ input, textarea, select {
 }
 
 /* ================================
-   Draw path for SVG logo
+   Draw path for SVG logo stroke
    ================================ */
 @keyframes drawPath {
   to { stroke-dashoffset: 0; }
+}
+
+.draw-path {
+  animation: drawPath 1.5s ease-out forwards;
 }
 
 /* ================================
@@ -421,4 +428,49 @@ input, textarea, select {
 
 .card-press:active {
   transform: scale(0.97);
+}
+
+/* ================================
+   SVG Stroke Drawing Animation
+   For splash screen logo
+   ================================ */
+@keyframes strokeDraw {
+  0% {
+    stroke-dashoffset: 200;
+  }
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+.stroke-draw {
+  stroke-dasharray: 200;
+  stroke-dashoffset: 200;
+  animation: strokeDraw 1.5s ease-out forwards;
+}
+
+/* ================================
+   Scale in animation
+   ================================ */
+@keyframes scaleIn {
+  from { transform: scale(0.8); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.scale-in {
+  animation: scaleIn 0.4s ease-out forwards;
+}
+
+/* ================================
+   Skeleton loading
+   ================================ */
+@keyframes skeletonShimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.skeleton {
+  background: linear-gradient(90deg, rgba(128,128,128,0.1) 25%, rgba(128,128,128,0.2) 50%, rgba(128,128,128,0.1) 75%);
+  background-size: 200% 100%;
+  animation: skeletonShimmer 1.5s infinite;
 }

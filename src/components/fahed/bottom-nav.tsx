@@ -23,14 +23,18 @@ export default function BottomNav() {
     <nav
       className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md z-40"
       style={{
-        background: isDark ? 'rgba(15,15,15,0.85)' : 'rgba(255,255,255,0.85)',
-        backdropFilter: 'blur(24px)',
-        WebkitBackdropFilter: 'blur(24px)',
+        background: isDark ? '#0F0F0F' : '#FFFFFF',
         borderTop: isDark ? '1px solid rgba(255,255,255,0.06)' : '1px solid rgba(0,0,0,0.06)',
+        boxShadow: isDark
+          ? '0 -2px 10px rgba(0,0,0,0.3)'
+          : '0 -2px 10px rgba(0,0,0,0.04)',
       }}
     >
-      <div className="flex items-end justify-around px-2 pt-2 safe-bottom relative" style={{ paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 16px)' }}>
-        {/* Left tabs */}
+      <div
+        className="flex items-end justify-around px-1 pt-1 safe-bottom relative"
+        style={{ paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 12px)', height: 68 }}
+      >
+        {/* Left tabs (Home + Services) */}
         {tabs.slice(0, 2).map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -38,57 +42,59 @@ export default function BottomNav() {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className="flex flex-col items-center justify-center gap-0.5 py-1 px-3 min-w-[56px] relative"
+              className="flex flex-col items-center justify-center gap-0.5 py-1 px-2 min-w-[52px] relative"
             >
-              <div className="relative">
-                <motion.div
-                  animate={{
-                    scale: isActive ? 1.1 : 1,
-                  }}
-                  transition={{ type: 'spring', stiffness: 400, damping: 20 }}
-                >
-                  <Icon
-                    size={22}
-                    strokeWidth={isActive ? 2.2 : 1.5}
-                    style={{ color: isActive ? '#E60000' : isDark ? '#555' : '#AAA' }}
-                  />
-                </motion.div>
-                {isActive && (
-                  <motion.div
-                    layoutId="activeTabDot1"
-                    className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full"
-                    style={{ background: '#E60000' }}
-                    transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-                  />
-                )}
-              </div>
+              <motion.div
+                animate={{ scale: isActive ? 1.08 : 1 }}
+                transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+              >
+                <Icon
+                  size={22}
+                  strokeWidth={isActive ? 2 : 1.5}
+                  style={{ color: isActive ? '#E60000' : isDark ? '#555' : '#AAAAAA' }}
+                />
+              </motion.div>
               <span
                 className="text-[10px] font-medium"
-                style={{ color: isActive ? '#E60000' : isDark ? '#555' : '#AAA' }}
+                style={{ color: isActive ? '#E60000' : isDark ? '#555' : '#AAAAAA' }}
               >
                 {tab.label}
               </span>
+              {/* Active dot indicator */}
+              {isActive && (
+                <motion.div
+                  layoutId="navDot1"
+                  className="absolute -top-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full"
+                  style={{ background: '#E60000' }}
+                  transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                />
+              )}
             </button>
           );
         })}
 
-        {/* Center FAB */}
-        <div className="flex items-center justify-center -mt-6 mx-2">
+        {/* Center FAB - Jaib Style: 56x56px, dark bg, fully rounded */}
+        <div className="flex items-center justify-center -mt-7 mx-1">
           <motion.button
             onClick={() => setDrawerOpen(true)}
-            className="relative w-14 h-14 rounded-2xl flex items-center justify-center"
+            className="relative flex items-center justify-center"
             style={{
-              background: 'linear-gradient(145deg, #E60000 0%, #8B0000 100%)',
-              boxShadow: '0 4px 20px rgba(230,0,0,0.4), 0 0 0 4px rgba(230,0,0,0.1)',
+              width: 56,
+              height: 56,
+              borderRadius: 28,
+              background: isDark
+                ? 'linear-gradient(145deg, #2A2A2A 0%, #1A1A1A 100%)'
+                : 'linear-gradient(145deg, #1A1A1A 0%, #0A0A0A 100%)',
+              boxShadow: '0 4px 16px rgba(0,0,0,0.25), 0 0 0 3px rgba(0,0,0,0.05)',
             }}
-            whileTap={{ scale: 0.9 }}
+            whileTap={{ scale: 0.92 }}
             whileHover={{ scale: 1.05 }}
           >
-            <Plus size={24} strokeWidth={2.5} color="#FFFFFF" />
+            <Plus size={26} strokeWidth={2.5} color="#FFFFFF" />
           </motion.button>
         </div>
 
-        {/* Right tabs */}
+        {/* Right tabs (Wallet + Account) */}
         {tabs.slice(2, 4).map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -96,36 +102,33 @@ export default function BottomNav() {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className="flex flex-col items-center justify-center gap-0.5 py-1 px-3 min-w-[56px] relative"
+              className="flex flex-col items-center justify-center gap-0.5 py-1 px-2 min-w-[52px] relative"
             >
-              <div className="relative">
-                <motion.div
-                  animate={{
-                    scale: isActive ? 1.1 : 1,
-                  }}
-                  transition={{ type: 'spring', stiffness: 400, damping: 20 }}
-                >
-                  <Icon
-                    size={22}
-                    strokeWidth={isActive ? 2.2 : 1.5}
-                    style={{ color: isActive ? '#E60000' : isDark ? '#555' : '#AAA' }}
-                  />
-                </motion.div>
-                {isActive && (
-                  <motion.div
-                    layoutId="activeTabDot2"
-                    className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full"
-                    style={{ background: '#E60000' }}
-                    transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-                  />
-                )}
-              </div>
+              <motion.div
+                animate={{ scale: isActive ? 1.08 : 1 }}
+                transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+              >
+                <Icon
+                  size={22}
+                  strokeWidth={isActive ? 2 : 1.5}
+                  style={{ color: isActive ? '#E60000' : isDark ? '#555' : '#AAAAAA' }}
+                />
+              </motion.div>
               <span
                 className="text-[10px] font-medium"
-                style={{ color: isActive ? '#E60000' : isDark ? '#555' : '#AAA' }}
+                style={{ color: isActive ? '#E60000' : isDark ? '#555' : '#AAAAAA' }}
               >
                 {tab.label}
               </span>
+              {/* Active dot indicator */}
+              {isActive && (
+                <motion.div
+                  layoutId="navDot2"
+                  className="absolute -top-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full"
+                  style={{ background: '#E60000' }}
+                  transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                />
+              )}
             </button>
           );
         })}

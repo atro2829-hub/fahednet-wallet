@@ -177,13 +177,12 @@ export default function AccountScreen() {
         <div
           className="rounded-2xl p-4 relative overflow-hidden"
           style={{
-            background: isDark ? 'rgba(30,30,30,0.6)' : 'rgba(255,255,255,0.7)',
-            backdropFilter: 'blur(20px)',
-            border: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)'}`,
+            background: isDark ? '#1A1A1A' : '#FFFFFF',
+            border: `1px solid ${isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.05)'}`,
           }}
         >
           {/* Decorative */}
-          <div className="absolute -top-8 -right-8 w-24 h-24 rounded-full" style={{ background: `${kycInfo.color}08` }} />
+          <div className="absolute -top-8 -right-8 w-24 h-24 rounded-full" style={{ background: `${kycInfo.color}06` }} />
 
           <div className="flex items-center gap-4 relative z-10">
             <div
@@ -335,9 +334,8 @@ export default function AccountScreen() {
                     onClick={() => handleMenuAction(item.id)}
                     className="w-full flex items-center gap-3 p-3.5 rounded-2xl active:scale-[0.98] transition-transform"
                     style={{
-                      background: isDark ? 'rgba(30,30,30,0.6)' : 'rgba(255,255,255,0.7)',
-                      backdropFilter: 'blur(10px)',
-                      border: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)'}`,
+                      background: isDark ? '#1A1A1A' : '#FFFFFF',
+                      border: `1px solid ${isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.05)'}`,
                     }}
                   >
                     <div
@@ -383,9 +381,8 @@ export default function AccountScreen() {
           onClick={logout}
           className="w-full py-3.5 rounded-2xl flex items-center justify-center gap-2 font-medium text-sm active:scale-[0.98] transition-transform"
           style={{
-            background: isDark ? 'rgba(30,30,30,0.6)' : 'rgba(255,255,255,0.7)',
-            backdropFilter: 'blur(10px)',
-            border: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)'}`,
+            background: isDark ? '#1A1A1A' : '#FFFFFF',
+            border: `1px solid ${isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.05)'}`,
             color: '#E60000',
           }}
         >
