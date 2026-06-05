@@ -21,6 +21,7 @@ import {
   MessageCircle,
   CreditCard,
   Globe,
+  LayoutDashboard,
 } from 'lucide-react';
 import { useAppStore } from '@/lib/store';
 
@@ -100,7 +101,8 @@ const settingsSections: SettingsSection[] = [
 export default function SettingsScreen() {
   const { theme } = useTheme();
   const isDark = theme === 'dark';
-  const { setActiveScreen, logout } = useAppStore();
+  const { setActiveScreen, logout, user } = useAppStore();
+  const isAdmin = user?.role === 'admin';
   const [expandedSections, setExpandedSections] = useState<string[]>(['account-settings', 'privacy-security']);
   const [toggleStates, setToggleStates] = useState<Record<string, boolean>>({
     'auto-login': true,
@@ -236,6 +238,44 @@ export default function SettingsScreen() {
           );
         })}
       </div>
+
+      {/* Admin Panel Button - Only visible for admin users */}
+      {isAdmin && (
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.25 }}
+          className="px-4 mt-4"
+        >
+          <button
+            onClick={() => setActiveScreen('admin')}
+            className="w-full flex items-center gap-3 p-4 rounded-2xl"
+            style={{
+              background: 'linear-gradient(135deg, rgba(230,0,0,0.08) 0%, rgba(139,0,0,0.12) 100%)',
+              border: '1px solid rgba(230,0,0,0.2)',
+            }}
+          >
+            <div
+              className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0"
+              style={{
+                background: 'linear-gradient(135deg, #E60000 0%, #8B0000 100%)',
+                boxShadow: '0 4px 12px rgba(230,0,0,0.3)',
+              }}
+            >
+              <LayoutDashboard size={20} strokeWidth={1.5} color="#FFF" />
+            </div>
+            <div className="flex-1 text-right">
+              <p className="text-sm font-bold" style={{ color: '#E60000' }}>
+                لوحة تحكم الأدمن
+              </p>
+              <p className="text-[11px] mt-0.5" style={{ color: isDark ? '#888' : '#AAA' }}>
+                إدارة المستخدمين والطلبات والعمليات
+              </p>
+            </div>
+            <ChevronLeft size={18} strokeWidth={1.5} color="#E60000" />
+          </button>
+        </motion.div>
+      )}
 
       {/* Delete Account */}
       <motion.div

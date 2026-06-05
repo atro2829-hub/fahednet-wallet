@@ -14,7 +14,7 @@ export async function POST() {
           password: 'admin123',
           name: 'المدير',
           role: 'admin',
-          userId: '0001',
+          userId: '100001',
           kycStatus: 'verified',
           balanceYER: 500000,
           balanceSAR: 5000,

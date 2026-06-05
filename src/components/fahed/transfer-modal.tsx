@@ -148,7 +148,7 @@ export default function TransferModal() {
   };
 
   const handleUserIdChange = (value: string) => {
-    const cleaned = value.replace(/\D/g, '').slice(0, 4);
+    const cleaned = value.replace(/\D/g, '').slice(0, 6);
     setToUserId(cleaned);
   };
 
@@ -363,7 +363,7 @@ export default function TransferModal() {
 
   const canSend = () => {
     if (!amount || !user) return false;
-    if (transferMode === 'userId') return toUserId.length >= 4;
+    if (transferMode === 'userId') return toUserId.length >= 6;
     if (transferMode === 'phone') return toPhone.length >= 9;
     return false;
   };
@@ -739,13 +739,13 @@ export default function TransferModal() {
                       <Hash size={18} strokeWidth={1.5} color="#E60000" />
                       <input
                         type="tel"
-                        placeholder="رقم الحساب (4 أرقام)"
+                        placeholder="رقم الحساب (6 أرقام)"
                         value={toUserId}
                         onChange={(e) => handleUserIdChange(e.target.value)}
                         className="flex-1 bg-transparent outline-none text-sm"
                         style={{ color: isDark ? '#FFF' : '#1a1a1a' }}
                         dir="ltr"
-                        maxLength={4}
+                        maxLength={6}
                       />
                     </div>
                   ) : (

@@ -486,7 +486,7 @@ export default function QRScreen() {
                     style={{ color: '#E60000' }}
                     dir="ltr"
                   >
-                    {user?.userId || '0000'}
+                    {user?.userId || '100000'}
                   </p>
                   {amount && (
                     <p
