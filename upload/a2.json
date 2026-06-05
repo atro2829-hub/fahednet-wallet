@@ -1,0 +1,28 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "This mobile app interface appears to be in Arabic, with a clean, minimalistic design. Here’s a breakdown:  \n\n### Top Section:  \n- **Status Bar**: Displays time (11:18), battery, Wi-Fi, and notification icons (including WhatsApp, a blue icon, and another WhatsApp icon).  \n- **Header**: A light gray background with a subtle pattern of abstract shapes (circles, squares) on the left. The word “أكثر” (meaning “More”) appears on the right, with a right-facing arrow (suggesting a navigation option to view additional content).  \n\n\n### Main Content (List of Options):  \nFour white, rounded rectangular cards (or buttons) are stacked vertically, each with Arabic text and an icon on the right:  \n1. **“لائحة الانتظار”** (Waiting List) – Icon: Three red checkmarks + a list (suggesting a list or queue).  \n2. **“قائمة طلبات”** (Orders List) – Icon: A document/note (likely for viewing orders).  \n3. **“مني على”** (On Me / My Turn) – Icon: A red-tinted document with a funnel (possibly for pending actions or tasks).  \n4. **“مني على الطلبات المعلقة”** (On Me for Pending Orders) – Icon: Similar to the third, but with a slightly different document design (likely for pending orders).  \n\n\n### Bottom Navigation Bar:  \nA white bar with four icons (and Arabic labels):  \n- **“الحساب”** (Account) – Person icon (gray).  \n- **“الطلبات”** (Orders) – List icon (red, indicating the current active tab).  \n- **“العروض”** (Offers) – Shopping bag icon (gray).  \n- **“الرئيسية”** (Home) – House icon (gray).  \n\nA prominent **black circular button** with a white upward arrow (possibly a “scroll to top” or “add” action) sits above the navigation bar.  \n\n\n### Overall Style:  \nThe interface uses a light gray background, white cards, and minimal color (red for active elements/icons). The design is intuitive, with clear labels and icons for navigation, suggesting a focus on order management or service-related tasks (e.g., waiting lists, orders, pending requests).",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1780690833,
+  "id": "202606060420237461f5a240454720",
+  "model": "glm-4.6v",
+  "object": "chat.completion",
+  "request_id": "202606060420237461f5a240454720",
+  "usage": {
+    "completion_tokens": 494,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 3371,
+    "prompt_tokens_details": {
+      "cached_tokens": 6
+    },
+    "total_tokens": 3865
+  }
+}
