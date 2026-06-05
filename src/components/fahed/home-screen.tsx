@@ -1,26 +1,25 @@
 'use client';
 
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { useTheme } from 'next-themes';
-import { motion, useMotionValue, useTransform, animate } from 'framer-motion';
+import { motion } from 'framer-motion';
 import {
   Bell,
   Headphones,
   Eye,
   EyeOff,
   ChevronLeft,
-  ChevronRight,
-  Zap,
-  Receipt,
   Smartphone,
-  Tv,
+  Receipt,
   Wifi,
+  Tv,
   Gamepad2,
+  Zap,
   ArrowUpRight,
   ArrowDownLeft,
 } from 'lucide-react';
 import { useAppStore } from '@/lib/store';
-import { formatBalance, currencySymbols, currencyNames, currencyFlags } from '@/lib/utils';
+import { formatBalance, currencySymbols, currencyNames, currencyFlags, currencyBadgeColors } from '@/lib/utils';
 
 interface BalanceCard {
   currency: 'YER' | 'SAR' | 'USD';
@@ -46,14 +45,45 @@ const services = [
   { id: 'more3', label: 'المزيد', icon: ChevronLeft, color: '#6366F1' },
 ];
 
+// Currency badge component - NO emojis
+function CurrencyBadge({ currency }: { currency: string }) {
+  const bgColor = currencyBadgeColors[currency] || '#666';
+  return (
+    <span
+      className="inline-flex items-center justify-center px-1.5 py-0.5 rounded text-[10px] font-bold text-white"
+      style={{ background: bgColor }}
+    >
+      {currencyFlags[currency]}
+    </span>
+  );
+}
+
 export default function HomeScreen() {
   const { theme } = useTheme();
   const isDark = theme === 'dark';
-  const { user, balanceVisible, toggleBalance, setActiveScreen, unreadCount, notifications } = useAppStore();
+  const { user, balanceVisible, toggleBalance, setActiveScreen, notifications } = useAppStore();
   const [activeCardIndex, setActiveCardIndex] = useState(0);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const carouselRef = useRef<HTMLDivElement>(null);
-  const dragX = useMotionValue(0);
+  const [carouselWidth, setCarouselWidth] = useState(375);
+
+  const CARD_WIDTH_PERCENT = 0.82;
+  const CARD_GAP = 16;
+
+  useEffect(() => {
+    const updateWidth = () => {
+      if (carouselRef.current) {
+        setCarouselWidth(carouselRef.current.offsetWidth);
+      }
+    };
+    updateWidth();
+    window.addEventListener('resize', updateWidth);
+    return () => window.removeEventListener('resize', updateWidth);
+  }, []);
+
+  const getCardWidth = useCallback(() => {
+    return carouselWidth * CARD_WIDTH_PERCENT + CARD_GAP;
+  }, [carouselWidth]);
 
   const getGreeting = () => {
     const hour = new Date().getHours();
@@ -84,7 +114,6 @@ export default function HomeScreen() {
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
-    // Simulated refresh
     await new Promise(resolve => setTimeout(resolve, 1500));
     setIsRefreshing(false);
   };
@@ -147,9 +176,13 @@ export default function HomeScreen() {
         >
           <motion.div
             className="flex gap-4 cursor-grab active:cursor-grabbing"
+            animate={{ x: -(activeCardIndex * getCardWidth()) }}
+            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
             drag="x"
-            dragConstraints={{ left: 0, right: 0 }}
-            style={{ x: dragX }}
+            dragConstraints={{
+              left: -(balanceCards.length - 1) * getCardWidth(),
+              right: 0,
+            }}
             onDragEnd={handleDragEnd}
           >
             {balanceCards.map((card, index) => {
@@ -182,7 +215,7 @@ export default function HomeScreen() {
                   {/* Logo & Visibility */}
                   <div className="flex items-center justify-between mb-4">
                     <span className="text-white/80 text-sm font-bold">فهد نت</span>
-                    <button onClick={toggleBalance}>
+                    <button onClick={(e) => { e.stopPropagation(); toggleBalance(); }}>
                       {balanceVisible ? (
                         <Eye size={18} strokeWidth={1.5} color="rgba(255,255,255,0.7)" />
                       ) : (
@@ -193,7 +226,7 @@ export default function HomeScreen() {
 
                   {/* Currency Badge */}
                   <div className="flex items-center gap-2 mb-3">
-                    <span className="text-xl">{currencyFlags[card.currency]}</span>
+                    <CurrencyBadge currency={card.currency} />
                     <span className="text-white/70 text-xs font-medium">
                       {currencyNames[card.currency]}
                     </span>
@@ -374,12 +407,15 @@ export default function HomeScreen() {
                     >
                       {isIncoming ? '+' : '-'}{tx.amount.toLocaleString()}
                     </p>
-                    <p
-                      className="text-xs"
-                      style={{ color: isDark ? '#777' : '#AAA' }}
-                    >
-                      {currencyFlags[tx.currency]} {currencySymbols[tx.currency]}
-                    </p>
+                    <div className="flex items-center gap-1">
+                      <CurrencyBadge currency={tx.currency} />
+                      <span
+                        className="text-xs"
+                        style={{ color: isDark ? '#777' : '#AAA' }}
+                      >
+                        {currencySymbols[tx.currency]}
+                      </span>
+                    </div>
                   </div>
                 </div>
               );

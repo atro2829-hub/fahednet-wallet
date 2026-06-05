@@ -1,27 +1,38 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { generateAccountNo } from '@/lib/utils';
+import { generateUserId } from '@/lib/utils';
 
 export async function POST(req: NextRequest) {
   try {
-    const { phone, name, pin } = await req.json();
+    const { email, password, name, phone, firebaseUid, userId: providedUserId } = await req.json();
     
-    if (!phone || !pin) {
-      return NextResponse.json({ error: 'رقم الهاتف والرقم السري مطلوبان' }, { status: 400 });
+    if (!email || !password) {
+      return NextResponse.json({ error: 'البريد الإلكتروني وكلمة المرور مطلوبان' }, { status: 400 });
     }
 
-    const existing = await db.user.findUnique({ where: { phone } });
-    if (existing) {
-      return NextResponse.json({ error: 'رقم الهاتف مسجل مسبقاً' }, { status: 409 });
+    // Check if email already exists
+    const existingEmail = await db.user.findUnique({ where: { email } });
+    if (existingEmail) {
+      return NextResponse.json({ error: 'البريد الإلكتروني مسجل مسبقاً' }, { status: 409 });
+    }
+
+    // Generate unique userId (10XXXX format)
+    let userId = providedUserId || generateUserId();
+    let attempts = 0;
+    while (attempts < 10) {
+      const existingUserId = await db.user.findUnique({ where: { userId } });
+      if (!existingUserId) break;
+      userId = generateUserId();
+      attempts++;
     }
 
     const user = await db.user.create({
       data: {
-        phone,
-        name: name || phone,
-        pin, // In production, hash this with bcrypt
-        accountNo1: generateAccountNo(),
-        accountNo2: generateAccountNo(),
+        email,
+        password, // In production, hash this with bcrypt
+        phone: phone || '',
+        name: name || email,
+        userId,
         balanceYER: 0,
         balanceSAR: 0,
         balanceUSD: 0,
@@ -29,7 +40,14 @@ export async function POST(req: NextRequest) {
     });
 
     return NextResponse.json({ 
-      user: { id: user.id, phone: user.phone, name: user.name, role: user.role },
+      user: { 
+        id: user.id, 
+        email: user.email, 
+        phone: user.phone,
+        name: user.name, 
+        role: user.role,
+        userId: user.userId,
+      },
       message: 'تم التسجيل بنجاح'
     });
   } catch (error) {

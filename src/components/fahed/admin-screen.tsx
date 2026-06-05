@@ -20,9 +20,14 @@ import {
   ToggleRight,
   DollarSign,
   ArrowLeft,
+  Search,
+  Bell,
+  Mail,
+  MapPin,
+  Hash,
 } from 'lucide-react';
 import { useAppStore } from '@/lib/store';
-import { currencySymbols, currencyFlags } from '@/lib/utils';
+import { currencySymbols, currencyBadgeColors } from '@/lib/utils';
 
 type AdminTab = 'overview' | 'users' | 'transactions' | 'products';
 
@@ -35,6 +40,7 @@ interface StatsData {
 
 interface UserData {
   id: string;
+  email: string;
   phone: string;
   name: string;
   role: string;
@@ -43,6 +49,8 @@ interface UserData {
   balanceYER: number;
   balanceSAR: number;
   balanceUSD: number;
+  userId: string;
+  governorate: string;
   createdAt: string;
 }
 
@@ -68,6 +76,19 @@ interface ProductData {
   isActive: boolean;
 }
 
+// Currency badge component - NO emojis
+function CurrencyBadge({ currency }: { currency: string }) {
+  const bgColor = currencyBadgeColors[currency] || '#666';
+  return (
+    <span
+      className="inline-flex items-center justify-center px-1.5 py-0.5 rounded text-[10px] font-bold text-white"
+      style={{ background: bgColor }}
+    >
+      {currency}
+    </span>
+  );
+}
+
 export default function AdminScreen() {
   const { theme } = useTheme();
   const isDark = theme === 'dark';
@@ -79,6 +100,12 @@ export default function AdminScreen() {
   const [transactions, setTransactions] = useState<TransactionData[]>([]);
   const [products, setProducts] = useState<ProductData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  // Send notification state
+  const [notifyUserId, setNotifyUserId] = useState<string | null>(null);
+  const [notifyTitle, setNotifyTitle] = useState('');
+  const [notifyBody, setNotifyBody] = useState('');
 
   // Add product form
   const [showAddProduct, setShowAddProduct] = useState(false);
@@ -157,6 +184,39 @@ export default function AdminScreen() {
       }
     } catch {}
   };
+
+  const handleSendNotification = async (targetUserId: string) => {
+    if (!notifyTitle || !notifyBody) return;
+
+    try {
+      await fetch('/api/notifications', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: targetUserId,
+          title: notifyTitle,
+          body: notifyBody,
+          type: 'info',
+          createOnly: true,
+        }),
+      });
+      setNotifyUserId(null);
+      setNotifyTitle('');
+      setNotifyBody('');
+    } catch {}
+  };
+
+  // Filter users by search
+  const filteredUsers = users.filter((u) => {
+    if (!searchQuery) return true;
+    const q = searchQuery.toLowerCase();
+    return (
+      u.name.toLowerCase().includes(q) ||
+      u.email.toLowerCase().includes(q) ||
+      u.userId.includes(q) ||
+      u.phone.includes(q)
+    );
+  });
 
   const tabs: { id: AdminTab; label: string; icon: typeof Users }[] = [
     { id: 'overview', label: 'نظرة عامة', icon: TrendingUp },
@@ -294,9 +354,28 @@ export default function AdminScreen() {
               exit={{ opacity: 0, y: -10 }}
               className="space-y-3"
             >
-              {users.map((user) => (
+              {/* Search Bar */}
+              <div
+                className="flex items-center gap-2 px-4 py-3 rounded-2xl"
+                style={{
+                  background: isDark ? '#1A1A1A' : '#FFFFFF',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                }}
+              >
+                <Search size={18} strokeWidth={1.5} color={isDark ? '#777' : '#AAA'} />
+                <input
+                  type="text"
+                  placeholder="ابحث بالاسم، البريد، رقم الحساب..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="flex-1 bg-transparent outline-none text-sm"
+                  style={{ color: isDark ? '#FFF' : '#1a1a1a' }}
+                />
+              </div>
+
+              {filteredUsers.map((u) => (
                 <div
-                  key={user.id}
+                  key={u.id}
                   className="rounded-2xl p-4"
                   style={{
                     background: isDark ? '#1A1A1A' : '#FFFFFF',
@@ -306,23 +385,49 @@ export default function AdminScreen() {
                   <div className="flex items-start justify-between mb-2">
                     <div>
                       <p className="text-sm font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>
-                        {user.name}
+                        {u.name}
                       </p>
-                      <p className="text-xs" style={{ color: isDark ? '#888' : '#AAA' }} dir="ltr">
-                        {user.phone}
-                      </p>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <div className="flex items-center gap-1">
+                          <Hash size={10} color={isDark ? '#888' : '#AAA'} />
+                          <span className="text-xs font-medium" style={{ color: '#E60000' }} dir="ltr">
+                            {u.userId}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-1 mt-0.5">
+                        <Mail size={10} color={isDark ? '#888' : '#AAA'} />
+                        <span className="text-xs" style={{ color: isDark ? '#888' : '#AAA' }} dir="ltr">
+                          {u.email}
+                        </span>
+                      </div>
+                      {u.phone && (
+                        <div className="flex items-center gap-1 mt-0.5">
+                          <span className="text-xs" style={{ color: isDark ? '#888' : '#AAA' }} dir="ltr">
+                            {u.phone}
+                          </span>
+                        </div>
+                      )}
+                      {u.governorate && (
+                        <div className="flex items-center gap-1 mt-0.5">
+                          <MapPin size={10} color={isDark ? '#888' : '#AAA'} />
+                          <span className="text-xs" style={{ color: isDark ? '#888' : '#AAA' }}>
+                            {u.governorate}
+                          </span>
+                        </div>
+                      )}
                     </div>
                     <div className="flex items-center gap-1.5">
                       <span
                         className="text-[10px] px-2 py-0.5 rounded-full font-medium"
                         style={{
-                          background: `${kycStatusColors[user.kycStatus]}20`,
-                          color: kycStatusColors[user.kycStatus],
+                          background: `${kycStatusColors[u.kycStatus]}20`,
+                          color: kycStatusColors[u.kycStatus],
                         }}
                       >
-                        {kycStatusLabels[user.kycStatus]}
+                        {kycStatusLabels[u.kycStatus]}
                       </span>
-                      {user.isBlocked && (
+                      {u.isBlocked && (
                         <span className="text-[10px] px-2 py-0.5 rounded-full font-medium bg-[#E60000]/20 text-[#E60000]">
                           محظور
                         </span>
@@ -332,38 +437,47 @@ export default function AdminScreen() {
 
                   {/* Balances */}
                   <div className="flex gap-3 mb-3">
-                    <span className="text-xs" style={{ color: isDark ? '#AAA' : '#888' }}>
-                      🇾🇪 {user.balanceYER.toLocaleString()} ر.ي
-                    </span>
-                    <span className="text-xs" style={{ color: isDark ? '#AAA' : '#888' }}>
-                      🇸🇦 {user.balanceSAR.toLocaleString()} ر.س
-                    </span>
-                    <span className="text-xs" style={{ color: isDark ? '#AAA' : '#888' }}>
-                      🇺🇸 ${user.balanceUSD.toLocaleString()}
-                    </span>
+                    <div className="flex items-center gap-1">
+                      <CurrencyBadge currency="YER" />
+                      <span className="text-xs" style={{ color: isDark ? '#AAA' : '#888' }}>
+                        {u.balanceYER.toLocaleString()} ر.ي
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <CurrencyBadge currency="SAR" />
+                      <span className="text-xs" style={{ color: isDark ? '#AAA' : '#888' }}>
+                        {u.balanceSAR.toLocaleString()} ر.س
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <CurrencyBadge currency="USD" />
+                      <span className="text-xs" style={{ color: isDark ? '#AAA' : '#888' }}>
+                        ${u.balanceUSD.toLocaleString()}
+                      </span>
+                    </div>
                   </div>
 
                   {/* Actions */}
                   <div className="flex gap-2 flex-wrap">
                     <button
                       onClick={() => handleAdminAction(
-                        user.isBlocked ? 'unblockUser' : 'blockUser',
-                        { userId: user.id }
+                        u.isBlocked ? 'unblockUser' : 'blockUser',
+                        { userId: u.id }
                       )}
                       className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-[10px] font-medium"
                       style={{
-                        background: user.isBlocked ? 'rgba(16,185,129,0.1)' : 'rgba(230,0,0,0.1)',
-                        color: user.isBlocked ? '#10B981' : '#E60000',
+                        background: u.isBlocked ? 'rgba(16,185,129,0.1)' : 'rgba(230,0,0,0.1)',
+                        color: u.isBlocked ? '#10B981' : '#E60000',
                       }}
                     >
-                      {user.isBlocked ? <Unlock size={12} /> : <Lock size={12} />}
-                      {user.isBlocked ? 'إلغاء الحظر' : 'حظر'}
+                      {u.isBlocked ? <Unlock size={12} /> : <Lock size={12} />}
+                      {u.isBlocked ? 'إلغاء الحظر' : 'حظر'}
                     </button>
 
-                    {user.kycStatus === 'submitted' && (
+                    {u.kycStatus === 'submitted' && (
                       <>
                         <button
-                          onClick={() => handleAdminAction('verifyKyc', { userId: user.id })}
+                          onClick={() => handleAdminAction('verifyKyc', { userId: u.id })}
                           className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-[10px] font-medium"
                           style={{ background: 'rgba(16,185,129,0.1)', color: '#10B981' }}
                         >
@@ -371,7 +485,7 @@ export default function AdminScreen() {
                           تحقق
                         </button>
                         <button
-                          onClick={() => handleAdminAction('rejectKyc', { userId: user.id })}
+                          onClick={() => handleAdminAction('rejectKyc', { userId: u.id })}
                           className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-[10px] font-medium"
                           style={{ background: 'rgba(230,0,0,0.1)', color: '#E60000' }}
                         >
@@ -382,17 +496,26 @@ export default function AdminScreen() {
                     )}
 
                     <button
-                      onClick={() => setAdjustUserId(user.id)}
+                      onClick={() => setAdjustUserId(u.id)}
                       className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-[10px] font-medium"
                       style={{ background: 'rgba(59,130,246,0.1)', color: '#3B82F6' }}
                     >
                       <DollarSign size={12} />
                       تعديل الرصيد
                     </button>
+
+                    <button
+                      onClick={() => setNotifyUserId(u.id)}
+                      className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-[10px] font-medium"
+                      style={{ background: 'rgba(245,158,11,0.1)', color: '#F59E0B' }}
+                    >
+                      <Bell size={12} />
+                      إشعار
+                    </button>
                   </div>
 
                   {/* Balance Adjustment */}
-                  {adjustUserId === user.id && (
+                  {adjustUserId === u.id && (
                     <motion.div
                       initial={{ height: 0, opacity: 0 }}
                       animate={{ height: 'auto', opacity: 1 }}
@@ -422,7 +545,7 @@ export default function AdminScreen() {
                         <button
                           onClick={() => {
                             handleAdminAction('updateBalance', {
-                              userId: user.id,
+                              userId: u.id,
                               currency: adjustCurrency,
                               amount: parseFloat(adjustAmount),
                               operation: adjustOp,
@@ -460,10 +583,53 @@ export default function AdminScreen() {
                       </div>
                     </motion.div>
                   )}
+
+                  {/* Send Notification */}
+                  {notifyUserId === u.id && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      className="mt-3 pt-3"
+                      style={{ borderTop: isDark ? '1px solid #2A2A2A' : '1px solid #F0F0F0' }}
+                    >
+                      <input
+                        type="text"
+                        placeholder="عنوان الإشعار"
+                        value={notifyTitle}
+                        onChange={(e) => setNotifyTitle(e.target.value)}
+                        className="w-full px-3 py-2 rounded-lg text-xs outline-none mb-2"
+                        style={{ background: isDark ? '#222' : '#F8F8F8', color: isDark ? '#FFF' : '#1a1a1a' }}
+                      />
+                      <input
+                        type="text"
+                        placeholder="نص الإشعار"
+                        value={notifyBody}
+                        onChange={(e) => setNotifyBody(e.target.value)}
+                        className="w-full px-3 py-2 rounded-lg text-xs outline-none mb-2"
+                        style={{ background: isDark ? '#222' : '#F8F8F8', color: isDark ? '#FFF' : '#1a1a1a' }}
+                      />
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => handleSendNotification(u.id)}
+                          className="flex-1 px-3 py-2 rounded-lg text-xs font-medium text-white"
+                          style={{ background: '#F59E0B' }}
+                        >
+                          إرسال الإشعار
+                        </button>
+                        <button
+                          onClick={() => { setNotifyUserId(null); setNotifyTitle(''); setNotifyBody(''); }}
+                          className="px-3 py-2 rounded-lg text-xs font-medium"
+                          style={{ background: isDark ? '#222' : '#F0F0F0', color: isDark ? '#888' : '#AAA' }}
+                        >
+                          إلغاء
+                        </button>
+                      </div>
+                    </motion.div>
+                  )}
                 </div>
               ))}
 
-              {users.length === 0 && !isLoading && (
+              {filteredUsers.length === 0 && !isLoading && (
                 <div className="flex flex-col items-center py-8">
                   <Users size={40} strokeWidth={1.5} color={isDark ? '#444' : '#DDD'} />
                   <p className="text-sm mt-2" style={{ color: isDark ? '#777' : '#AAA' }}>
@@ -642,7 +808,7 @@ export default function AdminScreen() {
                       {product.name}
                     </p>
                     <p className="text-xs" style={{ color: isDark ? '#888' : '#AAA' }}>
-                      {product.price} {currencySymbols[product.currency]} • {product.category}
+                      {product.price} {currencySymbols[product.currency]} - {product.category}
                     </p>
                   </div>
                   <div className="flex items-center gap-2">

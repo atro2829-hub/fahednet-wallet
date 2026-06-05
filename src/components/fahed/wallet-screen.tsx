@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { useTheme } from 'next-themes';
 import { motion } from 'framer-motion';
 import {
@@ -14,7 +14,7 @@ import {
   Receipt,
 } from 'lucide-react';
 import { useAppStore } from '@/lib/store';
-import { formatBalance, currencySymbols, currencyNames, currencyFlags } from '@/lib/utils';
+import { formatBalance, currencySymbols, currencyNames, currencyFlags, currencyBadgeColors } from '@/lib/utils';
 
 type FilterTab = 'all' | 'incoming' | 'outgoing';
 
@@ -30,6 +30,19 @@ const balanceCards: BalanceCard[] = [
   { currency: 'USD', gradient: 'linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%)', accentColor: '#3B82F6' },
 ];
 
+// Currency badge component - NO emojis
+function CurrencyBadge({ currency }: { currency: string }) {
+  const bgColor = currencyBadgeColors[currency] || '#666';
+  return (
+    <span
+      className="inline-flex items-center justify-center px-1.5 py-0.5 rounded text-[10px] font-bold text-white"
+      style={{ background: bgColor }}
+    >
+      {currencyFlags[currency]}
+    </span>
+  );
+}
+
 export default function WalletScreen() {
   const { theme } = useTheme();
   const isDark = theme === 'dark';
@@ -37,12 +50,32 @@ export default function WalletScreen() {
   const [activeCardIndex, setActiveCardIndex] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState<FilterTab>('all');
+  const carouselRef = useRef<HTMLDivElement>(null);
+  const [carouselWidth, setCarouselWidth] = useState(375);
+
+  const CARD_WIDTH_PERCENT = 0.82;
+  const CARD_GAP = 16;
+
+  useEffect(() => {
+    const updateWidth = () => {
+      if (carouselRef.current) {
+        setCarouselWidth(carouselRef.current.offsetWidth);
+      }
+    };
+    updateWidth();
+    window.addEventListener('resize', updateWidth);
+    return () => window.removeEventListener('resize', updateWidth);
+  }, []);
 
   const getBalance = (currency: string): number => {
     if (!user) return 0;
     const field = `balance${currency}` as keyof typeof user;
     return (user[field] as number) || 0;
   };
+
+  const getCardWidth = useCallback(() => {
+    return carouselWidth * CARD_WIDTH_PERCENT + CARD_GAP;
+  }, [carouselWidth]);
 
   // Calculate income/expense stats
   const income = transactions
@@ -67,6 +100,19 @@ export default function WalletScreen() {
     { id: 'outgoing', label: 'صادر' },
   ];
 
+  // Carousel snap logic
+  const handleDragEnd = useCallback((_event: MouseEvent | TouchEvent | PointerEvent, info: { offset: { x: number }; velocity: { x: number } }) => {
+    const threshold = 60;
+    const velocity = info.velocity.x;
+    const offset = info.offset.x;
+
+    if (offset < -threshold || velocity < -200) {
+      setActiveCardIndex((prev) => Math.min(prev + 1, balanceCards.length - 1));
+    } else if (offset > threshold || velocity > 200) {
+      setActiveCardIndex((prev) => Math.max(prev - 1, 0));
+    }
+  }, []);
+
   return (
     <div className="pb-4">
       {/* Header */}
@@ -81,19 +127,21 @@ export default function WalletScreen() {
 
       {/* Balance Card Carousel (Taller) */}
       <div className="px-5 mt-2">
-        <div className="relative overflow-hidden" style={{ touchAction: 'pan-y' }}>
+        <div
+          ref={carouselRef}
+          className="relative overflow-hidden"
+          style={{ touchAction: 'pan-y' }}
+        >
           <motion.div
             className="flex gap-4 cursor-grab active:cursor-grabbing"
+            animate={{ x: -(activeCardIndex * getCardWidth()) }}
+            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
             drag="x"
-            dragConstraints={{ left: 0, right: 0 }}
-            onDragEnd={(_e, info) => {
-              const threshold = 60;
-              if (info.offset.x < -threshold || info.velocity.x < -200) {
-                setActiveCardIndex(prev => Math.min(prev + 1, balanceCards.length - 1));
-              } else if (info.offset.x > threshold || info.velocity.x > 200) {
-                setActiveCardIndex(prev => Math.max(prev - 1, 0));
-              }
+            dragConstraints={{
+              left: -(balanceCards.length - 1) * getCardWidth(),
+              right: 0,
             }}
+            onDragEnd={handleDragEnd}
           >
             {balanceCards.map((card, index) => {
               const isActive = index === activeCardIndex;
@@ -119,7 +167,7 @@ export default function WalletScreen() {
                   {/* Logo & Visibility */}
                   <div className="flex items-center justify-between mb-3">
                     <span className="text-white/80 text-sm font-bold">فهد نت</span>
-                    <button onClick={toggleBalance}>
+                    <button onClick={(e) => { e.stopPropagation(); toggleBalance(); }}>
                       {balanceVisible ? (
                         <Eye size={18} strokeWidth={1.5} color="rgba(255,255,255,0.7)" />
                       ) : (
@@ -130,7 +178,7 @@ export default function WalletScreen() {
 
                   {/* Currency Badge */}
                   <div className="flex items-center gap-2 mb-2">
-                    <span className="text-xl">{currencyFlags[card.currency]}</span>
+                    <CurrencyBadge currency={card.currency} />
                     <span className="text-white/70 text-xs font-medium">
                       {currencyNames[card.currency]}
                     </span>
@@ -292,9 +340,12 @@ export default function WalletScreen() {
                     >
                       {isIncoming ? '+' : '-'}{tx.amount.toLocaleString()}
                     </p>
-                    <p className="text-xs" style={{ color: isDark ? '#777' : '#AAA' }}>
-                      {currencyFlags[tx.currency]} {currencySymbols[tx.currency]}
-                    </p>
+                    <div className="flex items-center gap-1">
+                      <CurrencyBadge currency={tx.currency} />
+                      <span className="text-xs" style={{ color: isDark ? '#777' : '#AAA' }}>
+                        {currencySymbols[tx.currency]}
+                      </span>
+                    </div>
                   </div>
                 </motion.div>
               );

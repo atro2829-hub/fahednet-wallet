@@ -20,7 +20,23 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const { userId, notificationId } = await req.json();
+    const body = await req.json();
+    const { userId, notificationId, title, body: notifBody, type, createOnly } = body;
+
+    // Create a new notification (for admin send notification feature)
+    if (createOnly && userId && title && notifBody) {
+      await db.notification.create({
+        data: {
+          userId,
+          title,
+          body: notifBody,
+          type: type || 'info',
+        },
+      });
+      return NextResponse.json({ message: 'تم إرسال الإشعار' });
+    }
+
+    // Mark as read
     if (notificationId) {
       await db.notification.update({ where: { id: notificationId }, data: { isRead: true } });
     } else if (userId) {

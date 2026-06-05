@@ -18,6 +18,11 @@ import {
   Copy,
   Check,
   ChevronLeft,
+  Mail,
+  Phone,
+  MapPin,
+  Hash,
+  ShieldCheck,
 } from 'lucide-react';
 import { useAppStore } from '@/lib/store';
 import { useState } from 'react';
@@ -28,13 +33,14 @@ interface MenuItem {
   icon: typeof User;
   color: string;
   toggle?: boolean;
+  adminOnly?: boolean;
 }
 
 const menuItems: MenuItem[] = [
   { id: 'transfer', label: 'تحويل أموال', icon: Send, color: '#E60000' },
   { id: 'cards', label: 'إدارة البطاقات', icon: CreditCard, color: '#3B82F6' },
   { id: 'account', label: 'حسابي', icon: User, color: '#10B981' },
-  { id: 'users', label: 'إدارة المستخدمين', icon: Users, color: '#F59E0B' },
+  { id: 'users', label: 'إدارة المستخدمين', icon: Users, color: '#F59E0B', adminOnly: true },
   { id: 'security', label: 'الأمان', icon: Shield, color: '#8B5CF6' },
   { id: 'settings', label: 'إعدادات التطبيق', icon: Settings, color: '#EC4899' },
   { id: 'support', label: 'الدعم', icon: Headphones, color: '#14B8A6' },
@@ -43,10 +49,17 @@ const menuItems: MenuItem[] = [
   { id: 'theme', label: 'الوضع الداكن', icon: Moon, color: '#F59E0B', toggle: true },
 ];
 
+const kycStatusLabels: Record<string, { label: string; color: string }> = {
+  pending: { label: 'قيد الانتظار', color: '#F59E0B' },
+  submitted: { label: 'تم الإرسال', color: '#3B82F6' },
+  verified: { label: 'متحقق', color: '#10B981' },
+  rejected: { label: 'مرفوض', color: '#E60000' },
+};
+
 export default function AccountScreen() {
   const { theme, setTheme } = useTheme();
   const isDark = theme === 'dark';
-  const { user, logout } = useAppStore();
+  const { user, logout, setActiveScreen } = useAppStore();
   const [copiedField, setCopiedField] = useState<string | null>(null);
 
   const handleCopy = (text: string, field: string) => {
@@ -66,7 +79,17 @@ export default function AccountScreen() {
     if (item.id === 'users' && user?.role === 'admin') {
       setActiveScreen('admin');
     }
+    if (item.id === 'transfer') {
+      useAppStore.getState().setTransferOpen(true);
+    }
   };
+
+  const kycInfo = kycStatusLabels[user?.kycStatus || 'pending'] || kycStatusLabels.pending;
+
+  // Filter menu items: hide admin-only items if not admin
+  const visibleMenuItems = menuItems.filter(
+    (item) => !item.adminOnly || user?.role === 'admin'
+  );
 
   return (
     <div className="pb-4">
@@ -82,7 +105,7 @@ export default function AccountScreen() {
           >
             <User size={28} strokeWidth={1.5} color="#FFF" />
           </div>
-          <div>
+          <div className="flex-1">
             <h1
               className="text-xl font-bold"
               style={{ color: isDark ? '#FFFFFF' : '#1a1a1a' }}
@@ -96,10 +119,20 @@ export default function AccountScreen() {
               مرحباً بك في فهد نت
             </p>
           </div>
+          {/* KYC Status Badge */}
+          <span
+            className="text-[10px] px-2.5 py-1 rounded-full font-medium"
+            style={{
+              background: `${kycInfo.color}20`,
+              color: kycInfo.color,
+            }}
+          >
+            {kycInfo.label}
+          </span>
         </div>
       </div>
 
-      {/* Account Numbers Card */}
+      {/* User ID Card */}
       <div className="px-5 mt-4">
         <div
           className="rounded-2xl p-5 relative overflow-hidden"
@@ -113,46 +146,63 @@ export default function AccountScreen() {
           <div className="absolute -bottom-6 -left-6 w-20 h-20 rounded-full opacity-10 bg-white" />
 
           <div className="relative z-10">
-            <p className="text-white/70 text-xs font-medium mb-3">أرقام الحساب</p>
+            <p className="text-white/70 text-xs font-medium mb-3">رقم الحساب</p>
 
-            {/* Account 1 */}
-            <div className="flex items-center justify-between mb-3">
+            {/* User ID */}
+            <div className="flex items-center justify-between mb-4">
               <div>
-                <p className="text-white/50 text-[10px]">الحساب الرئيسي</p>
-                <p className="text-white text-lg font-bold tracking-wider" dir="ltr">
-                  {user?.accountNo1 || '0000000'}
+                <p className="text-white/50 text-[10px]">المعرف الرئيسي</p>
+                <p className="text-white text-2xl font-bold tracking-wider" dir="ltr">
+                  {user?.userId || '------'}
                 </p>
               </div>
               <button
-                onClick={() => handleCopy(user?.accountNo1 || '', 'acc1')}
-                className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center"
+                onClick={() => handleCopy(user?.userId || '', 'userId')}
+                className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center"
               >
-                {copiedField === 'acc1' ? (
-                  <Check size={14} color="#FFF" />
+                {copiedField === 'userId' ? (
+                  <Check size={16} color="#FFF" />
                 ) : (
-                  <Copy size={14} color="#FFF" />
+                  <Copy size={16} color="#FFF" />
                 )}
               </button>
             </div>
 
-            {/* Account 2 */}
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-white/50 text-[10px]">الحساب الفرعي</p>
-                <p className="text-white text-lg font-bold tracking-wider" dir="ltr">
-                  {user?.accountNo2 || '0000000'}
+            {/* Divider */}
+            <div className="h-px bg-white/10 mb-3" />
+
+            {/* Info rows */}
+            <div className="space-y-2">
+              {/* Email */}
+              <div className="flex items-center gap-2">
+                <Mail size={12} color="rgba(255,255,255,0.5)" />
+                <p className="text-white/50 text-[10px]">البريد</p>
+                <p className="text-white/80 text-xs mr-auto" dir="ltr">
+                  {user?.email || '--'}
                 </p>
               </div>
-              <button
-                onClick={() => handleCopy(user?.accountNo2 || '', 'acc2')}
-                className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center"
-              >
-                {copiedField === 'acc2' ? (
-                  <Check size={14} color="#FFF" />
-                ) : (
-                  <Copy size={14} color="#FFF" />
-                )}
-              </button>
+
+              {/* Phone */}
+              {user?.phone && (
+                <div className="flex items-center gap-2">
+                  <Phone size={12} color="rgba(255,255,255,0.5)" />
+                  <p className="text-white/50 text-[10px]">الهاتف</p>
+                  <p className="text-white/80 text-xs mr-auto" dir="ltr">
+                    {user.phone}
+                  </p>
+                </div>
+              )}
+
+              {/* Governorate */}
+              {user?.governorate && (
+                <div className="flex items-center gap-2">
+                  <MapPin size={12} color="rgba(255,255,255,0.5)" />
+                  <p className="text-white/50 text-[10px]">المحافظة</p>
+                  <p className="text-white/80 text-xs mr-auto">
+                    {user.governorate}
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -167,7 +217,7 @@ export default function AccountScreen() {
             boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
           }}
         >
-          {menuItems.map((item, index) => {
+          {visibleMenuItems.map((item, index) => {
             const Icon = item.id === 'theme' && isDark ? Sun : item.icon;
             return (
               <motion.button
@@ -179,7 +229,7 @@ export default function AccountScreen() {
                 className="w-full flex items-center gap-3 px-4 py-3.5 active:bg-[#E60000]/5 transition-colors"
                 style={{
                   borderBottom:
-                    index < menuItems.length - 1
+                    index < visibleMenuItems.length - 1
                       ? isDark
                         ? '1px solid #2A2A2A'
                         : '1px solid #F0F0F0'

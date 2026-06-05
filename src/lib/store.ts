@@ -3,17 +3,21 @@ import { persist } from 'zustand/middleware';
 
 interface User {
   id: string;
+  email: string;
   phone: string;
   name: string;
   avatar: string;
   role: 'user' | 'admin';
+  userId: string; // The 10XXXX ID
   kycStatus: 'pending' | 'submitted' | 'verified' | 'rejected';
   isBlocked: boolean;
   balanceYER: number;
   balanceSAR: number;
   balanceUSD: number;
-  accountNo1: string;
-  accountNo2: string;
+  cardType: string;
+  cardNumber: string;
+  cardIssuedAt: string;
+  governorate: string;
   theme: 'light' | 'dark';
 }
 

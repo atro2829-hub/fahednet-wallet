@@ -10,10 +10,12 @@ datasource db {
 // ====== USER SYSTEM ======
 model User {
   id            String   @id @default(cuid())
-  phone         String   @unique
+  email         String   @unique
+  password      String   @default("")
+  phone         String   @default("")
+  userId        String   @unique              // 10XXXX format, used for transactions
   name          String   @default("")
   avatar        String   @default("")
-  pin           String   @default("")         // Hashed PIN
   role          String   @default("user")      // user | admin
   kycStatus     String   @default("pending")   // pending | submitted | verified | rejected
   kycIdNumber   String   @default("")
@@ -27,8 +29,10 @@ model User {
   balanceYER    Float    @default(0)
   balanceSAR    Float    @default(0)
   balanceUSD    Float    @default(0)
-  accountNo1    String   @default("")
-  accountNo2    String   @default("")
+  cardType      String   @default("")           // بطاقة شخصية | جواز سفر | رخصة قيادة
+  cardNumber    String   @default("")
+  cardIssuedAt  String   @default("")           // where the card was issued
+  governorate   String   @default("")           // Southern Yemen governorate
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 

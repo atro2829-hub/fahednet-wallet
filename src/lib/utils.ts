@@ -11,9 +11,10 @@ export function formatBalance(amount: number, currency: string): string {
   return formatted;
 }
 
-// Generate random account number
-export function generateAccountNo(): string {
-  return Math.floor(1000000 + Math.random() * 9000000).toString();
+// Generate userId starting with "10" + 4 random digits
+export function generateUserId(): string {
+  const random4 = Math.floor(1000 + Math.random() * 9000).toString();
+  return '10' + random4;
 }
 
 // Generate transaction reference
@@ -39,8 +40,35 @@ export const currencyNames: Record<string, string> = {
   USD: 'الدولار الأمريكي',
 };
 
+// Currency flags - text indicators (NO emojis)
 export const currencyFlags: Record<string, string> = {
-  YER: '🇾🇪',
-  SAR: '🇸🇦',
-  USD: '🇺🇸',
+  YER: 'YER',
+  SAR: 'SAR',
+  USD: 'USD',
 };
+
+// Currency badge background colors
+export const currencyBadgeColors: Record<string, string> = {
+  YER: '#E60000',
+  SAR: '#059669',
+  USD: '#2563EB',
+};
+
+// Southern Yemen governorates
+export const governorates = [
+  'عدن',
+  'لحج',
+  'أبين',
+  'شبوة',
+  'حضرموت',
+  'المهرة',
+  'الضالع',
+  'سقطرى',
+];
+
+// Card types
+export const cardTypes = [
+  'بطاقة شخصية',
+  'جواز سفر',
+  'رخصة قيادة',
+];

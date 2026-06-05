@@ -11,9 +11,9 @@ export async function GET(req: NextRequest) {
       const users = await db.user.findMany({
         orderBy: { createdAt: 'desc' },
         select: {
-          id: true, phone: true, name: true, role: true, kycStatus: true,
+          id: true, email: true, phone: true, name: true, role: true, kycStatus: true,
           isBlocked: true, balanceYER: true, balanceSAR: true, balanceUSD: true,
-          createdAt: true,
+          userId: true, governorate: true, createdAt: true,
         },
       });
       return NextResponse.json({ users });

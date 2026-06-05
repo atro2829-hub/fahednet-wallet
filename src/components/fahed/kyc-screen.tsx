@@ -10,10 +10,12 @@ import {
   CheckCircle2,
   ArrowLeft,
   ArrowRight,
-  Loader2,
   AlertCircle,
+  MapPin,
+  FileText,
 } from 'lucide-react';
 import { useAppStore } from '@/lib/store';
+import { governorates, cardTypes } from '@/lib/utils';
 
 export default function KYCScreen() {
   const { theme } = useTheme();
@@ -21,9 +23,18 @@ export default function KYCScreen() {
   const { user, setUser, setActiveScreen } = useAppStore();
 
   const [step, setStep] = useState(1);
-  const [idNumber, setIdNumber] = useState('');
+  // Step 1: Card type
+  const [cardType, setCardType] = useState('');
+  // Step 2: Card number + issued at
+  const [cardNumber, setCardNumber] = useState('');
+  const [cardIssuedAt, setCardIssuedAt] = useState('');
+  // Step 3: Governorate
+  const [governorate, setGovernorate] = useState('');
+  // Step 4: ID Photo
   const [idPhoto, setIdPhoto] = useState<string>('');
+  // Step 5: Selfie
   const [selfiePhoto, setSelfiePhoto] = useState<string>('');
+  // General
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
@@ -31,7 +42,7 @@ export default function KYCScreen() {
   const idFileRef = useRef<HTMLInputElement>(null);
   const selfieFileRef = useRef<HTMLInputElement>(null);
 
-  const totalSteps = 4;
+  const totalSteps = 6;
 
   const handleFileToBase64 = (file: File, setter: (val: string) => void) => {
     const reader = new FileReader();
@@ -53,10 +64,12 @@ export default function KYCScreen() {
 
   const canProceed = () => {
     switch (step) {
-      case 1: return idNumber.length >= 5;
-      case 2: return !!idPhoto;
-      case 3: return !!selfiePhoto;
-      case 4: return true;
+      case 1: return cardType !== '';
+      case 2: return cardNumber.length >= 5 && cardIssuedAt !== '';
+      case 3: return governorate !== '';
+      case 4: return !!idPhoto;
+      case 5: return !!selfiePhoto;
+      case 6: return true;
       default: return false;
     }
   };
@@ -74,9 +87,13 @@ export default function KYCScreen() {
         body: JSON.stringify({
           userId: user.id,
           kycStatus: 'submitted',
-          kycIdNumber: idNumber,
+          kycIdNumber: cardNumber,
           kycIdPhoto: idPhoto,
           kycSelfie: selfiePhoto,
+          cardType,
+          cardNumber,
+          cardIssuedAt,
+          governorate,
         }),
       });
 
@@ -88,7 +105,14 @@ export default function KYCScreen() {
       }
 
       setSuccess(true);
-      setUser({ ...user, kycStatus: 'submitted' });
+      setUser({
+        ...user,
+        kycStatus: 'submitted',
+        cardType,
+        cardNumber,
+        cardIssuedAt,
+        governorate,
+      });
     } catch {
       setError('حدث خطأ في الاتصال');
     } finally {
@@ -97,6 +121,12 @@ export default function KYCScreen() {
   };
 
   const inputStyle = {
+    background: isDark ? '#222' : '#F8F8F8',
+    border: isDark ? '1px solid #333' : '1px solid #EEE',
+    color: isDark ? '#FFF' : '#1a1a1a',
+  };
+
+  const selectStyle = {
     background: isDark ? '#222' : '#F8F8F8',
     border: isDark ? '1px solid #333' : '1px solid #EEE',
     color: isDark ? '#FFF' : '#1a1a1a',
@@ -196,7 +226,7 @@ export default function KYCScreen() {
       {/* Steps Content */}
       <div className="flex-1 px-5 mt-6">
         <AnimatePresence mode="wait">
-          {/* Step 1: ID Number */}
+          {/* Step 1: Card Type Selection */}
           {step === 1 && (
             <motion.div
               key="step1"
@@ -216,38 +246,199 @@ export default function KYCScreen() {
                   className="text-lg font-bold"
                   style={{ color: isDark ? '#FFF' : '#1a1a1a' }}
                 >
-                  رقم الهوية
+                  نوع البطاقة
                 </h3>
                 <p
                   className="text-xs text-center mt-1 max-w-[250px]"
                   style={{ color: isDark ? '#888' : '#AAA' }}
                 >
-                  أدخل رقم بطاقة الهوية الشخصية الخاصة بك
+                  اختر نوع وثيقة التعريف الخاصة بك
                 </p>
               </div>
 
-              <div
-                className="flex items-center gap-2 px-4 py-3.5 rounded-2xl"
-                style={inputStyle}
-              >
-                <CreditCard size={18} strokeWidth={1.5} color="#E60000" />
-                <input
-                  type="text"
-                  placeholder="رقم الهوية"
-                  value={idNumber}
-                  onChange={(e) => setIdNumber(e.target.value)}
-                  className="flex-1 bg-transparent outline-none text-sm"
-                  style={{ color: isDark ? '#FFF' : '#1a1a1a' }}
-                  dir="ltr"
-                />
+              <div className="space-y-2">
+                {cardTypes.map((type) => (
+                  <button
+                    key={type}
+                    onClick={() => setCardType(type)}
+                    className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all"
+                    style={{
+                      background: cardType === type ? 'rgba(230,0,0,0.1)' : isDark ? '#1A1A1A' : '#FFFFFF',
+                      border: cardType === type ? '2px solid #E60000' : isDark ? '1px solid #2A2A2A' : '1px solid #F0F0F0',
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                    }}
+                  >
+                    <div
+                      className="w-5 h-5 rounded-full border-2 flex items-center justify-center"
+                      style={{
+                        borderColor: cardType === type ? '#E60000' : isDark ? '#555' : '#CCC',
+                      }}
+                    >
+                      {cardType === type && (
+                        <div className="w-2.5 h-2.5 rounded-full" style={{ background: '#E60000' }} />
+                      )}
+                    </div>
+                    <span
+                      className="text-sm font-medium"
+                      style={{ color: cardType === type ? '#E60000' : isDark ? '#FFF' : '#1a1a1a' }}
+                    >
+                      {type}
+                    </span>
+                  </button>
+                ))}
               </div>
             </motion.div>
           )}
 
-          {/* Step 2: ID Photo */}
+          {/* Step 2: Card Number + Issued At */}
           {step === 2 && (
             <motion.div
               key="step2"
+              initial={{ x: 300, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              exit={{ x: -300, opacity: 0 }}
+              className="space-y-4"
+            >
+              <div className="flex flex-col items-center mb-6">
+                <div
+                  className="w-16 h-16 rounded-full flex items-center justify-center mb-3"
+                  style={{ background: 'rgba(230,0,0,0.1)' }}
+                >
+                  <FileText size={32} strokeWidth={1.5} color="#E60000" />
+                </div>
+                <h3
+                  className="text-lg font-bold"
+                  style={{ color: isDark ? '#FFF' : '#1a1a1a' }}
+                >
+                  بيانات البطاقة
+                </h3>
+                <p
+                  className="text-xs text-center mt-1 max-w-[250px]"
+                  style={{ color: isDark ? '#888' : '#AAA' }}
+                >
+                  أدخل رقم البطاقة ومكان إصدارها
+                </p>
+              </div>
+
+              {/* Card Number */}
+              <div>
+                <label
+                  className="text-xs font-medium mb-1.5 block"
+                  style={{ color: isDark ? '#AAA' : '#888' }}
+                >
+                  رقم البطاقة
+                </label>
+                <div
+                  className="flex items-center gap-2 px-4 py-3.5 rounded-2xl"
+                  style={inputStyle}
+                >
+                  <CreditCard size={18} strokeWidth={1.5} color="#E60000" />
+                  <input
+                    type="text"
+                    placeholder="رقم البطاقة"
+                    value={cardNumber}
+                    onChange={(e) => setCardNumber(e.target.value)}
+                    className="flex-1 bg-transparent outline-none text-sm"
+                    style={{ color: isDark ? '#FFF' : '#1a1a1a' }}
+                    dir="ltr"
+                  />
+                </div>
+              </div>
+
+              {/* Issued At */}
+              <div>
+                <label
+                  className="text-xs font-medium mb-1.5 block"
+                  style={{ color: isDark ? '#AAA' : '#888' }}
+                >
+                  مكان الإصدار
+                </label>
+                <div
+                  className="flex items-center gap-2 px-4 py-3.5 rounded-2xl"
+                  style={inputStyle}
+                >
+                  <MapPin size={18} strokeWidth={1.5} color="#E60000" />
+                  <input
+                    type="text"
+                    placeholder="مكان إصدار البطاقة"
+                    value={cardIssuedAt}
+                    onChange={(e) => setCardIssuedAt(e.target.value)}
+                    className="flex-1 bg-transparent outline-none text-sm"
+                    style={{ color: isDark ? '#FFF' : '#1a1a1a' }}
+                  />
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Step 3: Governorate Selection */}
+          {step === 3 && (
+            <motion.div
+              key="step3"
+              initial={{ x: 300, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              exit={{ x: -300, opacity: 0 }}
+              className="space-y-4"
+            >
+              <div className="flex flex-col items-center mb-6">
+                <div
+                  className="w-16 h-16 rounded-full flex items-center justify-center mb-3"
+                  style={{ background: 'rgba(230,0,0,0.1)' }}
+                >
+                  <MapPin size={32} strokeWidth={1.5} color="#E60000" />
+                </div>
+                <h3
+                  className="text-lg font-bold"
+                  style={{ color: isDark ? '#FFF' : '#1a1a1a' }}
+                >
+                  المحافظة
+                </h3>
+                <p
+                  className="text-xs text-center mt-1 max-w-[250px]"
+                  style={{ color: isDark ? '#888' : '#AAA' }}
+                >
+                  اختر محافظتك من محافظات جنوب اليمن
+                </p>
+              </div>
+
+              <div className="space-y-2 max-h-80 overflow-y-auto">
+                {governorates.map((gov) => (
+                  <button
+                    key={gov}
+                    onClick={() => setGovernorate(gov)}
+                    className="w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all"
+                    style={{
+                      background: governorate === gov ? 'rgba(230,0,0,0.1)' : isDark ? '#1A1A1A' : '#FFFFFF',
+                      border: governorate === gov ? '2px solid #E60000' : isDark ? '1px solid #2A2A2A' : '1px solid #F0F0F0',
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                    }}
+                  >
+                    <div
+                      className="w-5 h-5 rounded-full border-2 flex items-center justify-center"
+                      style={{
+                        borderColor: governorate === gov ? '#E60000' : isDark ? '#555' : '#CCC',
+                      }}
+                    >
+                      {governorate === gov && (
+                        <div className="w-2.5 h-2.5 rounded-full" style={{ background: '#E60000' }} />
+                      )}
+                    </div>
+                    <span
+                      className="text-sm font-medium"
+                      style={{ color: governorate === gov ? '#E60000' : isDark ? '#FFF' : '#1a1a1a' }}
+                    >
+                      {gov}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </motion.div>
+          )}
+
+          {/* Step 4: ID Photo Upload */}
+          {step === 4 && (
+            <motion.div
+              key="step4"
               initial={{ x: 300, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               exit={{ x: -300, opacity: 0 }}
@@ -264,13 +455,13 @@ export default function KYCScreen() {
                   className="text-lg font-bold"
                   style={{ color: isDark ? '#FFF' : '#1a1a1a' }}
                 >
-                  صورة الهوية
+                  صورة البطاقة
                 </h3>
                 <p
                   className="text-xs text-center mt-1 max-w-[250px]"
                   style={{ color: isDark ? '#888' : '#AAA' }}
                 >
-                  ارفع صورة واضحة لبطاقة الهوية الشخصية
+                  ارفع صورة واضحة لبطاقة التعريف الشخصية
                 </p>
               </div>
 
@@ -287,14 +478,14 @@ export default function KYCScreen() {
                 <div className="relative rounded-2xl overflow-hidden">
                   <img
                     src={idPhoto}
-                    alt="صورة الهوية"
+                    alt="صورة البطاقة"
                     className="w-full h-48 object-cover"
                   />
                   <button
                     onClick={() => setIdPhoto('')}
                     className="absolute top-2 left-2 w-8 h-8 rounded-full bg-black/50 flex items-center justify-center"
                   >
-                    <span className="text-white text-xs">✕</span>
+                    <span className="text-white text-xs">X</span>
                   </button>
                 </div>
               ) : (
@@ -315,10 +506,10 @@ export default function KYCScreen() {
             </motion.div>
           )}
 
-          {/* Step 3: Selfie */}
-          {step === 3 && (
+          {/* Step 5: Selfie Upload */}
+          {step === 5 && (
             <motion.div
-              key="step3"
+              key="step5"
               initial={{ x: 300, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               exit={{ x: -300, opacity: 0 }}
@@ -365,7 +556,7 @@ export default function KYCScreen() {
                     onClick={() => setSelfiePhoto('')}
                     className="absolute top-2 left-2 w-8 h-8 rounded-full bg-black/50 flex items-center justify-center"
                   >
-                    <span className="text-white text-xs">✕</span>
+                    <span className="text-white text-xs">X</span>
                   </button>
                 </div>
               ) : (
@@ -386,10 +577,10 @@ export default function KYCScreen() {
             </motion.div>
           )}
 
-          {/* Step 4: Confirmation */}
-          {step === 4 && (
+          {/* Step 6: Confirmation */}
+          {step === 6 && (
             <motion.div
-              key="step4"
+              key="step6"
               initial={{ x: 300, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               exit={{ x: -300, opacity: 0 }}
@@ -425,34 +616,55 @@ export default function KYCScreen() {
               >
                 <div className="flex items-center justify-between">
                   <span className="text-xs" style={{ color: isDark ? '#888' : '#AAA' }}>
-                    رقم الهوية
+                    نوع البطاقة
                   </span>
-                  <span className="text-sm font-medium" style={{ color: isDark ? '#FFF' : '#1a1a1a' }} dir="ltr">
-                    {idNumber}
+                  <span className="text-sm font-medium" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>
+                    {cardType}
                   </span>
                 </div>
-                <div
-                  className="h-px"
-                  style={{ background: isDark ? '#2A2A2A' : '#F0F0F0' }}
-                />
+                <div className="h-px" style={{ background: isDark ? '#2A2A2A' : '#F0F0F0' }} />
                 <div className="flex items-center justify-between">
                   <span className="text-xs" style={{ color: isDark ? '#888' : '#AAA' }}>
-                    صورة الهوية
+                    رقم البطاقة
                   </span>
-                  <span className="text-sm font-medium" style={{ color: idPhoto ? '#10B981' : '#E60000' }}>
-                    {idPhoto ? '✓ تم الرفع' : '✕ لم يتم الرفع'}
+                  <span className="text-sm font-medium" style={{ color: isDark ? '#FFF' : '#1a1a1a' }} dir="ltr">
+                    {cardNumber}
                   </span>
                 </div>
-                <div
-                  className="h-px"
-                  style={{ background: isDark ? '#2A2A2A' : '#F0F0F0' }}
-                />
+                <div className="h-px" style={{ background: isDark ? '#2A2A2A' : '#F0F0F0' }} />
+                <div className="flex items-center justify-between">
+                  <span className="text-xs" style={{ color: isDark ? '#888' : '#AAA' }}>
+                    مكان الإصدار
+                  </span>
+                  <span className="text-sm font-medium" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>
+                    {cardIssuedAt}
+                  </span>
+                </div>
+                <div className="h-px" style={{ background: isDark ? '#2A2A2A' : '#F0F0F0' }} />
+                <div className="flex items-center justify-between">
+                  <span className="text-xs" style={{ color: isDark ? '#888' : '#AAA' }}>
+                    المحافظة
+                  </span>
+                  <span className="text-sm font-medium" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>
+                    {governorate}
+                  </span>
+                </div>
+                <div className="h-px" style={{ background: isDark ? '#2A2A2A' : '#F0F0F0' }} />
+                <div className="flex items-center justify-between">
+                  <span className="text-xs" style={{ color: isDark ? '#888' : '#AAA' }}>
+                    صورة البطاقة
+                  </span>
+                  <span className="text-sm font-medium" style={{ color: idPhoto ? '#10B981' : '#E60000' }}>
+                    {idPhoto ? 'تم الرفع' : 'لم يتم الرفع'}
+                  </span>
+                </div>
+                <div className="h-px" style={{ background: isDark ? '#2A2A2A' : '#F0F0F0' }} />
                 <div className="flex items-center justify-between">
                   <span className="text-xs" style={{ color: isDark ? '#888' : '#AAA' }}>
                     الصورة الشخصية
                   </span>
                   <span className="text-sm font-medium" style={{ color: selfiePhoto ? '#10B981' : '#E60000' }}>
-                    {selfiePhoto ? '✓ تم الرفع' : '✕ لم يتم الرفع'}
+                    {selfiePhoto ? 'تم الرفع' : 'لم يتم الرفع'}
                   </span>
                 </div>
               </div>
@@ -475,7 +687,7 @@ export default function KYCScreen() {
 
         {/* Action Buttons */}
         <div className="mt-8 pb-8">
-          {step < 4 ? (
+          {step < totalSteps ? (
             <button
               onClick={() => setStep(step + 1)}
               disabled={!canProceed()}
@@ -509,6 +721,19 @@ export default function KYCScreen() {
               ) : (
                 <span>إرسال الطلب</span>
               )}
+            </button>
+          )}
+
+          {step > 1 && (
+            <button
+              onClick={() => setStep(step - 1)}
+              className="w-full py-3 mt-2 rounded-2xl flex items-center justify-center gap-2 text-sm font-medium"
+              style={{
+                color: isDark ? '#AAA' : '#888',
+              }}
+            >
+              <ArrowRight size={16} strokeWidth={1.5} />
+              <span>السابق</span>
             </button>
           )}
         </div>

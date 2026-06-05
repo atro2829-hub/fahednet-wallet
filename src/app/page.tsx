@@ -82,12 +82,18 @@ function AppContent() {
     );
   }
 
-  if (activeScreen === 'admin') {
+  // Admin screen ONLY for admin users
+  if (activeScreen === 'admin' && user.role === 'admin') {
     return (
       <div className="min-h-screen bg-[#F5F5F5] dark:bg-[#0F0F0F] max-w-md mx-auto relative">
         <AdminScreen />
       </div>
     );
+  }
+
+  // If non-admin tries to access admin, redirect to main
+  if (activeScreen === 'admin' && user.role !== 'admin') {
+    setActiveScreen('main');
   }
 
   // Main app with tabs

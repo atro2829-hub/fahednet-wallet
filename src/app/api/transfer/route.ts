@@ -4,10 +4,14 @@ import { generateReference } from '@/lib/utils';
 
 export async function POST(req: NextRequest) {
   try {
-    const { fromUserId, toPhone, amount, currency, description } = await req.json();
+    const { fromUserId, toUserId, toPhone, amount, currency, description } = await req.json();
     
-    if (!fromUserId || !toPhone || !amount || !currency) {
+    if (!fromUserId || !amount || !currency) {
       return NextResponse.json({ error: 'جميع الحقول مطلوبة' }, { status: 400 });
+    }
+
+    if (!toUserId && !toPhone) {
+      return NextResponse.json({ error: 'يجب تحديد المستلم (رقم الحساب أو الهاتف)' }, { status: 400 });
     }
 
     if (amount <= 0) {
@@ -19,7 +23,20 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'المستخدم المرسل غير موجود' }, { status: 404 });
     }
 
-    const toUser = await db.user.findUnique({ where: { phone: toPhone } });
+    // Find recipient by userId or phone
+    let toUser;
+    if (toUserId) {
+      toUser = await db.user.findUnique({ where: { userId: toUserId } });
+      if (!toUser) {
+        return NextResponse.json({ error: 'رقم الحساب غير موجود' }, { status: 404 });
+      }
+    } else if (toPhone) {
+      toUser = await db.user.findUnique({ where: { phone: toPhone } });
+      if (!toUser) {
+        return NextResponse.json({ error: 'رقم الهاتف غير مسجل' }, { status: 404 });
+      }
+    }
+
     if (!toUser) {
       return NextResponse.json({ error: 'المستخدم المستلم غير موجود' }, { status: 404 });
     }
