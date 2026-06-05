@@ -2,13 +2,12 @@
 
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { useTheme } from 'next-themes';
-import { motion } from 'framer-motion';
+import { motion, useMotionValue, useTransform, animate } from 'framer-motion';
 import {
   Bell,
   Headphones,
   Eye,
   EyeOff,
-  ChevronLeft,
   Smartphone,
   Receipt,
   Wifi,
@@ -17,20 +16,27 @@ import {
   Zap,
   ArrowUpRight,
   ArrowDownLeft,
+  ChevronLeft,
+  QrCode,
+  Send,
+  CreditCard,
+  Wifi as Contactless,
 } from 'lucide-react';
 import { useAppStore } from '@/lib/store';
-import { formatBalance, currencySymbols, currencyNames, currencyFlags, currencyBadgeColors } from '@/lib/utils';
+import { formatBalance, currencySymbols, currencyNames, currencyBadgeColors } from '@/lib/utils';
 
 interface BalanceCard {
   currency: 'YER' | 'SAR' | 'USD';
   gradient: string;
+  gradientEnd: string;
   accentColor: string;
+  patternColor: string;
 }
 
 const balanceCards: BalanceCard[] = [
-  { currency: 'YER', gradient: 'linear-gradient(135deg, #E60000 0%, #B30000 100%)', accentColor: '#E60000' },
-  { currency: 'SAR', gradient: 'linear-gradient(135deg, #059669 0%, #047857 100%)', accentColor: '#10B981' },
-  { currency: 'USD', gradient: 'linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%)', accentColor: '#3B82F6' },
+  { currency: 'YER', gradient: '#E60000', gradientEnd: '#8B0000', accentColor: '#E60000', patternColor: 'rgba(255,255,255,0.08)' },
+  { currency: 'SAR', gradient: '#059669', gradientEnd: '#064E3B', accentColor: '#10B981', patternColor: 'rgba(255,255,255,0.08)' },
+  { currency: 'USD', gradient: '#2563EB', gradientEnd: '#1E3A8A', accentColor: '#3B82F6', patternColor: 'rgba(255,255,255,0.08)' },
 ];
 
 const services = [
@@ -38,37 +44,23 @@ const services = [
   { id: 'bills', label: 'دفع فواتير', icon: Receipt, color: '#10B981' },
   { id: 'internet', label: 'إنترنت', icon: Wifi, color: '#3B82F6' },
   { id: 'tv', label: 'تلفزيون', icon: Tv, color: '#F59E0B' },
-  { id: 'transfer', label: 'تحويل', icon: Zap, color: '#8B5CF6' },
+  { id: 'transfer', label: 'تحويل', icon: Send, color: '#8B5CF6' },
   { id: 'games', label: 'ألعاب', icon: Gamepad2, color: '#EC4899' },
-  { id: 'more1', label: 'خدمة', icon: Receipt, color: '#14B8A6' },
-  { id: 'more2', label: 'خدمة', icon: Smartphone, color: '#F97316' },
-  { id: 'more3', label: 'المزيد', icon: ChevronLeft, color: '#6366F1' },
+  { id: 'qr', label: 'مسح QR', icon: QrCode, color: '#14B8A6' },
+  { id: 'cards', label: 'بطاقات', icon: CreditCard, color: '#F97316' },
+  { id: 'more', label: 'المزيد', icon: ChevronLeft, color: '#6366F1' },
 ];
-
-// Currency badge component - NO emojis
-function CurrencyBadge({ currency }: { currency: string }) {
-  const bgColor = currencyBadgeColors[currency] || '#666';
-  return (
-    <span
-      className="inline-flex items-center justify-center px-1.5 py-0.5 rounded text-[10px] font-bold text-white"
-      style={{ background: bgColor }}
-    >
-      {currencyFlags[currency]}
-    </span>
-  );
-}
 
 export default function HomeScreen() {
   const { theme } = useTheme();
   const isDark = theme === 'dark';
-  const { user, balanceVisible, toggleBalance, setActiveScreen, notifications } = useAppStore();
+  const { user, balanceVisible, toggleBalance, setActiveScreen, notifications, setTransferOpen } = useAppStore();
   const [activeCardIndex, setActiveCardIndex] = useState(0);
-  const [isRefreshing, setIsRefreshing] = useState(false);
   const carouselRef = useRef<HTMLDivElement>(null);
   const [carouselWidth, setCarouselWidth] = useState(375);
+  const x = useMotionValue(0);
 
-  const CARD_WIDTH_PERCENT = 0.82;
-  const CARD_GAP = 16;
+  const CARD_GAP = 14;
 
   useEffect(() => {
     const updateWidth = () => {
@@ -82,8 +74,12 @@ export default function HomeScreen() {
   }, []);
 
   const getCardWidth = useCallback(() => {
-    return carouselWidth * CARD_WIDTH_PERCENT + CARD_GAP;
+    return carouselWidth * 0.78;
   }, [carouselWidth]);
+
+  const getStepWidth = useCallback(() => {
+    return getCardWidth() + CARD_GAP;
+  }, [getCardWidth]);
 
   const getGreeting = () => {
     const hour = new Date().getHours();
@@ -98,29 +94,27 @@ export default function HomeScreen() {
   };
 
   const unreadNotifCount = notifications.filter(n => !n.isRead).length;
+  const { transactions } = useAppStore();
+  const recentTx = transactions.slice(0, 5);
 
-  // Carousel snap logic
+  const snapTo = useCallback((index: number) => {
+    const clamped = Math.max(0, Math.min(index, balanceCards.length - 1));
+    setActiveCardIndex(clamped);
+    animate(x, -clamped * getStepWidth(), { type: 'spring', stiffness: 300, damping: 30 });
+  }, [x, getStepWidth]);
+
   const handleDragEnd = useCallback((_event: MouseEvent | TouchEvent | PointerEvent, info: { offset: { x: number }; velocity: { x: number } }) => {
-    const threshold = 60;
     const velocity = info.velocity.x;
     const offset = info.offset.x;
 
-    if (offset < -threshold || velocity < -200) {
-      setActiveCardIndex((prev) => Math.min(prev + 1, balanceCards.length - 1));
-    } else if (offset > threshold || velocity > 200) {
-      setActiveCardIndex((prev) => Math.max(prev - 1, 0));
+    let newIndex = activeCardIndex;
+    if (offset < -40 || velocity < -300) {
+      newIndex = Math.min(activeCardIndex + 1, balanceCards.length - 1);
+    } else if (offset > 40 || velocity > 300) {
+      newIndex = Math.max(activeCardIndex - 1, 0);
     }
-  }, []);
-
-  const handleRefresh = async () => {
-    setIsRefreshing(true);
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    setIsRefreshing(false);
-  };
-
-  // Recent transactions (mock data + store data)
-  const { transactions } = useAppStore();
-  const recentTx = transactions.slice(0, 5);
+    snapTo(newIndex);
+  }, [activeCardIndex, snapTo]);
 
   return (
     <div className="pb-4">
@@ -128,135 +122,147 @@ export default function HomeScreen() {
       <div className="px-5 pt-4 pb-2">
         <div className="flex items-center justify-between">
           <div>
-            <h1
-              className="text-xl font-bold"
-              style={{ color: isDark ? '#FFFFFF' : '#1a1a1a' }}
-            >
+            <h1 className="text-xl font-bold" style={{ color: isDark ? '#FFFFFF' : '#1a1a1a' }}>
               {getGreeting()}، {user?.name || 'مستخدم'}
             </h1>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5">
             <button
               onClick={() => setActiveScreen('notifications')}
-              className="relative w-10 h-10 rounded-full flex items-center justify-center"
-              style={{ background: isDark ? '#222' : '#F0F0F0' }}
+              className="relative w-10 h-10 rounded-2xl flex items-center justify-center"
+              style={{ background: isDark ? '#1E1E1E' : '#F5F5F5' }}
             >
               <Bell size={20} strokeWidth={1.5} color={isDark ? '#FFF' : '#555'} />
               {unreadNotifCount > 0 && (
-                <span
-                  className="absolute -top-0.5 -right-0.5 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold text-white"
-                  style={{ background: '#E60000' }}
-                >
+                <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold text-white" style={{ background: '#E60000' }}>
                   {unreadNotifCount}
                 </span>
               )}
             </button>
-            <button
-              className="w-10 h-10 rounded-full flex items-center justify-center"
-              style={{ background: isDark ? '#222' : '#F0F0F0' }}
-            >
+            <button className="w-10 h-10 rounded-2xl flex items-center justify-center" style={{ background: isDark ? '#1E1E1E' : '#F5F5F5' }}>
               <Headphones size={20} strokeWidth={1.5} color={isDark ? '#FFF' : '#555'} />
             </button>
           </div>
         </div>
-        <p
-          className="text-xs mt-1"
-          style={{ color: isDark ? '#777' : '#AAA' }}
-        >
-          اسحب للأسفل للتحديث
-        </p>
       </div>
 
       {/* Balance Card Carousel */}
-      <div className="px-5 mt-2">
-        <div
-          ref={carouselRef}
-          className="relative overflow-hidden"
-          style={{ touchAction: 'pan-y' }}
-        >
+      <div className="px-5 mt-3">
+        <div ref={carouselRef} className="relative overflow-hidden" style={{ touchAction: 'pan-y' }}>
           <motion.div
-            className="flex gap-4 cursor-grab active:cursor-grabbing"
-            animate={{ x: -(activeCardIndex * getCardWidth()) }}
-            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+            className="flex cursor-grab active:cursor-grabbing"
+            style={{ gap: CARD_GAP, x }}
             drag="x"
             dragConstraints={{
-              left: -(balanceCards.length - 1) * getCardWidth(),
+              left: -(balanceCards.length - 1) * getStepWidth(),
               right: 0,
             }}
+            dragElastic={0.1}
             onDragEnd={handleDragEnd}
           >
-            {balanceCards.map((card, index) => {
-              const isActive = index === activeCardIndex;
-              return (
-                <motion.div
-                  key={card.currency}
-                  className="shrink-0 w-[82%] rounded-2xl p-5 relative overflow-hidden"
-                  style={{
-                    background: card.gradient,
-                    boxShadow: isActive ? `0 8px 24px ${card.accentColor}33` : '0 2px 8px rgba(0,0,0,0.04)',
-                  }}
-                  animate={{
-                    scale: isActive ? 1 : 0.88,
-                    opacity: isActive ? 1 : 0.45,
-                  }}
-                  transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-                  onClick={() => setActiveCardIndex(index)}
-                >
-                  {/* Card decorative circle */}
-                  <div
-                    className="absolute -top-10 -left-10 w-32 h-32 rounded-full opacity-10"
-                    style={{ background: 'white' }}
-                  />
-                  <div
-                    className="absolute -bottom-8 -right-8 w-24 h-24 rounded-full opacity-10"
-                    style={{ background: 'white' }}
-                  />
+            {balanceCards.map((card, index) => (
+              <motion.div
+                key={card.currency}
+                className="shrink-0 rounded-3xl relative overflow-hidden select-none"
+                style={{
+                  width: getCardWidth(),
+                  height: 200,
+                  background: `linear-gradient(145deg, ${card.gradient} 0%, ${card.gradientEnd} 100%)`,
+                  boxShadow: index === activeCardIndex
+                    ? `0 12px 32px ${card.accentColor}44, 0 4px 12px rgba(0,0,0,0.15)`
+                    : '0 2px 8px rgba(0,0,0,0.08)',
+                }}
+                animate={{
+                  scale: index === activeCardIndex ? 1 : 0.9,
+                  opacity: index === activeCardIndex ? 1 : 0.5,
+                  y: index === activeCardIndex ? 0 : 8,
+                }}
+                transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+                onClick={() => snapTo(index)}
+              >
+                {/* Card SVG Pattern */}
+                <svg className="absolute inset-0 w-full h-full" xmlns="http://www.w3.org/2000/svg">
+                  <defs>
+                    <pattern id={`grid-${card.currency}`} width="40" height="40" patternUnits="userSpaceOnUse">
+                      <circle cx="20" cy="20" r="1" fill={card.patternColor} />
+                    </pattern>
+                  </defs>
+                  <rect width="100%" height="100%" fill={`url(#grid-${card.currency})`} />
+                </svg>
 
-                  {/* Logo & Visibility */}
-                  <div className="flex items-center justify-between mb-4">
-                    <span className="text-white/80 text-sm font-bold">فهد نت</span>
-                    <button onClick={(e) => { e.stopPropagation(); toggleBalance(); }}>
-                      {balanceVisible ? (
-                        <Eye size={18} strokeWidth={1.5} color="rgba(255,255,255,0.7)" />
-                      ) : (
-                        <EyeOff size={18} strokeWidth={1.5} color="rgba(255,255,255,0.7)" />
-                      )}
-                    </button>
+                {/* Decorative circles */}
+                <div className="absolute -top-16 -right-16 w-40 h-40 rounded-full" style={{ background: 'rgba(255,255,255,0.06)' }} />
+                <div className="absolute -bottom-10 -left-10 w-32 h-32 rounded-full" style={{ background: 'rgba(255,255,255,0.04)' }} />
+                <div className="absolute top-8 right-12 w-16 h-16 rounded-full" style={{ background: 'rgba(255,255,255,0.05)' }} />
+
+                {/* Card Content */}
+                <div className="relative z-10 h-full flex flex-col justify-between p-5">
+                  {/* Top Row */}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-6 rounded flex items-center justify-center" style={{ background: 'rgba(255,255,255,0.2)' }}>
+                        <span className="text-white text-[8px] font-bold">FH</span>
+                      </div>
+                      <span className="text-white/70 text-xs font-bold">فهد نت</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Contactless size={16} strokeWidth={1.5} color="rgba(255,255,255,0.5)" />
+                      <button onClick={(e) => { e.stopPropagation(); toggleBalance(); }}>
+                        {balanceVisible ? (
+                          <Eye size={16} strokeWidth={1.5} color="rgba(255,255,255,0.5)" />
+                        ) : (
+                          <EyeOff size={16} strokeWidth={1.5} color="rgba(255,255,255,0.5)" />
+                        )}
+                      </button>
+                    </div>
                   </div>
 
-                  {/* Currency Badge */}
-                  <div className="flex items-center gap-2 mb-3">
-                    <CurrencyBadge currency={card.currency} />
-                    <span className="text-white/70 text-xs font-medium">
-                      {currencyNames[card.currency]}
+                  {/* Chip */}
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-7 rounded-md" style={{ background: 'linear-gradient(135deg, rgba(255,215,0,0.5) 0%, rgba(255,215,0,0.3) 100%)', border: '1px solid rgba(255,215,0,0.3)' }} />
+                    <span
+                      className="text-[10px] px-2 py-0.5 rounded font-bold text-white"
+                      style={{ background: currencyBadgeColors[card.currency] }}
+                    >
+                      {card.currency}
                     </span>
+                    <span className="text-white/50 text-[10px]">{currencyNames[card.currency]}</span>
                   </div>
 
-                  {/* Balance */}
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-white text-2xl font-bold">
-                      {balanceVisible ? formatBalance(getBalance(card.currency), card.currency) : '****'}
-                    </span>
-                    <span className="text-white/60 text-sm">
-                      {currencySymbols[card.currency]}
-                    </span>
+                  {/* Bottom Row */}
+                  <div>
+                    {/* User ID */}
+                    <p className="text-white/40 text-[10px] mb-0.5">رقم الحساب</p>
+                    <p className="text-white text-sm font-bold tracking-[0.2em]" dir="ltr">
+                      {user?.userId || '------'}
+                    </p>
+
+                    {/* Balance */}
+                    <div className="flex items-baseline justify-between mt-2">
+                      <div className="flex items-baseline gap-1.5">
+                        <span className="text-white text-2xl font-bold">
+                          {balanceVisible ? formatBalance(getBalance(card.currency), card.currency) : '****'}
+                        </span>
+                        <span className="text-white/50 text-xs">{currencySymbols[card.currency]}</span>
+                      </div>
+                    </div>
                   </div>
-                </motion.div>
-              );
-            })}
+                </div>
+              </motion.div>
+            ))}
           </motion.div>
 
-          {/* Page Indicator Dots */}
-          <div className="flex items-center justify-center gap-2 mt-3">
+          {/* Page Indicator */}
+          <div className="flex items-center justify-center gap-1.5 mt-4">
             {balanceCards.map((_, index) => (
               <button
                 key={index}
-                onClick={() => setActiveCardIndex(index)}
+                onClick={() => snapTo(index)}
                 className="rounded-full transition-all duration-300"
                 style={{
-                  width: activeCardIndex === index ? 20 : 8,
+                  width: activeCardIndex === index ? 24 : 8,
                   height: 8,
-                  background: activeCardIndex === index ? '#E60000' : isDark ? '#444' : '#DDD',
+                  background: activeCardIndex === index ? balanceCards[activeCardIndex].accentColor : isDark ? '#333' : '#DDD',
                 }}
               />
             ))}
@@ -264,64 +270,77 @@ export default function HomeScreen() {
         </div>
       </div>
 
-      {/* Promo Banner */}
+      {/* Quick Actions */}
       <div className="px-5 mt-5">
+        <div className="flex gap-3">
+          <button
+            onClick={() => setTransferOpen(true)}
+            className="flex-1 flex items-center gap-3 py-3 px-4 rounded-2xl active:scale-[0.98] transition-transform"
+            style={{ background: isDark ? '#1E1E1E' : '#FFF', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}
+          >
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'rgba(230,0,0,0.1)' }}>
+              <Send size={18} strokeWidth={1.5} color="#E60000" />
+            </div>
+            <div className="text-right">
+              <p className="text-xs font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>تحويل</p>
+              <p className="text-[10px]" style={{ color: isDark ? '#888' : '#AAA' }}>أرسل أموالاً الآن</p>
+            </div>
+          </button>
+          <button
+            className="flex-1 flex items-center gap-3 py-3 px-4 rounded-2xl active:scale-[0.98] transition-transform"
+            style={{ background: isDark ? '#1E1E1E' : '#FFF', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}
+          >
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'rgba(16,185,129,0.1)' }}>
+              <QrCode size={18} strokeWidth={1.5} color="#10B981" />
+            </div>
+            <div className="text-right">
+              <p className="text-xs font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>استقبال</p>
+              <p className="text-[10px]" style={{ color: isDark ? '#888' : '#AAA' }}>استقبل تحويلاً</p>
+            </div>
+          </button>
+        </div>
+      </div>
+
+      {/* Promo Banner */}
+      <div className="px-5 mt-4">
         <div
           className="rounded-2xl p-4 relative overflow-hidden"
-          style={{
-            background: 'linear-gradient(135deg, #2D2D2D 0%, #1A1A1A 100%)',
-          }}
+          style={{ background: 'linear-gradient(145deg, #2D2D2D 0%, #1A1A1A 100%)' }}
         >
-          <div className="absolute -top-6 -right-6 w-20 h-20 rounded-full opacity-10" style={{ background: '#E60000' }} />
-          <div className="absolute -bottom-4 -left-4 w-16 h-16 rounded-full opacity-5" style={{ background: '#E60000' }} />
+          <div className="absolute -top-6 -right-6 w-20 h-20 rounded-full" style={{ background: 'rgba(230,0,0,0.15)' }} />
+          <div className="absolute -bottom-4 -left-4 w-16 h-16 rounded-full" style={{ background: 'rgba(230,0,0,0.08)' }} />
           <div className="relative z-10">
-            <span
-              className="text-[10px] font-bold px-2 py-0.5 rounded-full"
-              style={{ background: '#E60000', color: '#FFF' }}
-            >
+            <span className="text-[10px] font-bold px-2.5 py-1 rounded-full" style={{ background: '#E60000', color: '#FFF' }}>
               عرض خاص
             </span>
-            <h3 className="text-white font-bold mt-2 text-sm">
-              شحن رصيدك الآن واحصل على مكافأة!
-            </h3>
-            <p className="text-white/50 text-xs mt-1">
-              مكافأة تصل إلى 500 ر.ي عند كل شحن
-            </p>
+            <h3 className="text-white font-bold mt-2 text-sm">شحن رصيدك الآن واحصل على مكافأة!</h3>
+            <p className="text-white/40 text-xs mt-1">مكافأة تصل إلى 500 ر.ي عند كل شحن</p>
           </div>
         </div>
       </div>
 
       {/* Services Grid */}
       <div className="px-5 mt-5">
-        <h3
-          className="text-sm font-bold mb-3"
-          style={{ color: isDark ? '#FFFFFF' : '#1a1a1a' }}
-        >
-          الخدمات
-        </h3>
+        <h3 className="text-sm font-bold mb-3" style={{ color: isDark ? '#FFFFFF' : '#1a1a1a' }}>الخدمات</h3>
         <div className="grid grid-cols-3 gap-3">
           {services.map((service) => {
             const Icon = service.icon;
             return (
               <button
                 key={service.id}
-                className="flex flex-col items-center gap-1.5 py-3 px-2 rounded-2xl active:scale-95 transition-transform"
+                className="flex flex-col items-center gap-2 py-4 px-2 rounded-2xl active:scale-95 transition-transform"
                 style={{
-                  background: isDark ? '#1A1A1A' : '#FFFFFF',
+                  background: isDark ? '#1E1E1E' : '#FFFFFF',
                   boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
                 }}
               >
-                <div className="relative">
-                  <Icon size={22} strokeWidth={1.5} color={service.color} />
-                  <div
-                    className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full"
-                    style={{ background: service.color }}
-                  />
-                </div>
-                <span
-                  className="text-[10px] font-medium text-center"
-                  style={{ color: isDark ? '#BBB' : '#666' }}
+                <div
+                  className="w-11 h-11 rounded-xl flex items-center justify-center"
+                  style={{ background: `${service.color}12` }}
                 >
+                  <Icon size={20} strokeWidth={1.5} color={service.color} />
+                </div>
+                <span className="text-[11px] font-medium text-center" style={{ color: isDark ? '#BBB' : '#666' }}>
                   {service.label}
                 </span>
               </button>
@@ -333,12 +352,7 @@ export default function HomeScreen() {
       {/* Recent Transactions */}
       <div className="px-5 mt-5">
         <div className="flex items-center justify-between mb-3">
-          <h3
-            className="text-sm font-bold"
-            style={{ color: isDark ? '#FFFFFF' : '#1a1a1a' }}
-          >
-            آخر المعاملات
-          </h3>
+          <h3 className="text-sm font-bold" style={{ color: isDark ? '#FFFFFF' : '#1a1a1a' }}>آخر المعاملات</h3>
           <button
             onClick={() => useAppStore.getState().setActiveTab('wallet')}
             className="text-xs font-medium"
@@ -349,17 +363,9 @@ export default function HomeScreen() {
         </div>
 
         {recentTx.length === 0 ? (
-          <div
-            className="rounded-2xl p-8 flex flex-col items-center"
-            style={{ background: isDark ? '#1A1A1A' : '#FFFFFF', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}
-          >
-            <Receipt size={40} strokeWidth={1.5} color={isDark ? '#444' : '#DDD'} />
-            <p
-              className="text-sm mt-2"
-              style={{ color: isDark ? '#777' : '#AAA' }}
-            >
-              لا توجد معاملات بعد
-            </p>
+          <div className="rounded-2xl p-8 flex flex-col items-center" style={{ background: isDark ? '#1E1E1E' : '#FFFFFF', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
+            <Receipt size={40} strokeWidth={1.5} color={isDark ? '#333' : '#DDD'} />
+            <p className="text-sm mt-2" style={{ color: isDark ? '#666' : '#AAA' }}>لا توجد معاملات بعد</p>
           </div>
         ) : (
           <div className="space-y-2">
@@ -369,53 +375,30 @@ export default function HomeScreen() {
                 <div
                   key={tx.id}
                   className="flex items-center gap-3 p-3 rounded-2xl"
-                  style={{
-                    background: isDark ? '#1A1A1A' : '#FFFFFF',
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
-                  }}
+                  style={{ background: isDark ? '#1E1E1E' : '#FFFFFF', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}
                 >
                   <div
-                    className="w-10 h-10 rounded-full flex items-center justify-center"
-                    style={{
-                      background: isIncoming ? 'rgba(16,185,129,0.1)' : 'rgba(230,0,0,0.1)',
-                    }}
+                    className="w-10 h-10 rounded-xl flex items-center justify-center"
+                    style={{ background: isIncoming ? 'rgba(16,185,129,0.1)' : 'rgba(230,0,0,0.1)' }}
                   >
-                    {isIncoming ? (
-                      <ArrowDownLeft size={18} strokeWidth={1.5} color="#10B981" />
-                    ) : (
-                      <ArrowUpRight size={18} strokeWidth={1.5} color="#E60000" />
-                    )}
+                    {isIncoming ? <ArrowDownLeft size={18} strokeWidth={1.5} color="#10B981" /> : <ArrowUpRight size={18} strokeWidth={1.5} color="#E60000" />}
                   </div>
                   <div className="flex-1">
-                    <p
-                      className="text-sm font-medium"
-                      style={{ color: isDark ? '#FFF' : '#1a1a1a' }}
-                    >
-                      {tx.description}
-                    </p>
-                    <p
-                      className="text-xs"
-                      style={{ color: isDark ? '#777' : '#AAA' }}
-                    >
+                    <p className="text-sm font-medium" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>{tx.description}</p>
+                    <p className="text-xs" style={{ color: isDark ? '#666' : '#AAA' }}>
                       {new Date(tx.createdAt).toLocaleDateString('ar-SA')}
                     </p>
                   </div>
                   <div className="text-left">
-                    <p
-                      className="text-sm font-bold"
-                      style={{ color: isIncoming ? '#10B981' : '#E60000' }}
-                    >
+                    <p className="text-sm font-bold" style={{ color: isIncoming ? '#10B981' : '#E60000' }}>
                       {isIncoming ? '+' : '-'}{tx.amount.toLocaleString()}
                     </p>
-                    <div className="flex items-center gap-1">
-                      <CurrencyBadge currency={tx.currency} />
-                      <span
-                        className="text-xs"
-                        style={{ color: isDark ? '#777' : '#AAA' }}
-                      >
-                        {currencySymbols[tx.currency]}
-                      </span>
-                    </div>
+                    <span
+                      className="text-[10px] px-1.5 py-0.5 rounded font-bold text-white"
+                      style={{ background: currencyBadgeColors[tx.currency] || '#666' }}
+                    >
+                      {tx.currency}
+                    </span>
                   </div>
                 </div>
               );
@@ -423,21 +406,6 @@ export default function HomeScreen() {
           </div>
         )}
       </div>
-
-      {/* Refresh indicator */}
-      {isRefreshing && (
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex justify-center py-4"
-        >
-          <motion.div
-            animate={{ rotate: 360 }}
-            transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
-            className="w-6 h-6 border-2 border-[#E60000]/30 border-t-[#E60000] rounded-full"
-          />
-        </motion.div>
-      )}
     </div>
   );
 }

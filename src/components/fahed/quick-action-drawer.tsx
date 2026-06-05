@@ -42,54 +42,35 @@ export default function QuickActionDrawer() {
     <AnimatePresence>
       {isDrawerOpen && (
         <>
-          {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm"
+            className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm"
             onClick={handleClose}
           />
 
-          {/* Drawer */}
           <motion.div
             initial={{ y: '100%' }}
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
             transition={{ type: 'spring', stiffness: 400, damping: 30 }}
             className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md z-50 rounded-t-3xl overflow-hidden"
-            style={{
-              background: isDark ? '#1A1A1A' : '#FFFFFF',
-            }}
+            style={{ background: isDark ? '#1A1A1A' : '#FFFFFF' }}
           >
-            {/* Handle */}
-            <div className="flex justify-center pt-3 pb-2">
-              <div
-                className="w-10 h-1 rounded-full"
-                style={{ background: isDark ? '#444' : '#DDD' }}
-              />
+            <div className="flex justify-center pt-3 pb-1">
+              <div className="w-10 h-1 rounded-full" style={{ background: isDark ? '#444' : '#DDD' }} />
             </div>
 
-            {/* Header */}
-            <div className="flex items-center justify-between px-6 pb-4">
-              <h2
-                className="text-lg font-bold"
-                style={{ color: isDark ? '#FFFFFF' : '#1a1a1a' }}
-              >
-                إجراءات سريعة
-              </h2>
-              <button
-                onClick={handleClose}
-                className="w-8 h-8 rounded-full flex items-center justify-center"
-                style={{ background: isDark ? '#2D2D2D' : '#F0F0F0' }}
-              >
+            <div className="flex items-center justify-between px-6 py-3">
+              <h2 className="text-lg font-bold" style={{ color: isDark ? '#FFFFFF' : '#1a1a1a' }}>إجراءات سريعة</h2>
+              <button onClick={handleClose} className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: isDark ? '#2D2D2D' : '#F5F5F5' }}>
                 <X size={16} strokeWidth={1.5} color={isDark ? '#FFF' : '#666'} />
               </button>
             </div>
 
-            {/* Grid of actions */}
-            <div className="grid grid-cols-3 gap-4 px-6 pb-8">
+            <div className="grid grid-cols-3 gap-3 px-6 pb-8">
               {quickActions.map((action, index) => {
                 const Icon = action.icon;
                 return (
@@ -99,22 +80,13 @@ export default function QuickActionDrawer() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.05, duration: 0.3 }}
                     onClick={() => handleAction(action.id)}
-                    className="flex flex-col items-center gap-2 py-4 px-2 rounded-2xl active:scale-95 transition-transform"
-                    style={{
-                      background: isDark ? '#222' : '#F8F8F8',
-                    }}
+                    className="flex flex-col items-center gap-2.5 py-5 px-2 rounded-2xl active:scale-95 transition-transform"
+                    style={{ background: isDark ? '#222' : '#F8F8F8' }}
                   >
-                    <div className="relative">
-                      <Icon size={26} strokeWidth={1.5} color={action.color} />
-                      <div
-                        className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full"
-                        style={{ background: action.color }}
-                      />
+                    <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ background: `${action.color}15` }}>
+                      <Icon size={24} strokeWidth={1.5} color={action.color} />
                     </div>
-                    <span
-                      className="text-xs font-medium text-center leading-tight"
-                      style={{ color: isDark ? '#CCC' : '#555' }}
-                    >
+                    <span className="text-[11px] font-medium text-center leading-tight" style={{ color: isDark ? '#CCC' : '#555' }}>
                       {action.label}
                     </span>
                   </motion.button>

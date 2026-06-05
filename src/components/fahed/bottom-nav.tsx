@@ -23,8 +23,9 @@ export default function BottomNav() {
     <nav
       className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md z-40 safe-bottom"
       style={{
-        background: isDark ? '#1A1A1A' : '#FFFFFF',
-        borderTop: isDark ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(0,0,0,0.06)',
+        background: isDark ? 'rgba(26,26,26,0.95)' : 'rgba(255,255,255,0.95)',
+        backdropFilter: 'blur(20px)',
+        borderTop: isDark ? '1px solid rgba(255,255,255,0.06)' : '1px solid rgba(0,0,0,0.06)',
       }}
     >
       <div className="flex items-end justify-around px-2 pt-2 pb-6 relative">
@@ -38,41 +39,43 @@ export default function BottomNav() {
               onClick={() => setActiveTab(tab.id)}
               className="flex flex-col items-center justify-center gap-0.5 py-1 px-3 min-w-[56px] relative"
             >
-              <Icon
-                size={22}
-                strokeWidth={1.5}
-                style={{ color: isActive ? '#E60000' : isDark ? '#888' : '#999' }}
-              />
+              <div className="relative">
+                <Icon
+                  size={22}
+                  strokeWidth={isActive ? 2 : 1.5}
+                  style={{ color: isActive ? '#E60000' : isDark ? '#555' : '#AAA' }}
+                />
+                {isActive && (
+                  <motion.div
+                    layoutId="activeTabDot1"
+                    className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full"
+                    style={{ background: '#E60000' }}
+                    transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                  />
+                )}
+              </div>
               <span
                 className="text-[10px] font-medium"
-                style={{ color: isActive ? '#E60000' : isDark ? '#888' : '#999' }}
+                style={{ color: isActive ? '#E60000' : isDark ? '#555' : '#AAA' }}
               >
                 {tab.label}
               </span>
-              {isActive && (
-                <motion.div
-                  layoutId="activeTab"
-                  className="absolute -top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 rounded-full"
-                  style={{ background: '#E60000' }}
-                  transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-                />
-              )}
             </button>
           );
         })}
 
         {/* Center FAB */}
-        <div className="flex items-center justify-center -mt-6 mx-2">
+        <div className="flex items-center justify-center -mt-5 mx-2">
           <motion.button
             onClick={() => setDrawerOpen(true)}
-            className="relative w-14 h-14 rounded-full flex items-center justify-center active:scale-95 transition-transform"
+            className="relative w-14 h-14 rounded-2xl flex items-center justify-center active:scale-95 transition-transform"
             style={{
-              background: 'linear-gradient(135deg, #2D2D2D 0%, #1A1A1A 100%)',
-              boxShadow: '0 0 0 3px #E60000, 0 4px 16px rgba(230,0,0,0.3)',
+              background: 'linear-gradient(145deg, #E60000 0%, #8B0000 100%)',
+              boxShadow: '0 4px 20px rgba(230,0,0,0.4)',
             }}
             whileTap={{ scale: 0.9 }}
           >
-            <Plus size={26} strokeWidth={2} color="#FFFFFF" />
+            <Plus size={24} strokeWidth={2} color="#FFFFFF" />
           </motion.button>
         </div>
 
@@ -86,25 +89,27 @@ export default function BottomNav() {
               onClick={() => setActiveTab(tab.id)}
               className="flex flex-col items-center justify-center gap-0.5 py-1 px-3 min-w-[56px] relative"
             >
-              <Icon
-                size={22}
-                strokeWidth={1.5}
-                style={{ color: isActive ? '#E60000' : isDark ? '#888' : '#999' }}
-              />
+              <div className="relative">
+                <Icon
+                  size={22}
+                  strokeWidth={isActive ? 2 : 1.5}
+                  style={{ color: isActive ? '#E60000' : isDark ? '#555' : '#AAA' }}
+                />
+                {isActive && (
+                  <motion.div
+                    layoutId="activeTabDot2"
+                    className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full"
+                    style={{ background: '#E60000' }}
+                    transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                  />
+                )}
+              </div>
               <span
                 className="text-[10px] font-medium"
-                style={{ color: isActive ? '#E60000' : isDark ? '#888' : '#999' }}
+                style={{ color: isActive ? '#E60000' : isDark ? '#555' : '#AAA' }}
               >
                 {tab.label}
               </span>
-              {isActive && (
-                <motion.div
-                  layoutId="activeTab2"
-                  className="absolute -top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 rounded-full"
-                  style={{ background: '#E60000' }}
-                  transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-                />
-              )}
             </button>
           );
         })}

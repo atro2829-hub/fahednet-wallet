@@ -19,12 +19,11 @@ import QuickActionDrawer from '@/components/fahed/quick-action-drawer';
 import TransferModal from '@/components/fahed/transfer-modal';
 
 function AppContent() {
-  const { user, isAuthenticated, activeTab, activeScreen, setActiveScreen, theme: storeTheme, toggleTheme } = useAppStore();
+  const { user, isAuthenticated, activeTab, activeScreen, setActiveScreen, theme: storeTheme } = useAppStore();
   const { setTheme } = useTheme();
   const mountedRef = useRef(false);
   const [showUI, setShowUI] = useState(false);
 
-  // Use useRef + requestAnimationFrame to avoid setState-in-effect lint error
   useEffect(() => {
     mountedRef.current = true;
     const raf = requestAnimationFrame(() => {
@@ -36,14 +35,12 @@ function AppContent() {
     };
   }, []);
 
-  // Sync Zustand theme with next-themes
   useEffect(() => {
     if (mountedRef.current) {
       setTheme(storeTheme);
     }
   }, [storeTheme, setTheme]);
 
-  // Request permissions on mount
   useEffect(() => {
     if (mountedRef.current && isAuthenticated) {
       if ('Notification' in window && Notification.permission === 'default') {
@@ -54,18 +51,26 @@ function AppContent() {
 
   if (!showUI) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#F5F5F5]">
-        <div className="w-12 h-12 border-3 border-[#E60000]/30 border-t-[#E60000] rounded-full animate-spin" />
+      <div className="min-h-screen flex items-center justify-center" style={{ background: '#0F0F0F' }}>
+        <motion.div
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          className="flex flex-col items-center"
+        >
+          <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-4" style={{ background: 'linear-gradient(145deg, #E60000 0%, #8B0000 100%)', boxShadow: '0 8px 24px rgba(230,0,0,0.3)' }}>
+            <span className="text-white text-xl font-bold">FH</span>
+          </div>
+          <div className="w-8 h-8 border-2 border-[#E60000]/30 border-t-[#E60000] rounded-full animate-spin" />
+        </motion.div>
       </div>
     );
   }
 
-  // Not authenticated → Show Auth Screen
   if (!isAuthenticated || !user) {
     return <AuthScreen />;
   }
 
-  // Active screen overrides (notifications, KYC, admin)
+  // Full-screen overlays
   if (activeScreen === 'notifications') {
     return (
       <div className="min-h-screen bg-[#F5F5F5] dark:bg-[#0F0F0F] max-w-md mx-auto relative">
@@ -82,7 +87,6 @@ function AppContent() {
     );
   }
 
-  // Admin screen ONLY for admin users
   if (activeScreen === 'admin' && user.role === 'admin') {
     return (
       <div className="min-h-screen bg-[#F5F5F5] dark:bg-[#0F0F0F] max-w-md mx-auto relative">
@@ -91,30 +95,22 @@ function AppContent() {
     );
   }
 
-  // If non-admin tries to access admin, redirect to main
   if (activeScreen === 'admin' && user.role !== 'admin') {
     setActiveScreen('main');
   }
 
-  // Main app with tabs
   const renderScreen = () => {
     switch (activeTab) {
-      case 'home':
-        return <HomeScreen />;
-      case 'services':
-        return <ServicesScreen />;
-      case 'wallet':
-        return <WalletScreen />;
-      case 'account':
-        return <AccountScreen />;
-      default:
-        return <HomeScreen />;
+      case 'home': return <HomeScreen />;
+      case 'services': return <ServicesScreen />;
+      case 'wallet': return <WalletScreen />;
+      case 'account': return <AccountScreen />;
+      default: return <HomeScreen />;
     }
   };
 
   return (
     <div className="min-h-screen bg-[#F5F5F5] dark:bg-[#0F0F0F] max-w-md mx-auto relative">
-      {/* Main Content */}
       <main className="flex-1 overflow-y-auto pb-24">
         <AnimatePresence mode="wait">
           <motion.div
@@ -122,20 +118,15 @@ function AppContent() {
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.2 }}
+            transition={{ duration: 0.15 }}
           >
             {renderScreen()}
           </motion.div>
         </AnimatePresence>
       </main>
 
-      {/* Bottom Navigation */}
       <BottomNav />
-
-      {/* Quick Action Drawer */}
       <QuickActionDrawer />
-
-      {/* Transfer Modal */}
       <TransferModal />
     </div>
   );
