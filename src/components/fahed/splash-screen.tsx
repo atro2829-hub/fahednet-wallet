@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useMemo, useRef } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { LOGO_BASE64 } from '@/lib/logo';
 
@@ -8,238 +8,181 @@ interface SplashScreenProps {
   onComplete: () => void;
 }
 
-// SVG path for the logo outline (simplified geometric wallet/shield shape)
-const LOGO_PATH = 'M40 10 L60 10 Q70 10 70 20 L70 50 Q70 60 60 60 L40 60 Q30 60 30 50 L30 20 Q30 10 40 10 Z';
+// Geometric shapes like Jaib splash screen - diamonds arranged in circle
+const SHAPES_COUNT = 8;
 
 export default function SplashScreen({ onComplete }: SplashScreenProps) {
-  const [phase, setPhase] = useState<'drawing' | 'filling' | 'complete' | 'exiting'>('drawing');
+  const [phase, setPhase] = useState<'loading' | 'logo' | 'complete' | 'exiting'>('loading');
   const [progress, setProgress] = useState(0);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  // Generate particles once
-  const particles = useMemo(() => {
-    const arr = [];
-    for (let i = 0; i < 15; i++) {
-      arr.push({
-        id: i,
-        x: Math.random() * 100,
-        y: Math.random() * 100,
-        size: 2 + Math.random() * 3,
-        delay: Math.random() * 2,
-      });
-    }
-    return arr;
-  }, []);
-
-  // Phase 1: Draw the SVG stroke (0-1500ms)
+  // Phase 1: Loading with geometric shapes (0-2000ms)
   useEffect(() => {
-    const drawDuration = 1500;
+    const loadDuration = 2000;
     const startTime = Date.now();
     const interval = setInterval(() => {
       const elapsed = Date.now() - startTime;
-      const pct = Math.min((elapsed / drawDuration) * 100, 100);
+      const pct = Math.min((elapsed / loadDuration) * 100, 100);
       setProgress(pct);
       if (pct >= 100) {
         clearInterval(interval);
-        setPhase('filling');
+        setPhase('logo');
       }
     }, 16);
     return () => clearInterval(interval);
   }, []);
 
-  // Phase 2: Fill transition (1500-2200ms)
+  // Phase 2: Logo reveal (2000-3000ms)
   useEffect(() => {
-    if (phase !== 'filling') return;
+    if (phase !== 'logo') return;
     const timer = setTimeout(() => {
       setPhase('complete');
-    }, 700);
-    return () => clearTimeout(timer);
-  }, [phase]);
-
-  // Phase 3: Complete - show name (2200-3200ms)
-  useEffect(() => {
-    if (phase !== 'complete') return;
-    const timer = setTimeout(() => {
-      setPhase('exiting');
     }, 1000);
     return () => clearTimeout(timer);
   }, [phase]);
 
-  // Phase 4: Exit transition then call onComplete
+  // Phase 3: Complete (3000-3500ms)
+  useEffect(() => {
+    if (phase !== 'complete') return;
+    const timer = setTimeout(() => {
+      setPhase('exiting');
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [phase]);
+
+  // Phase 4: Exit
   useEffect(() => {
     if (phase !== 'exiting') return;
     const timer = setTimeout(() => {
       onComplete();
-    }, 500);
+    }, 400);
     return () => clearTimeout(timer);
   }, [phase, onComplete]);
-
-  // Calculate stroke-dashoffset for drawing animation
-  const pathLength = 200; // approximate path length
-  const dashOffset = phase === 'drawing'
-    ? pathLength - (pathLength * progress / 100)
-    : 0;
 
   return (
     <AnimatePresence>
       {phase !== 'exiting' ? (
         <motion.div
           className="fixed inset-0 flex flex-col items-center justify-center overflow-hidden"
-          style={{ background: '#0F0F0F' }}
-          exit={{ opacity: 0, scale: 1.05 }}
+          style={{ background: '#FFFFFF' }}
+          exit={{ opacity: 0 }}
           transition={{ duration: 0.4, ease: 'easeInOut' }}
         >
-          {/* Background particles */}
-          <div className="absolute inset-0 pointer-events-none">
-            {particles.map((p) => (
-              <motion.div
-                key={p.id}
-                className="absolute rounded-full"
+          {/* Jaib-style geometric shapes in circular arrangement */}
+          <div className="relative" style={{ width: 200, height: 200 }}>
+            {/* Rotating container */}
+            <motion.div
+              className="absolute inset-0"
+              animate={{ rotate: 360 }}
+              transition={{ duration: 8, repeat: Infinity, ease: 'linear' }}
+            >
+              {Array.from({ length: SHAPES_COUNT }).map((_, i) => {
+                const angle = (i * 360) / SHAPES_COUNT;
+                const rad = (angle * Math.PI) / 180;
+                const radius = 65;
+                const x = 100 + radius * Math.cos(rad);
+                const y = 100 + radius * Math.sin(rad);
+                const delay = i * 0.1;
+
+                return (
+                  <motion.div
+                    key={i}
+                    className="absolute"
+                    style={{
+                      left: x - 15,
+                      top: y - 15,
+                      width: 30,
+                      height: 30,
+                    }}
+                    initial={{ opacity: 0, scale: 0, rotate: 0 }}
+                    animate={{
+                      opacity: phase === 'loading' ? [0, 0.6, 0.3, 0.6] : 0,
+                      scale: [0, 1, 0.8, 1],
+                      rotate: [0, 90, 180, 270],
+                    }}
+                    transition={{
+                      duration: 2,
+                      delay: delay,
+                      repeat: phase === 'loading' ? Infinity : 0,
+                      ease: 'easeInOut',
+                    }}
+                  >
+                    {/* Diamond shape - like Jaib */}
+                    <div
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        background: '#E8E8E8',
+                        borderRadius: 4,
+                        transform: 'rotate(45deg) scale(0.7)',
+                        border: '1.5px solid #D0D0D0',
+                      }}
+                    />
+                  </motion.div>
+                );
+              })}
+            </motion.div>
+
+            {/* Center diamond - larger */}
+            <motion.div
+              className="absolute"
+              style={{ left: 80, top: 80, width: 40, height: 40 }}
+              initial={{ opacity: 0, scale: 0 }}
+              animate={{
+                opacity: phase === 'loading' ? [0, 1, 0.7, 1] : (phase === 'logo' ? 0 : 1),
+                scale: [0, 1, 0.9, 1],
+                rotate: [0, 90, 180, 270],
+              }}
+              transition={{
+                duration: 2,
+                repeat: phase === 'loading' ? Infinity : 0,
+                ease: 'easeInOut',
+              }}
+            >
+              <div
                 style={{
-                  left: `${p.x}%`,
-                  top: `${p.y}%`,
-                  width: p.size,
-                  height: p.size,
-                  background: 'rgba(230, 0, 0, 0.12)',
-                }}
-                initial={{ opacity: 0, scale: 0 }}
-                animate={{
-                  opacity: [0, 0.5, 0],
-                  scale: [0, 1, 0.5],
-                  y: [0, -20, -40],
-                }}
-                transition={{
-                  duration: 3,
-                  delay: p.delay,
-                  repeat: Infinity,
-                  ease: 'easeInOut',
+                  width: '100%',
+                  height: '100%',
+                  background: '#E60000',
+                  borderRadius: 6,
+                  transform: 'rotate(45deg) scale(0.7)',
+                  boxShadow: '0 4px 12px rgba(230,0,0,0.3)',
                 }}
               />
-            ))}
-          </div>
-
-          {/* Subtle radial gradient background */}
-          <div
-            className="absolute inset-0 pointer-events-none"
-            style={{
-              background: 'radial-gradient(circle at 50% 40%, rgba(230,0,0,0.06) 0%, transparent 60%)',
-            }}
-          />
-
-          {/* Logo with stroke drawing animation */}
-          <div className="relative z-10">
-            <motion.div
-              className="relative flex items-center justify-center"
-              style={{ width: 120, height: 120 }}
-            >
-              {/* Background fill that fades in after drawing completes */}
-              <motion.div
-                className="absolute inset-0 rounded-3xl overflow-hidden"
-                initial={{ opacity: 0 }}
-                animate={{
-                  opacity: phase === 'drawing' ? 0 : 1,
-                }}
-                transition={{ duration: 0.6, ease: 'easeOut' }}
-                style={{
-                  background: 'linear-gradient(145deg, #E60000 0%, #8B0000 100%)',
-                  boxShadow: phase !== 'drawing' ? '0 12px 40px rgba(230,0,0,0.4)' : 'none',
-                }}
-              >
-                {/* Logo image inside the filled shape */}
-                <div className="w-full h-full flex items-center justify-center p-5">
-                  <img
-                    src={LOGO_BASE64}
-                    alt="محفظة الجنوب"
-                    className="w-full h-full object-contain"
-                    draggable={false}
-                  />
-                </div>
-              </motion.div>
-
-              {/* SVG stroke outline that draws first */}
-              <svg
-                width="120"
-                height="120"
-                viewBox="0 0 120 120"
-                className="absolute inset-0"
-                style={{ zIndex: phase === 'drawing' ? 10 : 0 }}
-              >
-                <rect
-                  x="4"
-                  y="4"
-                  width="112"
-                  height="112"
-                  rx="24"
-                  ry="24"
-                  fill="none"
-                  stroke="#E60000"
-                  strokeWidth="2"
-                  strokeDasharray={pathLength}
-                  strokeDashoffset={dashOffset}
-                  style={{
-                    transition: 'stroke-dashoffset 0.05s linear',
-                    opacity: phase === 'drawing' ? 1 : 0,
-                  }}
-                />
-              </svg>
-
-              {/* Glow effect during drawing */}
-              {phase === 'drawing' && (
-                <motion.div
-                  className="absolute inset-0 rounded-3xl"
-                  style={{
-                    boxShadow: '0 0 30px rgba(230,0,0,0.3)',
-                  }}
-                  animate={{
-                    boxShadow: [
-                      '0 0 20px rgba(230,0,0,0.2)',
-                      '0 0 40px rgba(230,0,0,0.4)',
-                      '0 0 20px rgba(230,0,0,0.2)',
-                    ],
-                  }}
-                  transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
-                />
-              )}
             </motion.div>
           </div>
 
-          {/* App name - appears after drawing completes */}
+          {/* Logo - appears after loading */}
           <motion.div
-            className="mt-6 relative z-10"
-            initial={{ opacity: 0, y: 10 }}
+            initial={{ opacity: 0, scale: 0.8 }}
             animate={{
-              opacity: phase === 'drawing' ? 0 : 1,
-              y: phase === 'drawing' ? 10 : 0,
+              opacity: phase === 'logo' || phase === 'complete' ? 1 : 0,
+              scale: phase === 'logo' || phase === 'complete' ? 1 : 0.8,
             }}
             transition={{ duration: 0.5, ease: 'easeOut' }}
+            className="absolute flex flex-col items-center"
           >
-            <h1 className="text-2xl font-bold text-white">محفظة الجنوب</h1>
+            <div
+              className="w-20 h-20 rounded-2xl overflow-hidden mb-4"
+              style={{
+                boxShadow: '0 8px 24px rgba(230,0,0,0.3)',
+              }}
+            >
+              <img src={LOGO_BASE64} alt="محفظة الجنوب" className="w-full h-full object-cover" />
+            </div>
+            <h1 className="text-2xl font-bold" style={{ color: '#1a1a1a' }}>محفظة الجنوب</h1>
+            <p className="text-sm mt-1" style={{ color: '#999' }}>محفظتك الرقمية الموثوقة</p>
           </motion.div>
 
-          {/* Tagline */}
-          <motion.p
-            className="mt-2 text-sm relative z-10"
-            style={{ color: 'rgba(255,255,255,0.35)' }}
-            initial={{ opacity: 0, y: 5 }}
-            animate={{
-              opacity: phase === 'drawing' ? 0 : 1,
-              y: phase === 'drawing' ? 5 : 0,
-            }}
-            transition={{ duration: 0.5, delay: 0.2, ease: 'easeOut' }}
-          >
-            محفظتك الرقمية الموثوقة
-          </motion.p>
-
           {/* Loading bar */}
-          <div className="absolute bottom-12 left-10 right-10 z-10">
+          <div className="absolute bottom-16 left-12 right-12">
             <div
               className="h-[3px] rounded-full overflow-hidden"
-              style={{ background: 'rgba(255,255,255,0.06)' }}
+              style={{ background: 'rgba(0,0,0,0.06)' }}
             >
               <motion.div
                 className="h-full rounded-full"
                 style={{
-                  background: 'linear-gradient(90deg, #E60000, #FF3333, #E60000)',
+                  background: '#E60000',
                   width: `${progress}%`,
                 }}
                 transition={{ duration: 0.05 }}
@@ -250,7 +193,7 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
       ) : (
         <motion.div
           className="fixed inset-0"
-          style={{ background: '#0F0F0F' }}
+          style={{ background: '#FFFFFF' }}
           initial={{ opacity: 1 }}
           animate={{ opacity: 0 }}
           transition={{ duration: 0.4, ease: 'easeInOut' }}

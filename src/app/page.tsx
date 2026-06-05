@@ -24,6 +24,9 @@ import PromoScreen from '@/components/fahed/promo-screen';
 import QRScreen from '@/components/fahed/qr-screen';
 import EditProfileScreen from '@/components/fahed/edit-profile-screen';
 import SplitScreen from '@/components/fahed/split-screen';
+import SubscriptionsScreen from '@/components/fahed/subscriptions-screen';
+import ChargingCompaniesScreen from '@/components/fahed/charging-companies-screen';
+import SettingsScreen from '@/components/fahed/settings-screen';
 import BottomNav from '@/components/fahed/bottom-nav';
 import QuickActionDrawer from '@/components/fahed/quick-action-drawer';
 import TransferModal from '@/components/fahed/transfer-modal';
@@ -66,7 +69,6 @@ function AppContent() {
     }
   }, [isAuthenticated]);
 
-  // Splash screen completion handler
   const handleSplashComplete = () => {
     if (isAuthenticated && pinCode) {
       setPhase('pin');
@@ -75,12 +77,10 @@ function AppContent() {
     }
   };
 
-  // PIN unlock handler
   const handlePinUnlock = () => {
     setPhase('main');
   };
 
-  // When auth state changes, update phase if still in splash/pin
   useEffect(() => {
     if (phase === 'main' && !isAuthenticated) {
       // User logged out, stay on main (which shows auth screen)
@@ -120,98 +120,29 @@ function AppContent() {
   }
 
   // Full-screen overlays
-  if (activeScreen === 'notifications') {
-    return (
-      <div className="min-h-screen bg-[#F5F5F5] dark:bg-[#0F0F0F] max-w-md mx-auto relative">
-        <NotificationsScreen />
-      </div>
-    );
-  }
+  const overlayScreens: Record<string, React.ComponentType> = {
+    notifications: NotificationsScreen,
+    kyc: KycScreen,
+    admin: AdminScreen,
+    orders: OrdersScreen,
+    deposit: DepositScreen,
+    savings: SavingsScreen,
+    support: SupportScreen,
+    exchange: ExchangeScreen,
+    promo: PromoScreen,
+    qr: QRScreen,
+    'edit-profile': EditProfileScreen,
+    split: SplitScreen,
+    subscriptions: SubscriptionsScreen,
+    'charging-companies': ChargingCompaniesScreen,
+    settings: SettingsScreen,
+  };
 
-  if (activeScreen === 'kyc') {
+  if (activeScreen in overlayScreens) {
+    const OverlayComponent = overlayScreens[activeScreen];
     return (
       <div className="min-h-screen bg-[#F5F5F5] dark:bg-[#0F0F0F] max-w-md mx-auto relative">
-        <KycScreen />
-      </div>
-    );
-  }
-
-  if (activeScreen === 'admin') {
-    return (
-      <div className="min-h-screen bg-[#F5F5F5] dark:bg-[#0F0F0F] max-w-md mx-auto relative">
-        <AdminScreen />
-      </div>
-    );
-  }
-
-  if (activeScreen === 'orders') {
-    return (
-      <div className="min-h-screen bg-[#F5F5F5] dark:bg-[#0F0F0F] max-w-md mx-auto relative">
-        <OrdersScreen />
-      </div>
-    );
-  }
-
-  if (activeScreen === 'deposit') {
-    return (
-      <div className="min-h-screen bg-[#F5F5F5] dark:bg-[#0F0F0F] max-w-md mx-auto relative">
-        <DepositScreen />
-      </div>
-    );
-  }
-
-  if (activeScreen === 'savings') {
-    return (
-      <div className="min-h-screen bg-[#F5F5F5] dark:bg-[#0F0F0F] max-w-md mx-auto relative">
-        <SavingsScreen />
-      </div>
-    );
-  }
-
-  if (activeScreen === 'support') {
-    return (
-      <div className="min-h-screen bg-[#F5F5F5] dark:bg-[#0F0F0F] max-w-md mx-auto relative">
-        <SupportScreen />
-      </div>
-    );
-  }
-
-  if (activeScreen === 'exchange') {
-    return (
-      <div className="min-h-screen bg-[#F5F5F5] dark:bg-[#0F0F0F] max-w-md mx-auto relative">
-        <ExchangeScreen />
-      </div>
-    );
-  }
-
-  if (activeScreen === 'promo') {
-    return (
-      <div className="min-h-screen bg-[#F5F5F5] dark:bg-[#0F0F0F] max-w-md mx-auto relative">
-        <PromoScreen />
-      </div>
-    );
-  }
-
-  if (activeScreen === 'qr') {
-    return (
-      <div className="min-h-screen bg-[#F5F5F5] dark:bg-[#0F0F0F] max-w-md mx-auto relative">
-        <QRScreen />
-      </div>
-    );
-  }
-
-  if (activeScreen === 'edit-profile') {
-    return (
-      <div className="min-h-screen bg-[#F5F5F5] dark:bg-[#0F0F0F] max-w-md mx-auto relative">
-        <EditProfileScreen />
-      </div>
-    );
-  }
-
-  if (activeScreen === 'split') {
-    return (
-      <div className="min-h-screen bg-[#F5F5F5] dark:bg-[#0F0F0F] max-w-md mx-auto relative">
-        <SplitScreen />
+        <OverlayComponent />
       </div>
     );
   }

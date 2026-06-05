@@ -1,17 +1,19 @@
 'use client';
 
 import { useTheme } from 'next-themes';
-import { Home, Grid3X3, Wallet, User, Plus } from 'lucide-react';
+import { Home, Menu, ShoppingCart, User, Plus } from 'lucide-react';
 import { useAppStore } from '@/lib/store';
 import { motion } from 'framer-motion';
 
 type TabType = 'home' | 'services' | 'wallet' | 'account';
 
+// Jaib-style bottom nav: 5 items + center FAB
+// الرئيسية | القائمة | [+FAB] | الطلبات | الحساب
 const tabs: { id: TabType; label: string; icon: typeof Home }[] = [
   { id: 'home', label: 'الرئيسية', icon: Home },
-  { id: 'services', label: 'الخدمات', icon: Grid3X3 },
-  { id: 'wallet', label: 'المحفظة', icon: Wallet },
-  { id: 'account', label: 'حسابي', icon: User },
+  { id: 'services', label: 'القائمة', icon: Menu },
+  { id: 'wallet', label: 'الطلبات', icon: ShoppingCart },
+  { id: 'account', label: 'الحساب', icon: User },
 ];
 
 export default function BottomNav() {
@@ -34,7 +36,7 @@ export default function BottomNav() {
         className="flex items-end justify-around px-1 pt-1 safe-bottom relative"
         style={{ paddingBottom: 'max(env(safe-area-inset-bottom, 0px), 12px)', height: 68 }}
       >
-        {/* Left tabs (Home + Services) */}
+        {/* Left tabs (Home + Menu) */}
         {tabs.slice(0, 2).map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -94,7 +96,7 @@ export default function BottomNav() {
           </motion.button>
         </div>
 
-        {/* Right tabs (Wallet + Account) */}
+        {/* Right tabs (Orders + Account) */}
         {tabs.slice(2, 4).map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;

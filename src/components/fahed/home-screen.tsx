@@ -16,12 +16,24 @@ import {
   ArrowDownLeft,
   Wifi,
   Heart,
-  Target,
   Plus,
   ChevronLeft,
   RefreshCw,
   Sparkles,
   Clock,
+  Zap,
+  CreditCard,
+  Smartphone,
+  Gamepad2,
+  ShoppingBag,
+  Shield,
+  Wallet,
+  ArrowRightLeft,
+  Phone,
+  Globe,
+  Receipt,
+  FileText,
+  ChevronRight,
 } from 'lucide-react';
 import { useAppStore } from '@/lib/store';
 import { formatBalance, formatNumber, currencySymbols, currencyNames, currencyBadgeColors, timeAgo, transactionTypeLabels, transactionTypeColors } from '@/lib/utils';
@@ -46,11 +58,17 @@ const balanceCards: BalanceCard[] = [
   { currency: 'USD', accentColor: '#E60000', patternColor: 'rgba(255,255,255,0.08)' },
 ];
 
-const quickActions = [
-  { id: 'send', label: 'تحويل', icon: Send, color: '#E60000', bgColor: 'rgba(230,0,0,0.08)' },
-  { id: 'receive', label: 'استقبال', icon: Download, color: '#10B981', bgColor: 'rgba(16,185,129,0.08)' },
-  { id: 'qr', label: 'مسح QR', icon: QrCode, color: '#3B82F6', bgColor: 'rgba(37,99,235,0.08)' },
-  { id: 'request', label: 'طلب أموال', icon: HandCoins, color: '#8B5CF6', bgColor: 'rgba(139,92,246,0.08)' },
+// Jaib-style services - 9 items matching exactly what Jaib shows
+const homeServices = [
+  { id: 'instant-pay', label: 'المدفوعات الفورية', icon: Zap, color: '#E60000', bgColor: 'rgba(230,0,0,0.08)' },
+  { id: 'transfer', label: 'تحويل الأموال', icon: Send, color: '#E60000', bgColor: 'rgba(230,0,0,0.08)' },
+  { id: 'wallet-transfer', label: 'تحويل لمحفظة', icon: ArrowRightLeft, color: '#2563EB', bgColor: 'rgba(37,99,235,0.08)' },
+  { id: 'recharge', label: 'شحن رصيد', icon: Phone, color: '#E60000', bgColor: 'rgba(230,0,0,0.08)' },
+  { id: 'app-store', label: 'متجر التطبيقات', icon: ShoppingBag, color: '#2563EB', bgColor: 'rgba(37,99,235,0.08)' },
+  { id: 'instant-charge', label: 'شحن فوري', icon: Smartphone, color: '#2563EB', bgColor: 'rgba(37,99,235,0.08)' },
+  { id: 'health', label: 'صحة', icon: Shield, color: '#2563EB', bgColor: 'rgba(37,99,235,0.08)' },
+  { id: 'games', label: 'ألعاب أونلاين', icon: Gamepad2, color: '#E60000', bgColor: 'rgba(230,0,0,0.08)' },
+  { id: 'digital-wallet', label: 'المحفظة الرقمية', icon: Wallet, color: '#2563EB', bgColor: 'rgba(37,99,235,0.08)' },
 ];
 
 const promoItems = [
@@ -187,14 +205,6 @@ export default function HomeScreen() {
     }, 3000);
   };
 
-  // Pull to refresh
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const handleRefresh = async () => {
-    setIsRefreshing(true);
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    setIsRefreshing(false);
-  };
-
   // Promo rotation
   useEffect(() => {
     const interval = setInterval(() => {
@@ -203,9 +213,8 @@ export default function HomeScreen() {
     return () => clearInterval(interval);
   }, []);
 
-  // Card dimensions per Jaib spec
   const CARD_GAP = 12;
-  const CARD_SIDE_PADDING = 32; // paddingHorizontal to show side cards
+  const CARD_SIDE_PADDING = 32;
 
   useEffect(() => {
     const updateWidth = () => {
@@ -219,7 +228,6 @@ export default function HomeScreen() {
   }, []);
 
   const getCardWidth = useCallback(() => {
-    // 78% of container width (75-80% per spec)
     return containerWidth * 0.78;
   }, [containerWidth]);
 
@@ -242,13 +250,9 @@ export default function HomeScreen() {
   const unreadNotifCount = notifications.filter(n => !n.isRead).length;
   const recentTx = transactions.slice(0, 5);
 
-  // Flash deal countdown
   const flashDealEnd = useRef(new Date(Date.now() + 6 * 60 * 60 * 1000));
 
-  // Filtered providers for services grid - show all active, no category filter
-  const allProviders = providers.filter(p => p.isActive);
-
-  // Snap to a specific card index
+  // Snap to card
   const snapToCard = useCallback((index: number) => {
     const clamped = Math.max(0, Math.min(index, balanceCards.length - 1));
     setActiveCardIndex(clamped);
@@ -343,25 +347,32 @@ export default function HomeScreen() {
     prevTranslate.current = 0;
   }, []);
 
-  const handleQuickAction = (id: string) => {
-    switch (id) {
-      case 'send': setTransferOpen(true); break;
-      case 'receive': setDrawerOpen(true); break;
-      case 'qr': setDrawerOpen(true); break;
-      case 'request': setRequestMoneyOpen(true); break;
+  const handleServiceClick = (serviceId: string) => {
+    switch (serviceId) {
+      case 'transfer':
+        setTransferOpen(true);
+        break;
+      case 'recharge':
+        useAppStore.getState().setActiveTab('services');
+        break;
+      case 'wallet-transfer':
+        setTransferOpen(true);
+        break;
+      case 'games':
+        useAppStore.getState().setActiveTab('services');
+        break;
+      default:
+        useAppStore.getState().setActiveTab('services');
+        break;
     }
-  };
-
-  const handleProviderClick = (provider: { id: string; name: string; color: string; icon: string; categoryId: string; isActive: boolean; inputLabel: string; inputType: 'phone' | 'text'; inputPrefix?: string }) => {
-    setSelectedProvider(provider);
-    setOrderOpen(true);
-    useAppStore.getState().addRecentService(provider.id);
   };
 
   return (
     <div className="pb-4">
       {/* ========================================
-          HEADER - Clean Jaib Style (60-70px)
+          HEADER - Jaib Style
+          Right: Greeting + Name
+          Left: Notifications bell + Support
           ======================================== */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
@@ -369,14 +380,12 @@ export default function HomeScreen() {
         transition={{ duration: 0.4 }}
         className="px-4 pt-4 pb-2"
       >
-        <div className="flex items-center justify-between" style={{ height: 60 }}>
+        <div className="flex items-center justify-between" style={{ height: 56 }}>
+          {/* Right side - Logo + Greeting */}
           <div className="flex items-center gap-3">
-            {/* Logo */}
             <div
               className="w-10 h-10 rounded-xl overflow-hidden"
-              style={{
-                boxShadow: '0 2px 8px rgba(230,0,0,0.15)',
-              }}
+              style={{ boxShadow: '0 2px 8px rgba(230,0,0,0.15)' }}
             >
               <img src={LOGO_BASE64} alt="الجنوب" className="w-full h-full object-cover" />
             </div>
@@ -387,13 +396,13 @@ export default function HomeScreen() {
               <p className="text-[11px]" style={{ color: isDark ? '#666' : '#999' }}>محفظة الجنوب</p>
             </button>
           </div>
+
+          {/* Left side - Notifications + Support */}
           <div className="flex items-center gap-2">
             <button
               onClick={() => setActiveScreen('notifications')}
               className="relative w-10 h-10 rounded-xl flex items-center justify-center"
-              style={{
-                background: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)',
-              }}
+              style={{ background: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)' }}
             >
               <Bell size={20} strokeWidth={1.5} color={isDark ? '#CCC' : '#666'} />
               {unreadNotifCount > 0 && (
@@ -408,9 +417,7 @@ export default function HomeScreen() {
             <button
               onClick={() => setActiveScreen('support')}
               className="w-10 h-10 rounded-xl flex items-center justify-center"
-              style={{
-                background: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)',
-              }}
+              style={{ background: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)' }}
             >
               <Headphones size={20} strokeWidth={1.5} color={isDark ? '#CCC' : '#666'} />
             </button>
@@ -420,8 +427,7 @@ export default function HomeScreen() {
 
       {/* ========================================
           BALANCE CARD CAROUSEL - Jaib Style
-          Card: 78% width, 12px gap, 20px radius
-          Container: 32px side padding to show edges
+          Red card with "رصيدك" text + eye toggle
           ======================================== */}
       <div className="relative z-20">
         <div
@@ -440,9 +446,7 @@ export default function HomeScreen() {
             onMouseDown={handleTouchStart}
             onMouseMove={handleTouchMove}
             onMouseUp={handleTouchEnd}
-            onMouseLeave={() => {
-              if (isDragging.current) handleTouchEnd();
-            }}
+            onMouseLeave={() => { if (isDragging.current) handleTouchEnd(); }}
           >
             {balanceCards.map((card, index) => (
               <div
@@ -450,7 +454,7 @@ export default function HomeScreen() {
                 className="shrink-0 relative overflow-hidden select-none"
                 style={{
                   width: getCardWidth(),
-                  height: 200,
+                  height: 190,
                   borderRadius: 20,
                   background: index === activeCardIndex
                     ? `linear-gradient(145deg, ${ACTIVE_GRADIENT} 0%, ${ACTIVE_GRADIENT_END} 100%)`
@@ -465,18 +469,9 @@ export default function HomeScreen() {
                 onClick={() => snapToCard(index)}
                 dir="rtl"
               >
-                {/* Logo Watermark - transparent icon */}
-                <img
-                  src={LOGO_BASE64}
-                  alt=""
-                  className="absolute bottom-1 left-1 w-24 h-24 object-contain opacity-[0.04] pointer-events-none select-none"
-                  aria-hidden="true"
-                />
-
-                {/* Shimmer effect */}
+                {/* Logo Watermark */}
+                <img src={LOGO_BASE64} alt="" className="absolute bottom-1 left-1 w-24 h-24 object-contain opacity-[0.04] pointer-events-none select-none" aria-hidden="true" />
                 <div className="absolute inset-0 shimmer pointer-events-none" />
-
-                {/* Card SVG Dot Pattern */}
                 <svg className="absolute inset-0 w-full h-full" xmlns="http://www.w3.org/2000/svg">
                   <defs>
                     <pattern id={`grid-${card.currency}`} width="40" height="40" patternUnits="userSpaceOnUse">
@@ -485,19 +480,15 @@ export default function HomeScreen() {
                   </defs>
                   <rect width="100%" height="100%" fill={`url(#grid-${card.currency})`} />
                 </svg>
-
-                {/* Decorative circles */}
                 <div className="absolute -top-16 -right-16 w-40 h-40 rounded-full" style={{ background: 'rgba(255,255,255,0.05)' }} />
                 <div className="absolute -bottom-10 -left-10 w-32 h-32 rounded-full" style={{ background: 'rgba(255,255,255,0.03)' }} />
-
-                {/* Decorative wave line */}
                 <svg className="absolute bottom-0 left-0 w-full" viewBox="0 0 300 40" preserveAspectRatio="none" style={{ height: '35px' }}>
                   <path d="M0,30 C50,10 100,40 150,25 C200,10 250,35 300,20 L300,40 L0,40 Z" fill="rgba(255,255,255,0.03)" />
                 </svg>
 
-                {/* Card Content */}
+                {/* Card Content - Jaib Layout */}
                 <div className="relative z-10 h-full flex flex-col justify-between p-5">
-                  {/* Top Row */}
+                  {/* Top Row - Logo + Eye */}
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <div className="w-8 h-6 rounded flex items-center justify-center" style={{ background: 'rgba(255,255,255,0.15)' }}>
@@ -520,33 +511,26 @@ export default function HomeScreen() {
                   {/* Chip + Currency */}
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-7 rounded-md" style={{ background: 'linear-gradient(135deg, rgba(255,215,0,0.4) 0%, rgba(255,215,0,0.2) 100%)', border: '1px solid rgba(255,215,0,0.2)' }} />
-                    <span
-                      className="text-[10px] px-2 py-0.5 rounded font-bold text-white"
-                      style={{ background: currencyBadgeColors[card.currency] }}
-                    >
+                    <span className="text-[10px] px-2 py-0.5 rounded font-bold text-white" style={{ background: currencyBadgeColors[card.currency] }}>
                       {card.currency}
                     </span>
                     <span className="text-white/40 text-[10px]">{currencyNames[card.currency]}</span>
                   </div>
 
-                  {/* Bottom Row - Account + Balance */}
+                  {/* Balance - "رصيدك" label per Jaib */}
                   <div>
-                    <p className="text-white/30 text-[10px] mb-0.5">رقم الحساب</p>
-                    <p className="text-white text-xs font-bold tracking-[0.15em]" dir="ltr">
+                    <p className="text-white/50 text-[11px] mb-0.5">رصيدك</p>
+                    <AnimatedBalance amount={getBalance(card.currency)} currency={card.currency} visible={balanceVisible} />
+                    <p className="text-white/30 text-[10px] mt-0.5" dir="ltr">
                       {user?.userId || '------'}
                     </p>
-                    <div className="mt-1.5">
-                      <AnimatedBalance amount={getBalance(card.currency)} currency={card.currency} visible={balanceVisible} />
-                    </div>
                   </div>
                 </div>
               </div>
             ))}
           </div>
 
-          {/* Pagination Dots - Jaib Style
-              Inactive: 6px circle gray
-              Active: 14px x 6px rounded rect, red */}
+          {/* Pagination Dots */}
           <div className="flex items-center justify-center gap-2 mt-4" dir="rtl">
             {balanceCards.map((_, index) => (
               <motion.button
@@ -566,80 +550,31 @@ export default function HomeScreen() {
       </div>
 
       {/* ========================================
-          QUICK ACTIONS ROW - Clean pill buttons
+          PROMO BANNER - Jaib Style
           ======================================== */}
       <motion.div
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.15, duration: 0.4 }}
-        className="px-4 mt-5"
-      >
-        <div className="flex justify-between gap-2">
-          {quickActions.map((action, index) => {
-            const Icon = action.icon;
-            return (
-              <motion.button
-                key={action.id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.05 * index }}
-                onClick={() => handleQuickAction(action.id)}
-                className="flex-1 flex flex-col items-center gap-2 py-3 card-press"
-              >
-                <div
-                  className="w-12 h-12 rounded-2xl flex items-center justify-center"
-                  style={{ background: action.bgColor }}
-                >
-                  <Icon size={22} strokeWidth={1.5} color={action.color} />
-                </div>
-                <span className="text-[11px] font-medium" style={{ color: isDark ? '#AAA' : '#666' }}>
-                  {action.label}
-                </span>
-              </motion.button>
-            );
-          })}
-        </div>
-      </motion.div>
-
-      {/* ========================================
-          PROMO BANNER - Jaib Style
-          Height: 80-100px, borderRadius: 16px
-          ======================================== */}
-      <motion.div
-        initial={{ opacity: 0, y: 15 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.25, duration: 0.4 }}
-        className="px-4 mt-5"
+        className="px-4 mt-4"
       >
         <div
           className="rounded-2xl relative overflow-hidden"
           style={{
-            height: 96,
+            height: 90,
             background: 'linear-gradient(145deg, #E60000 0%, #8B0000 60%, #5C0000 100%)',
             borderRadius: 16,
             boxShadow: '0 4px 16px rgba(230,0,0,0.2)',
           }}
         >
-          {/* Decorative circles */}
           <div className="absolute -top-8 -right-8 w-28 h-28 rounded-full" style={{ background: 'rgba(255,255,255,0.06)' }} />
           <div className="absolute -bottom-6 -left-6 w-24 h-24 rounded-full" style={{ background: 'rgba(255,255,255,0.04)' }} />
-          <div className="absolute top-4 left-16 w-12 h-12 rounded-full" style={{ background: 'rgba(255,255,255,0.04)' }} />
-
-          {/* Logo watermark on banner */}
-          <img
-            src={LOGO_BASE64}
-            alt=""
-            className="absolute left-2 bottom-1 w-20 h-20 object-contain opacity-[0.06] pointer-events-none"
-            aria-hidden="true"
-          />
+          <img src={LOGO_BASE64} alt="" className="absolute left-2 bottom-1 w-20 h-20 object-contain opacity-[0.06] pointer-events-none" aria-hidden="true" />
 
           <div className="relative z-10 h-full flex items-center px-4">
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-1.5">
-                <span
-                  className="text-[9px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1"
-                  style={{ background: 'rgba(255,255,255,0.2)', color: '#FFF' }}
-                >
+                <span className="text-[9px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1" style={{ background: 'rgba(255,255,255,0.2)', color: '#FFF' }}>
                   <Sparkles size={8} />
                   عرض خاص
                 </span>
@@ -648,7 +583,6 @@ export default function HomeScreen() {
                   محدود
                 </span>
               </div>
-
               <AnimatePresence mode="wait">
                 <motion.div
                   key={promoIndex}
@@ -657,47 +591,32 @@ export default function HomeScreen() {
                   exit={{ opacity: 0, x: -20 }}
                   transition={{ duration: 0.3 }}
                 >
-                  <h3 className="font-bold text-[13px] text-white leading-tight">
-                    {promoItems[promoIndex].title}
-                  </h3>
-                  <p className="text-[11px] mt-0.5 text-white/50">
-                    {promoItems[promoIndex].desc}
-                  </p>
+                  <h3 className="font-bold text-[13px] text-white leading-tight">{promoItems[promoIndex].title}</h3>
+                  <p className="text-[11px] mt-0.5 text-white/50">{promoItems[promoIndex].desc}</p>
                 </motion.div>
               </AnimatePresence>
             </div>
-
-            {/* Countdown */}
             <div className="shrink-0 mr-2">
               <CountdownTimer targetDate={flashDealEnd.current} />
             </div>
           </div>
 
-          {/* Promo indicators */}
           <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex items-center gap-1">
             {promoItems.map((_, i) => (
-              <div
-                key={i}
-                className="h-[3px] rounded-full transition-all duration-300"
-                style={{
-                  width: i === promoIndex ? 12 : 4,
-                  background: i === promoIndex ? 'rgba(255,255,255,0.8)' : 'rgba(255,255,255,0.25)',
-                }}
-              />
+              <div key={i} className="h-[3px] rounded-full transition-all duration-300" style={{ width: i === promoIndex ? 12 : 4, background: i === promoIndex ? 'rgba(255,255,255,0.8)' : 'rgba(255,255,255,0.25)' }} />
             ))}
           </div>
         </div>
       </motion.div>
 
       {/* ========================================
-          SERVICES GRID - Jaib Style
-          3 columns, square items, white bg
-          borderRadius: 16px, icon: 28px, text: 12px
+          SERVICES GRID - Jaib Style (3x3)
+          Red + Blue icon colors matching Jaib
           ======================================== */}
       <motion.div
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.35, duration: 0.4 }}
+        transition={{ delay: 0.25, duration: 0.4 }}
         className="px-4 mt-5"
       >
         <div className="flex items-center justify-between mb-3">
@@ -707,60 +626,34 @@ export default function HomeScreen() {
             className="text-xs font-medium flex items-center gap-0.5"
             style={{ color: '#E60000' }}
           >
-            عرض الكل
+            المزيد
             <ChevronLeft size={14} strokeWidth={1.5} />
           </button>
         </div>
 
-        {/* 3-column Grid - Jaib spec */}
         <div className="grid grid-cols-3 gap-3">
-          {allProviders.slice(0, 9).map((provider, index) => {
-            const isFav = favorites.includes(provider.id);
+          {homeServices.map((service, index) => {
+            const Icon = service.icon;
             return (
               <motion.button
-                key={provider.id}
+                key={service.id}
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.03 * index }}
-                onClick={() => handleProviderClick(provider)}
-                className="flex flex-col items-center justify-center gap-2 py-4 px-2 card-press relative"
+                onClick={() => handleServiceClick(service.id)}
+                className="flex flex-col items-center justify-center gap-2 py-4 px-2 card-press"
                 style={{
                   background: isDark ? '#1A1A1A' : '#FFFFFF',
                   borderRadius: 16,
                   border: `1px solid ${isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.05)'}`,
                   boxShadow: isDark ? 'none' : '0 1px 3px rgba(0,0,0,0.04)',
-                  aspectRatio: '1 / 0.95',
                 }}
               >
-                {/* Favorite heart */}
-                <button
-                  onClick={(e) => { e.stopPropagation(); toggleFavorite(provider.id); }}
-                  className="absolute top-1.5 left-1.5 z-10"
-                >
-                  <Heart
-                    size={10}
-                    fill={isFav ? '#E60000' : 'none'}
-                    color={isFav ? '#E60000' : (isDark ? '#333' : '#DDD')}
-                    strokeWidth={2}
-                  />
-                </button>
-
-                {/* Provider Icon - 28-32px per spec */}
-                {provider.icon && provider.icon.startsWith('data:') ? (
-                  <img src={provider.icon} alt={provider.name} className="w-7 h-7 rounded-lg object-cover" />
-                ) : (
-                  <div
-                    className="w-10 h-10 rounded-xl flex items-center justify-center"
-                    style={{ background: `${provider.color}12` }}
-                  >
-                    <span className="font-bold text-sm" style={{ color: provider.color }}>
-                      {provider.name.charAt(0)}
-                    </span>
-                  </div>
-                )}
-                {/* Text: 12px, max 2 lines */}
+                <div className="w-11 h-11 rounded-xl flex items-center justify-center" style={{ background: service.bgColor }}>
+                  <Icon size={22} strokeWidth={1.5} color={service.color} />
+                </div>
                 <span
-                  className="text-[12px] font-medium text-center leading-tight max-w-[90px]"
+                  className="text-[11px] font-medium text-center leading-tight max-w-[85px]"
                   style={{
                     color: isDark ? '#CCC' : '#444',
                     display: '-webkit-box',
@@ -769,7 +662,7 @@ export default function HomeScreen() {
                     overflow: 'hidden',
                   }}
                 >
-                  {provider.name}
+                  {service.label}
                 </span>
               </motion.button>
             );
@@ -778,16 +671,17 @@ export default function HomeScreen() {
       </motion.div>
 
       {/* ========================================
-          RECENT TRANSACTIONS
+          RECENT TRANSACTIONS - Jaib Style
+          Green for incoming, Red for outgoing
           ======================================== */}
       <motion.div
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.45, duration: 0.4 }}
+        transition={{ delay: 0.35, duration: 0.4 }}
         className="px-4 mt-5"
       >
         <div className="flex items-center justify-between mb-3">
-          <h3 className="text-sm font-bold" style={{ color: isDark ? '#FFFFFF' : '#1a1a1a' }}>آخر المعاملات</h3>
+          <h3 className="text-sm font-bold" style={{ color: isDark ? '#FFFFFF' : '#1a1a1a' }}>العمليات</h3>
           <button
             onClick={() => useAppStore.getState().setActiveTab('wallet')}
             className="text-xs font-medium flex items-center gap-0.5"
@@ -823,20 +717,17 @@ export default function HomeScreen() {
                   initial={{ opacity: 0, x: -15 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.04 * index }}
-                  className="flex items-center gap-3 p-3 rounded-2xl card-press"
+                  className="flex items-center gap-3 p-3 rounded-2xl"
                   style={{
                     background: isDark ? '#1A1A1A' : '#FFFFFF',
                     border: `1px solid ${isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.05)'}`,
                   }}
                 >
-                  <div
-                    className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-                    style={{ background: `${txColor}10` }}
-                  >
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: `${txColor}10` }}>
                     {isIncoming ? (
-                      <ArrowDownLeft size={18} strokeWidth={1.5} color={txColor} />
+                      <ArrowDownLeft size={18} strokeWidth={1.5} color="#10B981" />
                     ) : (
-                      <ArrowUpRight size={18} strokeWidth={1.5} color={txColor} />
+                      <ArrowUpRight size={18} strokeWidth={1.5} color="#E60000" />
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
@@ -852,10 +743,7 @@ export default function HomeScreen() {
                       {isIncoming ? '+' : '-'}{tx.amount.toLocaleString()}
                     </p>
                     <div className="flex justify-end mt-0.5">
-                      <span
-                        className="text-[9px] px-1.5 py-0.5 rounded font-bold text-white"
-                        style={{ background: currencyBadgeColors[tx.currency] || '#666' }}
-                      >
+                      <span className="text-[9px] px-1.5 py-0.5 rounded font-bold text-white" style={{ background: currencyBadgeColors[tx.currency] || '#666' }}>
                         {tx.currency}
                       </span>
                     </div>
