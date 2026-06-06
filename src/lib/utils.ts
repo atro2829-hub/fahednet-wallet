@@ -142,10 +142,11 @@ export const orderTimelineSteps = [
 ];
 
 // Currency exchange default rates
+// 1 USD = 1550 YER, 1 SAR = 410 YER
 export const defaultExchangeRates = {
   YER: 1,
-  SAR: 0.037,
-  USD: 0.0099,
+  SAR: 410,
+  USD: 1550,
 };
 
 // Support FAQ

@@ -21,7 +21,7 @@ import { ref, set, get, update, remove, push, onValue } from 'firebase/database'
 import { database } from '@/lib/firebase';
 import { LOGO_BASE64 } from '@/lib/logo';
 
-type AdminTab = 'overview' | 'orders' | 'users' | 'deposit' | 'withdraw' | 'kyc' | 'banks' | 'exchangeRates' | 'products' | 'providers' | 'codes' | 'settings';
+type AdminTab = 'overview' | 'orders' | 'users' | 'deposit' | 'withdraw' | 'kyc' | 'banks' | 'exchangeRates' | 'products' | 'providers' | 'codes' | 'banners' | 'settings';
 
 interface FirebaseUser {
   id: string;
@@ -90,6 +90,17 @@ interface BankAccount {
   isActive: boolean;
 }
 
+interface Banner {
+  id: string;
+  title: string;
+  description: string;
+  imageUrl: string;
+  isActive: boolean;
+  order: number;
+  link?: string;
+  createdAt: string;
+}
+
 interface AdminExchangeRates {
   YERtoSAR: number;
   YERtoUSD: number;
@@ -101,12 +112,12 @@ interface AdminExchangeRates {
 }
 
 const defaultAdminExchangeRates: AdminExchangeRates = {
-  YERtoSAR: 0.037,
-  YERtoUSD: 0.0099,
-  SARtoYER: 26.5,
-  SARtoUSD: 0.266,
-  USDtoYER: 530,
-  USDtoSAR: 3.75,
+  YERtoSAR: 1/410,
+  YERtoUSD: 1/1550,
+  SARtoYER: 410,
+  SARtoUSD: 410/1550,
+  USDtoYER: 1550,
+  USDtoSAR: 1550/410,
   commission: 2,
 };
 
@@ -181,6 +192,13 @@ export default function AdminScreen() {
   const [showAddBank, setShowAddBank] = useState(false);
   const [editingBank, setEditingBank] = useState<string | null>(null);
   const [newBank, setNewBank] = useState({ bankName: '', accountHolderName: '', accountNumber: '', color: '#E60000' });
+
+  // Banners
+  const [banners, setBanners] = useState<Banner[]>([]);
+  const [showAddBanner, setShowAddBanner] = useState(false);
+  const [newBanner, setNewBanner] = useState({ title: '', description: '', imageUrl: '', link: '', order: 0 });
+  const [editingBanner, setEditingBanner] = useState<string | null>(null);
+  const bannerFileInputRef = useRef<HTMLInputElement>(null);
 
   // Exchange Rates (admin section)
   const [adminExchangeRates, setAdminExchangeRates] = useState<AdminExchangeRates>(defaultAdminExchangeRates);
@@ -300,6 +318,30 @@ export default function AdminScreen() {
       if (snapshot.exists()) {
         const data = snapshot.val() as AdminExchangeRates;
         setAdminExchangeRates({ ...defaultAdminExchangeRates, ...data });
+      }
+    });
+    return () => unsubscribe();
+  }, []);
+
+  // Listen to banners from Firebase
+  useEffect(() => {
+    const bannersRef = ref(database, 'adminSettings/banners');
+    const unsubscribe = onValue(bannersRef, (snapshot) => {
+      if (snapshot.exists()) {
+        const data = snapshot.val();
+        const bannersList = Object.entries(data).map(([key, val]: [string, any]) => ({
+          id: key,
+          title: val.title || '',
+          description: val.description || '',
+          imageUrl: val.imageUrl || '',
+          isActive: val.isActive !== false,
+          order: val.order || 0,
+          link: val.link || '',
+          createdAt: val.createdAt || new Date().toISOString(),
+        }));
+        setBanners(bannersList.sort((a, b) => a.order - b.order));
+      } else {
+        setBanners([]);
       }
     });
     return () => unsubscribe();
@@ -599,6 +641,67 @@ export default function AdminScreen() {
     addAuditEntry(`تم ${bank.isActive ? 'تعطيل' : 'تفعيل'} بنك ${bank.bankName}`);
   };
 
+  // Banner handling
+  const handleAddBanner = () => {
+    if (!newBanner.title) return;
+    const id = generateReference();
+    const banner: Banner = {
+      id,
+      title: newBanner.title,
+      description: newBanner.description,
+      imageUrl: newBanner.imageUrl,
+      isActive: true,
+      order: newBanner.order || banners.length,
+      link: newBanner.link,
+      createdAt: new Date().toISOString(),
+    };
+    try {
+      set(ref(database, `adminSettings/banners/${id}`), banner);
+    } catch {}
+    setNewBanner({ title: '', description: '', imageUrl: '', link: '', order: 0 });
+    setShowAddBanner(false);
+    addAuditEntry(`تم إضافة بانر ${banner.title}`);
+  };
+
+  const handleToggleBanner = async (banner: Banner) => {
+    try {
+      await update(ref(database, `adminSettings/banners/${banner.id}`), { isActive: !banner.isActive });
+      addAuditEntry(`تم ${banner.isActive ? 'تعطيل' : 'تفعيل'} بانر ${banner.title}`);
+    } catch {}
+  };
+
+  const handleDeleteBanner = async (banner: Banner) => {
+    try {
+      await remove(ref(database, `adminSettings/banners/${banner.id}`));
+      addAuditEntry(`تم حذف بانر ${banner.title}`);
+    } catch {}
+  };
+
+  const handleUpdateBanner = async (banner: Banner) => {
+    try {
+      await update(ref(database, `adminSettings/banners/${banner.id}`), {
+        title: banner.title,
+        description: banner.description,
+        imageUrl: banner.imageUrl,
+        order: banner.order,
+        link: banner.link,
+      });
+      setEditingBanner(null);
+      addAuditEntry(`تم تعديل بانر ${banner.title}`);
+    } catch {}
+  };
+
+  const handleBannerImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const base64 = reader.result as string;
+      setNewBanner(prev => ({ ...prev, imageUrl: base64 }));
+    };
+    reader.readAsDataURL(file);
+  };
+
   // Exchange rates handling
   const handleSaveExchangeRates = () => {
     try {
@@ -645,6 +748,7 @@ export default function AdminScreen() {
     { id: 'products', label: 'المنتجات', icon: Package },
     { id: 'providers', label: 'المزودون', icon: Server },
     { id: 'codes', label: 'الأكواد', icon: Tag },
+    { id: 'banners', label: 'البانرات', icon: ImagePlus },
     { id: 'settings', label: 'الإعدادات', icon: Settings },
   ];
 
@@ -1499,6 +1603,120 @@ export default function AdminScreen() {
                 ))}
                 {promoCodes.length === 0 && (
                   <div className="flex flex-col items-center py-8"><Tag size={40} strokeWidth={1.5} color={isDark ? '#333' : '#DDD'} /><p className="text-sm mt-2" style={{ color: isDark ? '#666' : '#AAA' }}>لا توجد أكواد خصم</p></div>
+                )}
+              </motion.div>
+            )}
+
+            {/* === BANNERS === */}
+            {activeTab === 'banners' && (
+              <motion.div key="banners" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-3">
+                <motion.button whileTap={{ scale: 0.95 }} onClick={() => setShowAddBanner(!showAddBanner)}
+                  className="w-full py-3.5 rounded-2xl flex items-center justify-center gap-2 text-sm font-medium"
+                  style={{ background: 'rgba(230,0,0,0.1)', color: '#E60000', border: '1px solid rgba(230,0,0,0.2)', backdropFilter: 'blur(20px)' }}>
+                  <Plus size={18} strokeWidth={1.5} /><span>إضافة بانر</span>
+                </motion.button>
+
+                <AnimatePresence>
+                  {showAddBanner && (
+                    <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="rounded-2xl p-4 space-y-3 overflow-hidden" style={cardStyle}>
+                      <input type="text" placeholder="عنوان البانر" value={newBanner.title} onChange={e => setNewBanner({ ...newBanner, title: e.target.value })} className="w-full px-3 py-2.5 rounded-xl text-sm outline-none" style={inputStyle} />
+                      <textarea placeholder="وصف البانر" value={newBanner.description} onChange={e => setNewBanner({ ...newBanner, description: e.target.value })} rows={2} className="w-full px-3 py-2.5 rounded-xl text-sm outline-none resize-none" style={inputStyle} />
+                      <div className="space-y-2">
+                        <input type="text" placeholder="رابط الصورة (URL)" value={newBanner.imageUrl.startsWith('data:') ? 'تم رفع صورة' : newBanner.imageUrl} onChange={e => setNewBanner({ ...newBanner, imageUrl: e.target.value })} className="w-full px-3 py-2.5 rounded-xl text-sm outline-none" style={inputStyle} dir="ltr" />
+                        <div className="flex gap-2">
+                          <motion.button whileTap={{ scale: 0.95 }} onClick={() => bannerFileInputRef.current?.click()}
+                            className="flex-1 py-2.5 rounded-xl text-xs font-medium flex items-center justify-center gap-1.5"
+                            style={{ background: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)', color: isDark ? '#CCC' : '#666' }}>
+                            <ImageIcon size={14} /><span>رفع صورة</span>
+                          </motion.button>
+                          <input ref={bannerFileInputRef} type="file" accept="image/*" onChange={handleBannerImageUpload} className="hidden" />
+                        </div>
+                        {newBanner.imageUrl && (
+                          <div className="w-full h-32 rounded-xl overflow-hidden" style={{ background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)' }}>
+                            <img src={newBanner.imageUrl} alt="preview" className="w-full h-full object-cover" />
+                          </div>
+                        )}
+                      </div>
+                      <input type="text" placeholder="رابط عند الضغط (اختياري)" value={newBanner.link} onChange={e => setNewBanner({ ...newBanner, link: e.target.value })} className="w-full px-3 py-2.5 rounded-xl text-sm outline-none" style={inputStyle} dir="ltr" />
+                      <div className="flex items-center gap-3">
+                        <span className="text-xs" style={{ color: isDark ? '#AAA' : '#888' }}>ترتيب العرض</span>
+                        <input type="number" value={newBanner.order || ''} onChange={e => setNewBanner({ ...newBanner, order: parseInt(e.target.value) || 0 })} className="w-20 px-3 py-2.5 rounded-xl text-sm outline-none text-center" style={inputStyle} dir="ltr" />
+                      </div>
+                      <motion.button whileTap={{ scale: 0.95 }} onClick={handleAddBanner} className="w-full py-3 rounded-xl text-sm font-bold text-white" style={{ background: '#E60000' }}>إضافة البانر</motion.button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                {banners.map((banner) => (
+                  <div key={banner.id} className="rounded-2xl p-4" style={cardStyle}>
+                    {editingBanner === banner.id ? (
+                      <div className="space-y-3">
+                        <input type="text" value={banner.title} onChange={e => setBanners(banners.map(b => b.id === banner.id ? { ...b, title: e.target.value } : b))} className="w-full px-3 py-2.5 rounded-xl text-sm outline-none" style={inputStyle} />
+                        <textarea value={banner.description} onChange={e => setBanners(banners.map(b => b.id === banner.id ? { ...b, description: e.target.value } : b))} rows={2} className="w-full px-3 py-2.5 rounded-xl text-sm outline-none resize-none" style={inputStyle} />
+                        <input type="text" placeholder="رابط الصورة" value={banner.imageUrl.startsWith('data:') ? 'تم رفع صورة' : banner.imageUrl} onChange={e => setBanners(banners.map(b => b.id === banner.id ? { ...b, imageUrl: e.target.value } : b))} className="w-full px-3 py-2.5 rounded-xl text-sm outline-none" style={inputStyle} dir="ltr" />
+                        <input type="text" placeholder="رابط عند الضغط" value={banner.link || ''} onChange={e => setBanners(banners.map(b => b.id === banner.id ? { ...b, link: e.target.value } : b))} className="w-full px-3 py-2.5 rounded-xl text-sm outline-none" style={inputStyle} dir="ltr" />
+                        <div className="flex items-center gap-3">
+                          <span className="text-xs" style={{ color: isDark ? '#AAA' : '#888' }}>ترتيب</span>
+                          <input type="number" value={banner.order} onChange={e => setBanners(banners.map(b => b.id === banner.id ? { ...b, order: parseInt(e.target.value) || 0 } : b))} className="w-20 px-3 py-2.5 rounded-xl text-sm outline-none text-center" style={inputStyle} dir="ltr" />
+                        </div>
+                        <div className="flex gap-2">
+                          <motion.button whileTap={{ scale: 0.95 }} onClick={() => handleUpdateBanner(banner)} className="flex-1 py-2.5 rounded-xl text-xs font-bold text-white flex items-center justify-center gap-1.5" style={{ background: '#10B981' }}>
+                            <Save size={14} /><span>حفظ</span>
+                          </motion.button>
+                          <motion.button whileTap={{ scale: 0.95 }} onClick={() => setEditingBanner(null)} className="flex-1 py-2.5 rounded-xl text-xs font-medium flex items-center justify-center gap-1.5" style={{ background: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)', color: isDark ? '#CCC' : '#666' }}>
+                            <X size={14} /><span>إلغاء</span>
+                          </motion.button>
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="flex items-start gap-3">
+                          {banner.imageUrl ? (
+                            <div className="w-16 h-16 rounded-xl overflow-hidden flex-shrink-0" style={{ background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)' }}>
+                              <img src={banner.imageUrl} alt={banner.title} className="w-full h-full object-cover" />
+                            </div>
+                          ) : (
+                            <div className="w-16 h-16 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)' }}>
+                              <ImageIcon size={24} strokeWidth={1.5} color={isDark ? '#444' : '#CCC'} />
+                            </div>
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <h4 className="text-sm font-bold truncate" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>{banner.title}</h4>
+                              <span className="text-[10px] px-1.5 py-0.5 rounded-full font-bold flex-shrink-0" style={{ background: 'rgba(230,0,0,0.15)', color: '#E60000' }}>#{banner.order}</span>
+                            </div>
+                            <p className="text-xs mt-0.5 line-clamp-2" style={{ color: isDark ? '#888' : '#999' }}>{banner.description}</p>
+                            {banner.link && (
+                              <p className="text-[10px] mt-1 truncate" style={{ color: isDark ? '#555' : '#BBB' }} dir="ltr">{banner.link}</p>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-between mt-3 pt-3" style={{ borderTop: isDark ? '1px solid rgba(255,255,255,0.06)' : '1px solid rgba(0,0,0,0.06)' }}>
+                          <div className="flex items-center gap-2">
+                            <button onClick={() => handleToggleBanner(banner)}>
+                              {banner.isActive ? <ToggleRight size={22} color="#10B981" /> : <ToggleLeft size={22} color={isDark ? '#444' : '#CCC'} />}
+                            </button>
+                            <span className="text-[10px]" style={{ color: banner.isActive ? '#10B981' : isDark ? '#555' : '#CCC' }}>
+                              {banner.isActive ? 'مفعّل' : 'معطّل'}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            <motion.button whileTap={{ scale: 0.85 }} onClick={() => setEditingBanner(banner.id)}
+                              className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)' }}>
+                              <Edit3 size={14} color={isDark ? '#AAA' : '#888'} />
+                            </motion.button>
+                            <motion.button whileTap={{ scale: 0.85 }} onClick={() => handleDeleteBanner(banner)}
+                              className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'rgba(230,0,0,0.1)' }}>
+                              <Trash2 size={14} color="#E60000" />
+                            </motion.button>
+                          </div>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                ))}
+                {banners.length === 0 && (
+                  <div className="flex flex-col items-center py-8"><ImagePlus size={40} strokeWidth={1.5} color={isDark ? '#333' : '#DDD'} /><p className="text-sm mt-2" style={{ color: isDark ? '#666' : '#AAA' }}>لا توجد بانرات</p></div>
                 )}
               </motion.div>
             )}

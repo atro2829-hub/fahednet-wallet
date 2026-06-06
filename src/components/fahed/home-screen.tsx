@@ -39,6 +39,9 @@ import { useAppStore } from '@/lib/store';
 import { formatBalance, formatNumber, currencySymbols, currencyNames, currencyBadgeColors, timeAgo, transactionTypeLabels, transactionTypeColors } from '@/lib/utils';
 import { LOGO_BASE64, RED_LOGO_FILTER } from '@/lib/logo';
 import { serviceIcons } from '@/lib/service-icons';
+import { productIcons } from '@/lib/product-icons';
+import { database } from '@/lib/firebase';
+import { ref, onValue } from 'firebase/database';
 
 interface BalanceCard {
   currency: 'YER' | 'SAR' | 'USD';
@@ -46,6 +49,16 @@ interface BalanceCard {
   accentColorEnd: string;
   glowColor: string;
   patternColor: string;
+}
+
+interface Banner {
+  id: string;
+  title: string;
+  description: string;
+  imageUrl: string;
+  isActive: boolean;
+  order: number;
+  link?: string;
 }
 
 function hexToRgb(hex: string): string {
@@ -68,7 +81,7 @@ const homeServices = [
   { id: 'app-store', label: 'متجر التطبيقات', iconKey: 'app-store' },
   { id: 'instant-charge', label: 'شحن فوري', iconKey: 'instant-charge' },
   { id: 'health', label: 'صحة', iconKey: 'health' },
-  { id: 'games', label: 'ألعاب أونلاين', iconKey: 'games' },
+  { id: 'entertainment', label: 'خدمات ترفيهية', iconKey: 'entertainment-category' },
   { id: 'digital-wallet', label: 'المحفظة الرقمية', iconKey: 'digital-wallet' },
 ];
 
@@ -182,6 +195,8 @@ export default function HomeScreen() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerWidth, setContainerWidth] = useState(375);
   const [promoIndex, setPromoIndex] = useState(0);
+  const [banners, setBanners] = useState<Banner[]>([]);
+  const [bannerIndex, setBannerIndex] = useState(0);
 
   // Touch/drag tracking
   const isDragging = useRef(false);
@@ -206,13 +221,53 @@ export default function HomeScreen() {
     }, 3000);
   };
 
-  // Promo rotation
+  // Firebase banners listener
   useEffect(() => {
+    const bannersRef = ref(database, 'adminSettings/banners');
+    const unsubscribe = onValue(bannersRef, (snapshot) => {
+      if (snapshot.exists()) {
+        const data = snapshot.val();
+        const bannersList: Banner[] = Object.keys(data)
+          .map((key) => ({
+            id: key,
+            title: data[key].title || '',
+            description: data[key].description || '',
+            imageUrl: data[key].imageUrl || '',
+            isActive: data[key].isActive ?? true,
+            order: data[key].order ?? 0,
+            link: data[key].link || undefined,
+          }))
+          .filter((b) => b.isActive)
+          .sort((a, b) => a.order - b.order);
+        setBanners(bannersList);
+        setBannerIndex(0);
+      } else {
+        setBanners([]);
+      }
+    }, (error) => {
+      console.error('Firebase banners error:', error);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  // Banner auto-rotation
+  useEffect(() => {
+    if (banners.length <= 1) return;
+    const interval = setInterval(() => {
+      setBannerIndex((prev) => (prev + 1) % banners.length);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [banners.length]);
+
+  // Promo rotation (for static fallback)
+  useEffect(() => {
+    if (banners.length > 0) return; // Don't rotate static promo when banners exist
     const interval = setInterval(() => {
       setPromoIndex(prev => (prev + 1) % promoItems.length);
     }, 5000);
     return () => clearInterval(interval);
-  }, []);
+  }, [banners.length]);
 
   const CARD_GAP = 12;
   const CARD_SIDE_PADDING = 32;
@@ -363,7 +418,7 @@ export default function HomeScreen() {
       case 'health':
         useAppStore.getState().setActiveTab('services');
         break;
-      case 'games':
+      case 'entertainment':
         useAppStore.getState().setActiveTab('services');
         break;
       case 'digital-wallet':
@@ -372,6 +427,12 @@ export default function HomeScreen() {
       default:
         useAppStore.getState().setActiveTab('services');
         break;
+    }
+  };
+
+  const handleBannerClick = (banner: Banner) => {
+    if (banner.link) {
+      window.open(banner.link, '_blank', 'noopener,noreferrer');
     }
   };
 
@@ -596,7 +657,8 @@ export default function HomeScreen() {
       </div>
 
       {/* ========================================
-          PROMO BANNER - Jaib Style
+          BANNER CAROUSEL / PROMO BANNER
+          Dynamic banners from Firebase, fallback to static promo
           ======================================== */}
       <motion.div
         initial={{ opacity: 0, y: 15 }}
@@ -604,55 +666,127 @@ export default function HomeScreen() {
         transition={{ delay: 0.15, duration: 0.4 }}
         className="px-4 mt-4"
       >
-        <div
-          className="rounded-2xl relative overflow-hidden"
-          style={{
-            height: 90,
-            background: 'linear-gradient(145deg, #E60000 0%, #8B0000 60%, #5C0000 100%)',
-            borderRadius: 16,
-            boxShadow: '0 4px 16px rgba(230,0,0,0.2)',
-          }}
-        >
-          <div className="absolute -top-8 -right-8 w-28 h-28 rounded-full" style={{ background: 'rgba(255,255,255,0.06)' }} />
-          <div className="absolute -bottom-6 -left-6 w-24 h-24 rounded-full" style={{ background: 'rgba(255,255,255,0.04)' }} />
-          <img src={LOGO_BASE64} alt="" className="absolute left-2 bottom-1 w-20 h-20 object-contain opacity-[0.06] pointer-events-none" aria-hidden="true" />
+        {banners.length > 0 ? (
+          /* Dynamic Banner Carousel from Firebase */
+          <div
+            className="rounded-2xl relative overflow-hidden cursor-pointer"
+            style={{
+              height: 110,
+              borderRadius: 16,
+              boxShadow: '0 4px 16px rgba(230,0,0,0.2)',
+            }}
+            onClick={() => handleBannerClick(banners[bannerIndex])}
+          >
+            {/* Banner Image Background */}
+            {banners[bannerIndex]?.imageUrl && (
+              <img
+                src={banners[bannerIndex].imageUrl}
+                alt={banners[bannerIndex].title}
+                className="absolute inset-0 w-full h-full object-cover"
+              />
+            )}
+            {/* Overlay gradient */}
+            <div
+              className="absolute inset-0"
+              style={{
+                background: banners[bannerIndex]?.imageUrl
+                  ? 'linear-gradient(145deg, rgba(230,0,0,0.85) 0%, rgba(139,0,0,0.75) 60%, rgba(92,0,0,0.65) 100%)'
+                  : 'linear-gradient(145deg, #E60000 0%, #8B0000 60%, #5C0000 100%)',
+              }}
+            />
+            <div className="absolute -top-8 -right-8 w-28 h-28 rounded-full" style={{ background: 'rgba(255,255,255,0.06)' }} />
+            <div className="absolute -bottom-6 -left-6 w-24 h-24 rounded-full" style={{ background: 'rgba(255,255,255,0.04)' }} />
+            <img src={LOGO_BASE64} alt="" className="absolute left-2 bottom-1 w-20 h-20 object-contain opacity-[0.06] pointer-events-none" aria-hidden="true" />
 
-          <div className="relative z-10 h-full flex items-center px-4">
-            <div className="flex-1">
-              <div className="flex items-center gap-2 mb-1.5">
-                <span className="text-[9px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1" style={{ background: 'rgba(255,255,255,0.2)', color: '#FFF' }}>
-                  <Sparkles size={8} />
-                  عرض خاص
-                </span>
-                <span className="text-[9px] px-1.5 py-0.5 rounded-full" style={{ background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.7)' }}>
-                  <Clock size={8} className="inline ml-0.5" />
-                  محدود
-                </span>
+            <div className="relative z-10 h-full flex items-center px-4">
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-1.5">
+                  <span className="text-[9px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1" style={{ background: 'rgba(255,255,255,0.2)', color: '#FFF' }}>
+                    <Sparkles size={8} />
+                    عرض خاص
+                  </span>
+                </div>
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={bannerIndex}
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -20 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <h3 className="font-bold text-[13px] text-white leading-tight">{banners[bannerIndex]?.title}</h3>
+                    <p className="text-[11px] mt-0.5 text-white/50">{banners[bannerIndex]?.description}</p>
+                  </motion.div>
+                </AnimatePresence>
               </div>
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={promoIndex}
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <h3 className="font-bold text-[13px] text-white leading-tight">{promoItems[promoIndex].title}</h3>
-                  <p className="text-[11px] mt-0.5 text-white/50">{promoItems[promoIndex].desc}</p>
-                </motion.div>
-              </AnimatePresence>
             </div>
-            <div className="shrink-0 mr-2">
-              <CountdownTimer targetDate={flashDealEnd.current} />
-            </div>
-          </div>
 
-          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex items-center gap-1">
-            {promoItems.map((_, i) => (
-              <div key={i} className="h-[3px] rounded-full transition-all duration-300" style={{ width: i === promoIndex ? 12 : 4, background: i === promoIndex ? 'rgba(255,255,255,0.8)' : 'rgba(255,255,255,0.25)' }} />
-            ))}
+            {/* Banner Dot Indicators */}
+            {banners.length > 1 && (
+              <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex items-center gap-1">
+                {banners.map((_, i) => (
+                  <button
+                    key={i}
+                    onClick={(e) => { e.stopPropagation(); setBannerIndex(i); }}
+                    className="h-[3px] rounded-full transition-all duration-300"
+                    style={{ width: i === bannerIndex ? 12 : 4, background: i === bannerIndex ? 'rgba(255,255,255,0.8)' : 'rgba(255,255,255,0.25)' }}
+                  />
+                ))}
+              </div>
+            )}
           </div>
-        </div>
+        ) : (
+          /* Static Promo Banner (fallback) */
+          <div
+            className="rounded-2xl relative overflow-hidden"
+            style={{
+              height: 90,
+              background: 'linear-gradient(145deg, #E60000 0%, #8B0000 60%, #5C0000 100%)',
+              borderRadius: 16,
+              boxShadow: '0 4px 16px rgba(230,0,0,0.2)',
+            }}
+          >
+            <div className="absolute -top-8 -right-8 w-28 h-28 rounded-full" style={{ background: 'rgba(255,255,255,0.06)' }} />
+            <div className="absolute -bottom-6 -left-6 w-24 h-24 rounded-full" style={{ background: 'rgba(255,255,255,0.04)' }} />
+            <img src={LOGO_BASE64} alt="" className="absolute left-2 bottom-1 w-20 h-20 object-contain opacity-[0.06] pointer-events-none" aria-hidden="true" />
+
+            <div className="relative z-10 h-full flex items-center px-4">
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-1.5">
+                  <span className="text-[9px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1" style={{ background: 'rgba(255,255,255,0.2)', color: '#FFF' }}>
+                    <Sparkles size={8} />
+                    عرض خاص
+                  </span>
+                  <span className="text-[9px] px-1.5 py-0.5 rounded-full" style={{ background: 'rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.7)' }}>
+                    <Clock size={8} className="inline ml-0.5" />
+                    محدود
+                  </span>
+                </div>
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={promoIndex}
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -20 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <h3 className="font-bold text-[13px] text-white leading-tight">{promoItems[promoIndex].title}</h3>
+                    <p className="text-[11px] mt-0.5 text-white/50">{promoItems[promoIndex].desc}</p>
+                  </motion.div>
+                </AnimatePresence>
+              </div>
+              <div className="shrink-0 mr-2">
+                <CountdownTimer targetDate={flashDealEnd.current} />
+              </div>
+            </div>
+
+            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex items-center gap-1">
+              {promoItems.map((_, i) => (
+                <div key={i} className="h-[3px] rounded-full transition-all duration-300" style={{ width: i === promoIndex ? 12 : 4, background: i === promoIndex ? 'rgba(255,255,255,0.8)' : 'rgba(255,255,255,0.25)' }} />
+              ))}
+            </div>
+          </div>
+        )}
       </motion.div>
 
       {/* ========================================
@@ -679,7 +813,7 @@ export default function HomeScreen() {
 
         <div className="grid grid-cols-3 gap-3">
           {homeServices.map((service, index) => {
-            const iconSrc = serviceIcons[service.iconKey];
+            const iconSrc = productIcons[service.iconKey] || serviceIcons[service.iconKey];
             return (
               <motion.button
                 key={service.id}

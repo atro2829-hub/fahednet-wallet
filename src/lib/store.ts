@@ -46,7 +46,7 @@ interface Notification {
 export interface ServiceCategory {
   id: string;
   name: string;
-  type: 'telecom' | 'internet' | 'games' | 'cards';
+  type: 'telecom' | 'internet' | 'games' | 'cards' | 'electricity' | 'government';
   icon: string; // Base64 or icon key
 }
 
@@ -273,20 +273,69 @@ interface AppState {
 
 // Default service categories
 const defaultCategories: ServiceCategory[] = [
-  { id: 'telecom', name: 'الاتصالات والإنترنت', type: 'telecom', icon: 'telecom' },
-  { id: 'games', name: 'الألعاب والبطاقات', type: 'games', icon: 'games' },
+  { id: 'telecom', name: 'الاتصالات', type: 'telecom', icon: 'telecom' },
+  { id: 'internet', name: 'الإنترنت', type: 'internet', icon: 'internet' },
+  { id: 'entertainment', name: 'خدمات ترفيهية', type: 'games', icon: 'entertainment' },
+  { id: 'cards', name: 'بطاقات الرقمية', type: 'cards', icon: 'cards' },
+  { id: 'electricity', name: 'الكهرباء والماء', type: 'electricity', icon: 'electricity' },
+  { id: 'government', name: 'خدمات حكومية', type: 'government', icon: 'government' },
 ];
 
 // Default service providers for Yemen
 const defaultProviders: ServiceProvider[] = [
-  { id: 'yemen-mobile', categoryId: 'telecom', name: 'يمن موبايل', color: '#E60000', icon: '', isActive: true, inputLabel: 'رقم الهاتف', inputType: 'phone', inputPrefix: '+967' },
+  // الاتصالات
+  { id: 'yemen-mobile', categoryId: 'telecom', name: 'يمن موبايل', color: '#C41E3A', icon: '', isActive: true, inputLabel: 'رقم الهاتف', inputType: 'phone', inputPrefix: '+967' },
   { id: 'yo', categoryId: 'telecom', name: 'يو', color: '#FF6B00', icon: '', isActive: true, inputLabel: 'رقم الهاتف', inputType: 'phone', inputPrefix: '+967' },
   { id: 'sabafon', categoryId: 'telecom', name: 'سبأفون', color: '#2563EB', icon: '', isActive: true, inputLabel: 'رقم الهاتف', inputType: 'phone', inputPrefix: '+967' },
   { id: 'y', categoryId: 'telecom', name: 'واي', color: '#059669', icon: '', isActive: true, inputLabel: 'رقم الهاتف', inputType: 'phone', inputPrefix: '+967' },
-  { id: 'yemen-net', categoryId: 'telecom', name: 'يمن نت', color: '#8B5CF6', icon: '', isActive: true, inputLabel: 'رقم الحساب', inputType: 'text' },
-  { id: 'pubg', categoryId: 'games', name: 'ببجي موبايل', color: '#F59E0B', icon: '', isActive: true, inputLabel: 'Player ID', inputType: 'text' },
-  { id: 'freefire', categoryId: 'games', name: 'فري فاير', color: '#EC4899', icon: '', isActive: true, inputLabel: 'Player ID', inputType: 'text' },
-  { id: 'gift-cards', categoryId: 'games', name: 'بطاقات هدايا', color: '#14B8A6', icon: '', isActive: true, inputLabel: 'البريد الإلكتروني', inputType: 'text' },
+
+  // الإنترنت
+  { id: 'yemen-net', categoryId: 'internet', name: 'يمن نت', color: '#8B5CF6', icon: '', isActive: true, inputLabel: 'رقم الحساب', inputType: 'text' },
+  { id: 'y-net-internet', categoryId: 'internet', name: 'واي نت', color: '#059669', icon: '', isActive: true, inputLabel: 'رقم الهاتف', inputType: 'phone', inputPrefix: '+967' },
+  { id: 'sabafon-internet', categoryId: 'internet', name: 'سبأفون نت', color: '#2563EB', icon: '', isActive: true, inputLabel: 'رقم الهاتف', inputType: 'phone', inputPrefix: '+967' },
+
+  // خدمات ترفيهية
+  { id: 'pubg', categoryId: 'entertainment', name: 'ببجي موبايل', color: '#F59E0B', icon: '', isActive: true, inputLabel: 'Player ID', inputType: 'text' },
+  { id: 'freefire', categoryId: 'entertainment', name: 'فري فاير', color: '#EC4899', icon: '', isActive: true, inputLabel: 'Player ID', inputType: 'text' },
+  { id: 'call-of-duty', categoryId: 'entertainment', name: 'كال اوف ديوتي', color: '#1a1a1a', icon: '', isActive: true, inputLabel: 'Player ID', inputType: 'text' },
+  { id: 'clash-royale', categoryId: 'entertainment', name: 'كلاش رويال', color: '#3B82F6', icon: '', isActive: true, inputLabel: 'Player Tag', inputType: 'text' },
+  { id: 'clash-of-clans', categoryId: 'entertainment', name: 'كلاش اوف كلانس', color: '#F59E0B', icon: '', isActive: true, inputLabel: 'Player Tag', inputType: 'text' },
+  { id: 'roblox', categoryId: 'entertainment', name: 'روبلوكس', color: '#E60000', icon: '', isActive: true, inputLabel: 'Username', inputType: 'text' },
+  { id: 'fortnite', categoryId: 'entertainment', name: 'فورتنايت', color: '#6D28D9', icon: '', isActive: true, inputLabel: 'Epic ID', inputType: 'text' },
+  { id: 'minecraft', categoryId: 'entertainment', name: 'ماينكرافت', color: '#4ADE80', icon: '', isActive: true, inputLabel: 'Username', inputType: 'text' },
+  { id: '_valorant', categoryId: 'entertainment', name: 'فالورانت', color: '#FF4655', icon: '', isActive: true, inputLabel: 'Riot ID', inputType: 'text' },
+  { id: 'league-legends', categoryId: 'entertainment', name: 'ليق اوف ليجندز', color: '#C8AA6E', icon: '', isActive: true, inputLabel: 'Riot ID', inputType: 'text' },
+  { id: 'apex-legends', categoryId: 'entertainment', name: 'ابيكس ليجندز', color: '#DA292A', icon: '', isActive: true, inputLabel: 'EA Account', inputType: 'text' },
+  { id: 'genshin-impact', categoryId: 'entertainment', name: 'جينشين امباكت', color: '#FFD700', icon: '', isActive: true, inputLabel: 'UID', inputType: 'text' },
+  { id: 'honkai-star', categoryId: 'entertainment', name: 'هنكاي ستار ريل', color: '#7C3AED', icon: '', isActive: true, inputLabel: 'UID', inputType: 'text' },
+  { id: 'ea-fc', categoryId: 'entertainment', name: 'EA FC 25', color: '#22C55E', icon: '', isActive: true, inputLabel: 'EA Account', inputType: 'text' },
+  { id: 'steam', categoryId: 'entertainment', name: 'ستيم', color: '#1B2838', icon: '', isActive: true, inputLabel: 'Steam ID', inputType: 'text' },
+  { id: 'netflix', categoryId: 'entertainment', name: 'نتفلكس', color: '#E50914', icon: '', isActive: true, inputLabel: 'البريد الإلكتروني', inputType: 'text' },
+  { id: 'spotify', categoryId: 'entertainment', name: 'سبوتيفاي', color: '#1DB954', icon: '', isActive: true, inputLabel: 'البريد الإلكتروني', inputType: 'text' },
+  { id: 'youtube-premium', categoryId: 'entertainment', name: 'يوتيوب بريميوم', color: '#FF0000', icon: '', isActive: true, inputLabel: 'البريد الإلكتروني', inputType: 'text' },
+
+  // بطاقات رقمية
+  { id: 'google-play', categoryId: 'cards', name: 'بطاقة جوجل بلاي', color: '#34A853', icon: '', isActive: true, inputLabel: 'البريد الإلكتروني', inputType: 'text' },
+  { id: 'apple-itunes', categoryId: 'cards', name: 'بطاقة آيتونز', color: '#007AFF', icon: '', isActive: true, inputLabel: 'البريد الإلكتروني', inputType: 'text' },
+  { id: 'amazon-gift', categoryId: 'cards', name: 'بطاقة امازون', color: '#FF9900', icon: '', isActive: true, inputLabel: 'البريد الإلكتروني', inputType: 'text' },
+  { id: 'psn-card', categoryId: 'cards', name: 'بطاقة بلايستيشن', color: '#00439C', icon: '', isActive: true, inputLabel: 'البريد الإلكتروني', inputType: 'text' },
+  { id: 'xbox-card', categoryId: 'cards', name: 'بطاقة اكسبوكس', color: '#107C10', icon: '', isActive: true, inputLabel: 'البريد الإلكتروني', inputType: 'text' },
+  { id: 'nintendo-card', categoryId: 'cards', name: 'بطاقة نينتندو', color: '#E60012', icon: '', isActive: true, inputLabel: 'البريد الإلكتروني', inputType: 'text' },
+  { id: 'visa-virtual', categoryId: 'cards', name: 'بطاقة فيزا افتراضية', color: '#1A1F71', icon: '', isActive: true, inputLabel: 'البريد الإلكتروني', inputType: 'text' },
+  { id: 'mastercard-virtual', categoryId: 'cards', name: 'بطاقة ماستركارد افتراضية', color: '#EB001B', icon: '', isActive: true, inputLabel: 'البريد الإلكتروني', inputType: 'text' },
+  { id: 'paypal', categoryId: 'cards', name: 'شحن بايبال', color: '#003087', icon: '', isActive: true, inputLabel: 'البريد الإلكتروني', inputType: 'text' },
+
+  // الكهرباء والماء
+  { id: 'elec-sanaa', categoryId: 'electricity', name: 'كهرباء صنعاء', color: '#F59E0B', icon: '', isActive: true, inputLabel: 'رقم العداد', inputType: 'text' },
+  { id: 'elec-aden', categoryId: 'electricity', name: 'كهرباء عدن', color: '#3B82F6', icon: '', isActive: true, inputLabel: 'رقم العداد', inputType: 'text' },
+  { id: 'water-sanaa', categoryId: 'electricity', name: 'مياه صنعاء', color: '#06B6D4', icon: '', isActive: true, inputLabel: 'رقم الاشتراك', inputType: 'text' },
+  { id: 'water-aden', categoryId: 'electricity', name: 'مياه عدن', color: '#0EA5E9', icon: '', isActive: true, inputLabel: 'رقم الاشتراك', inputType: 'text' },
+
+  // خدمات حكومية
+  { id: 'civil-registry', categoryId: 'government', name: 'السجل المدني', color: '#6B7280', icon: '', isActive: true, inputLabel: 'رقم الهوية', inputType: 'text' },
+  { id: 'passport', categoryId: 'government', name: 'جواز السفر', color: '#1E40AF', icon: '', isActive: true, inputLabel: 'رقم الجواز', inputType: 'text' },
+  { id: 'traffic', categoryId: 'government', name: 'المرور', color: '#DC2626', icon: '', isActive: true, inputLabel: 'رقم اللوحة', inputType: 'text' },
+  { id: 'municipal', categoryId: 'government', name: 'البلدية', color: '#059669', icon: '', isActive: true, inputLabel: 'رقم الرخصة', inputType: 'text' },
 ];
 
 // Default packages
@@ -476,8 +525,8 @@ export const useAppStore = create<AppState>()(
         )
       })),
 
-      // Exchange rates
-      exchangeRates: { YER: 1, SAR: 0.037, USD: 0.0099 },
+      // Exchange rates: 1 USD = 1550 YER, 1 SAR = 410 YER
+      exchangeRates: { YER: 1, SAR: 410, USD: 1550 },
       setExchangeRates: (exchangeRates) => set({ exchangeRates }),
 
       // Promo codes
