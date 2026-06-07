@@ -38,8 +38,6 @@ const subSectionIcons: Record<string, string> = {
   'traffic-municipal': 'traffic',
   providers: 'yemen-net',
   'buy-sell': 'bitcoin',
-  'btc-plans': 'bitcoin',
-  'eth-plans': 'ethereum',
   'usdt-plans': 'usdt',
 };
 
@@ -85,9 +83,7 @@ const categorySubSections: Record<string, SubSection[]> = {
     { id: 'buy-sell', name: 'شراء وبيع', description: 'بيتكوين، إيثريوم، USDT والمزيد', providerIds: ['bitcoin', 'ethereum', 'usdt', 'bnb', 'solana', 'tron'], iconKey: 'bitcoin', color: '#F7931A' },
   ],
   'crypto-invest': [
-    { id: 'btc-plans', name: 'خطط بيتكوين', description: 'خطط استثمارية يومية وأسبوعية وشهرية', providerIds: ['btc-daily', 'btc-weekly', 'btc-monthly'], iconKey: 'bitcoin', color: '#F7931A' },
-    { id: 'eth-plans', name: 'خطط إيثريوم', description: 'خطط استثمارية يومية وأسبوعية وشهرية', providerIds: ['eth-daily', 'eth-weekly', 'eth-monthly'], iconKey: 'ethereum', color: '#627EEA' },
-    { id: 'usdt-plans', name: 'خطط USDT', description: 'خطط استثمارية يومية وشهرية', providerIds: ['usdt-daily', 'usdt-monthly'], iconKey: 'usdt', color: '#26A17B' },
+    { id: 'usdt-plans', name: 'خطط USDT', description: 'خطط استثمارية يومية وأسبوعية وشهرية وربع سنوية', providerIds: ['usdt-daily', 'usdt-weekly', 'usdt-monthly', 'usdt-quarterly'], iconKey: 'usdt', color: '#26A17B' },
   ],
 };
 
@@ -145,9 +141,7 @@ const STARTING_PRICES: Record<string, number> = {
   'elec-sanaa': 500, 'elec-aden': 500, 'water-sanaa': 300, 'water-aden': 300,
   'civil-registry': 1000, 'passport': 5000, 'traffic': 500, 'municipal': 500,
   'bitcoin': 1550, 'ethereum': 3500, 'usdt': 15500, 'bnb': 4000, 'solana': 2000, 'tron': 1500,
-  'btc-daily': 77500, 'btc-weekly': 155000, 'btc-monthly': 310000,
-  'eth-daily': 77500, 'eth-weekly': 155000, 'eth-monthly': 465000,
-  'usdt-daily': 155000, 'usdt-monthly': 310000,
+  'usdt-daily': 15500, 'usdt-weekly': 38750, 'usdt-monthly': 77500, 'usdt-quarterly': 155000,
 };
 
 // ─── Icon fallback mapping ──────────────────────────────────────────
@@ -157,9 +151,7 @@ const iconFallbackMap: Record<string, string> = {
   'y-net-internet': 'y-net-internet', 'sabafon-internet': 'sabafon-internet',
   'bitcoin': 'bitcoin', 'ethereum': 'ethereum', 'usdt': 'usdt',
   'bnb': 'bitcoin', 'solana': 'bitcoin', 'tron': 'bitcoin',
-  'btc-daily': 'bitcoin', 'btc-weekly': 'bitcoin', 'btc-monthly': 'bitcoin',
-  'eth-daily': 'ethereum', 'eth-weekly': 'ethereum', 'eth-monthly': 'ethereum',
-  'usdt-daily': 'usdt', 'usdt-monthly': 'usdt',
+  'usdt-daily': 'usdt', 'usdt-weekly': 'usdt', 'usdt-monthly': 'usdt', 'usdt-quarterly': 'usdt',
 };
 
 // Telecom provider IDs that navigate to recharge screen
@@ -246,6 +238,7 @@ export default function CategoryDetailScreen() {
 
   // Reset to subsections view when category changes
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Reset state when category changes
     setViewMode('subsections');
     setSelectedSubSection(null);
     setSearchQuery('');
@@ -293,7 +286,8 @@ export default function CategoryDetailScreen() {
     const provider = providers.find(p => p.id === providerId);
     if (provider) {
       setSelectedProvider(provider);
-      setOrderOpen(true);
+      // Use setTimeout to ensure provider state is committed before opening sheet
+      setTimeout(() => setOrderOpen(true), 200);
     }
   };
 

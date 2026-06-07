@@ -13,7 +13,7 @@ import {
   FileText, Image as ImageIcon, MessageSquare, Globe, RefreshCw, ArrowRightLeft,
   Banknote, Wallet, BadgeCheck, Ban, Edit3, Save, ChevronLeft, Activity,
   Zap, Layers, PieChart, Radio, Building2, ArrowDownCircle, ArrowUpCircle,
-  Server
+  Server, Link, ExternalLink, BookOpen, Scale, HelpCircle
 } from 'lucide-react';
 import { useAppStore, type ServiceProvider, type ProductPackage, type Order } from '@/lib/store';
 import { currencySymbols, currencyBadgeColors, currencyNames, generateReference, formatNumber, timeAgo, compressBase64Image, defaultExchangeRates } from '@/lib/utils';
@@ -21,7 +21,7 @@ import { ref, set, get, update, remove, push, onValue } from 'firebase/database'
 import { database } from '@/lib/firebase';
 import { LOGO_BASE64 } from '@/lib/logo';
 
-type AdminTab = 'overview' | 'orders' | 'users' | 'deposit' | 'withdraw' | 'kyc' | 'banks' | 'exchangeRates' | 'instantRecharge' | 'entertainment' | 'providers' | 'codes' | 'banners' | 'settings';
+type AdminTab = 'overview' | 'orders' | 'users' | 'deposit' | 'withdraw' | 'kyc' | 'banks' | 'exchangeRates' | 'instantRecharge' | 'entertainment' | 'providers' | 'codes' | 'banners' | 'socialLinks' | 'legalContent' | 'settings';
 
 interface FirebaseUser {
   id: string;
@@ -228,6 +228,19 @@ export default function AdminScreen() {
   const entertainSubFileRef = useRef<HTMLInputElement>(null);
   const [selectedEntertainSub, setSelectedEntertainSub] = useState<string | null>(null);
 
+  // Social Links
+  const [socialLinks, setSocialLinks] = useState({
+    whatsapp: '', facebook: '', twitter: '', instagram: '',
+    telegram: '', youtube: '', contactAdmin: '',
+  });
+  const [socialLinksSaved, setSocialLinksSaved] = useState(false);
+
+  // Legal Content
+  const [legalContent, setLegalContent] = useState({
+    faq: '', privacyPolicy: '', aboutApp: '',
+  });
+  const [legalContentSaved, setLegalContentSaved] = useState(false);
+
   const addAuditEntry = useCallback((action: string) => {
     setAuditLog(prev => [{ action, time: new Date().toISOString() }, ...prev].slice(0, 20));
   }, []);
@@ -412,6 +425,44 @@ export default function AdminScreen() {
         setEntertainmentSubs(list.sort((a, b) => a.order - b.order));
       } else {
         setEntertainmentSubs([]);
+      }
+    });
+    return () => unsubscribe();
+  }, []);
+
+  // Listen to social links from Firebase
+  useEffect(() => {
+    const linksRef = ref(database, 'adminSettings/socialLinks');
+    const unsubscribe = onValue(linksRef, (snapshot) => {
+      if (snapshot.exists()) {
+        const data = snapshot.val();
+        setSocialLinks(prev => ({
+          ...prev,
+          whatsapp: data.whatsapp || '',
+          facebook: data.facebook || '',
+          twitter: data.twitter || '',
+          instagram: data.instagram || '',
+          telegram: data.telegram || '',
+          youtube: data.youtube || '',
+          contactAdmin: data.contactAdmin || '',
+        }));
+      }
+    });
+    return () => unsubscribe();
+  }, []);
+
+  // Listen to legal content from Firebase
+  useEffect(() => {
+    const legalRef = ref(database, 'adminSettings/legalContent');
+    const unsubscribe = onValue(legalRef, (snapshot) => {
+      if (snapshot.exists()) {
+        const data = snapshot.val();
+        setLegalContent(prev => ({
+          ...prev,
+          faq: data.faq || '',
+          privacyPolicy: data.privacyPolicy || '',
+          aboutApp: data.aboutApp || '',
+        }));
       }
     });
     return () => unsubscribe();
@@ -782,6 +833,26 @@ export default function AdminScreen() {
     } catch {}
   };
 
+  // Social links handler
+  const handleSaveSocialLinks = () => {
+    try {
+      set(ref(database, 'adminSettings/socialLinks'), socialLinks);
+      setSocialLinksSaved(true);
+      setTimeout(() => setSocialLinksSaved(false), 3000);
+      addAuditEntry('تم تحديث روابط التواصل الاجتماعي');
+    } catch {}
+  };
+
+  // Legal content handler
+  const handleSaveLegalContent = () => {
+    try {
+      set(ref(database, 'adminSettings/legalContent'), legalContent);
+      setLegalContentSaved(true);
+      setTimeout(() => setLegalContentSaved(false), 3000);
+      addAuditEntry('تم تحديث محتوى التطبيق القانوني');
+    } catch {}
+  };
+
   // Settings handlers
   const handleSaveRates = () => {
     setExchangeRates(exchangeRatesForm);
@@ -820,6 +891,8 @@ export default function AdminScreen() {
     { id: 'providers', label: 'المزودون', icon: Server },
     { id: 'codes', label: 'الأكواد', icon: Tag },
     { id: 'banners', label: 'البانرات', icon: ImagePlus },
+    { id: 'socialLinks', label: 'روابط التواصل', icon: Link },
+    { id: 'legalContent', label: 'المحتوى', icon: BookOpen },
     { id: 'settings', label: 'الإعدادات', icon: Settings },
   ];
 
@@ -2069,6 +2142,115 @@ export default function AdminScreen() {
                 {banners.length === 0 && (
                   <div className="flex flex-col items-center py-8"><ImagePlus size={40} strokeWidth={1.5} color={isDark ? '#333' : '#DDD'} /><p className="text-sm mt-2" style={{ color: isDark ? '#666' : '#AAA' }}>لا توجد بانرات</p></div>
                 )}
+              </motion.div>
+            )}
+
+            {/* === SOCIAL LINKS === */}
+            {activeTab === 'socialLinks' && (
+              <motion.div key="socialLinks" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-3">
+                <div className="rounded-2xl p-4 space-y-3" style={cardStyle}>
+                  <div className="flex items-center gap-2 mb-2">
+                    <Link size={16} color="#E60000" />
+                    <h3 className="text-sm font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>روابط التواصل الاجتماعي</h3>
+                  </div>
+                  <p className="text-xs mb-2" style={{ color: isDark ? '#888' : '#AAA' }}>ادارة روابط التواصل التي تظهر للمستخدمين في التطبيق</p>
+
+                  {[
+                    { key: 'whatsapp' as const, label: 'واتساب', placeholder: 'رقم الواتساب (مثال: 967XXXXXXXX)', icon: Phone },
+                    { key: 'facebook' as const, label: 'فيسبوك', placeholder: 'رابط صفحة فيسبوك', icon: Globe },
+                    { key: 'twitter' as const, label: 'تويتر / X', placeholder: 'رابط حساب تويتر', icon: Globe },
+                    { key: 'instagram' as const, label: 'انستغرام', placeholder: 'رابط حساب انستغرام', icon: Globe },
+                    { key: 'telegram' as const, label: 'تيليغرام', placeholder: 'رابط قناة أو مجموعة تيليغرام', icon: Globe },
+                    { key: 'youtube' as const, label: 'يوتيوب', placeholder: 'رابط قناة يوتيوب', icon: Globe },
+                    { key: 'contactAdmin' as const, label: 'تواصل مع الادمن', placeholder: 'رابط زر تواصل مع الادمن', icon: ExternalLink },
+                  ].map((field) => {
+                    const Icon = field.icon;
+                    return (
+                      <div key={field.key} className="flex items-center gap-2">
+                        <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'rgba(230,0,0,0.08)' }}>
+                          <Icon size={16} color="#E60000" />
+                        </div>
+                        <div className="flex-1">
+                          <label className="text-[10px] font-medium block mb-0.5" style={{ color: isDark ? '#AAA' : '#888' }}>{field.label}</label>
+                          <input type="text" placeholder={field.placeholder} value={socialLinks[field.key]} onChange={(e) => setSocialLinks({ ...socialLinks, [field.key]: e.target.value })} className="w-full px-3 py-2 rounded-xl text-sm outline-none" style={inputStyle} dir="ltr" />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Preview */}
+                <div className="rounded-2xl p-4" style={cardStyle}>
+                  <div className="flex items-center gap-2 mb-3">
+                    <Eye size={16} color="#E60000" />
+                    <h3 className="text-sm font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>معاينة الروابط</h3>
+                  </div>
+                  <div className="space-y-2">
+                    {Object.entries(socialLinks).map(([key, value]) => {
+                      if (!value) return null;
+                      const labels: Record<string, string> = {
+                        whatsapp: 'واتساب', facebook: 'فيسبوك', twitter: 'تويتر',
+                        instagram: 'انستغرام', telegram: 'تيليغرام', youtube: 'يوتيوب',
+                        contactAdmin: 'تواصل مع الادمن',
+                      };
+                      return (
+                        <div key={key} className="flex items-center justify-between p-2.5 rounded-xl" style={{ background: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)' }}>
+                          <span className="text-xs font-medium" style={{ color: isDark ? '#CCC' : '#555' }}>{labels[key] || key}</span>
+                          <span className="text-[10px] truncate max-w-[180px]" style={{ color: '#E60000' }} dir="ltr">{value}</span>
+                        </div>
+                      );
+                    })}
+                    {Object.values(socialLinks).every(v => !v) && (
+                      <p className="text-xs text-center py-4" style={{ color: isDark ? '#555' : '#BBB' }}>لم يتم اضافة روابط بعد</p>
+                    )}
+                  </div>
+                </div>
+
+                <motion.button whileTap={{ scale: 0.95 }} onClick={handleSaveSocialLinks}
+                  className="w-full py-3.5 rounded-2xl flex items-center justify-center gap-2 text-sm font-bold text-white"
+                  style={{ background: socialLinksSaved ? '#10B981' : '#E60000' }}>
+                  {socialLinksSaved ? <CheckCircle2 size={18} /> : <Save size={18} />}
+                  <span>{socialLinksSaved ? 'تم الحفظ' : 'حفظ روابط التواصل'}</span>
+                </motion.button>
+              </motion.div>
+            )}
+
+            {/* === LEGAL CONTENT === */}
+            {activeTab === 'legalContent' && (
+              <motion.div key="legalContent" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-3">
+                {/* FAQ */}
+                <div className="rounded-2xl p-4 space-y-3" style={cardStyle}>
+                  <div className="flex items-center gap-2 mb-1">
+                    <HelpCircle size={16} color="#E60000" />
+                    <h3 className="text-sm font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>الاسئلة الشائعة</h3>
+                  </div>
+                  <textarea placeholder="اكتب محتوى الاسئلة الشائعة هنا..." value={legalContent.faq} onChange={(e) => setLegalContent({ ...legalContent, faq: e.target.value })} rows={6} className="w-full px-3 py-2.5 rounded-xl text-sm outline-none resize-none" style={inputStyle} />
+                </div>
+
+                {/* Privacy Policy */}
+                <div className="rounded-2xl p-4 space-y-3" style={cardStyle}>
+                  <div className="flex items-center gap-2 mb-1">
+                    <Scale size={16} color="#E60000" />
+                    <h3 className="text-sm font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>سياسة الخصوصية</h3>
+                  </div>
+                  <textarea placeholder="اكتب محتوى سياسة الخصوصية هنا..." value={legalContent.privacyPolicy} onChange={(e) => setLegalContent({ ...legalContent, privacyPolicy: e.target.value })} rows={6} className="w-full px-3 py-2.5 rounded-xl text-sm outline-none resize-none" style={inputStyle} />
+                </div>
+
+                {/* About App */}
+                <div className="rounded-2xl p-4 space-y-3" style={cardStyle}>
+                  <div className="flex items-center gap-2 mb-1">
+                    <BookOpen size={16} color="#E60000" />
+                    <h3 className="text-sm font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>حول التطبيق</h3>
+                  </div>
+                  <textarea placeholder="اكتب محتوى حول التطبيق هنا..." value={legalContent.aboutApp} onChange={(e) => setLegalContent({ ...legalContent, aboutApp: e.target.value })} rows={6} className="w-full px-3 py-2.5 rounded-xl text-sm outline-none resize-none" style={inputStyle} />
+                </div>
+
+                <motion.button whileTap={{ scale: 0.95 }} onClick={handleSaveLegalContent}
+                  className="w-full py-3.5 rounded-2xl flex items-center justify-center gap-2 text-sm font-bold text-white"
+                  style={{ background: legalContentSaved ? '#10B981' : '#E60000' }}>
+                  {legalContentSaved ? <CheckCircle2 size={18} /> : <Save size={18} />}
+                  <span>{legalContentSaved ? 'تم الحفظ' : 'حفظ المحتوى'}</span>
+                </motion.button>
               </motion.div>
             )}
 

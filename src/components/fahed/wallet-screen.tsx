@@ -477,19 +477,19 @@ export default function WalletScreen() {
             ))}
           </div>
 
-          {/* Pagination Dots - Jaib Style */}
-          <div className="flex items-center justify-center gap-2 mt-4" dir="rtl">
+          {/* Pagination Dots - Tiny Circles */}
+          <div className="flex items-center justify-center gap-1.5 mt-4" dir="rtl">
             {balanceCards.map((_, index) => (
               <motion.button
                 key={index}
                 onClick={() => snapToCard(index)}
                 className="rounded-full"
                 animate={{
-                  width: activeCardIndex === index ? 14 : 6,
+                  width: activeCardIndex === index ? 5 : 3,
+                  height: activeCardIndex === index ? 5 : 3,
                   backgroundColor: activeCardIndex === index ? balanceCards[index].accentColor : (isDark ? '#333' : '#D4D4D4'),
                 }}
                 transition={{ duration: 0.3, ease: 'easeInOut' }}
-                style={{ height: 6 }}
               />
             ))}
           </div>

@@ -5,11 +5,12 @@ import { useTheme } from 'next-themes';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ArrowLeft, ArrowRightLeft, RefreshCw, TrendingUp, TrendingDown,
-  Globe, Clock, Calculator, History, ChevronDown
+  Globe, Calculator, History, X, CheckCircle2, Copy
 } from 'lucide-react';
 import { useAppStore } from '@/lib/store';
-import { currencySymbols, currencyNames, currencyBadgeColors, formatNumber, timeAgo, defaultExchangeRates } from '@/lib/utils';
-import { ref, get, set } from 'firebase/database';
+import { currencySymbols, currencyNames, currencyBadgeColors, formatNumber, formatBalance, timeAgo, defaultExchangeRates } from '@/lib/utils';
+import { LOGO_BASE64 } from '@/lib/logo';
+import { ref, get } from 'firebase/database';
 import { database } from '@/lib/firebase';
 
 interface ConversionRecord {
@@ -20,12 +21,45 @@ interface ConversionRecord {
   rate: number;
   commission: number;
   date: string;
+  referenceNumber?: string;
+}
+
+interface VoucherData {
+  fromAmount: number;
+  fromCurrency: string;
+  toAmount: number;
+  toCurrency: string;
+  rate: number;
+  commission: number;
+  commissionAmount: number;
+  rawResult: number;
+  referenceNumber: string;
+  date: string;
+  userName: string;
+  userId: string;
+}
+
+function generateReferenceNumber(): string {
+  const prefix = 'EX';
+  const timestamp = Date.now().toString(36).toUpperCase();
+  const random = Math.random().toString(36).substring(2, 6).toUpperCase();
+  return `${prefix}-${timestamp}-${random}`;
+}
+
+function formatVoucherDate(isoString: string): string {
+  const d = new Date(isoString);
+  const day = String(d.getDate()).padStart(2, '0');
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const year = d.getFullYear();
+  const hours = String(d.getHours()).padStart(2, '0');
+  const minutes = String(d.getMinutes()).padStart(2, '0');
+  return `${day}/${month}/${year} - ${hours}:${minutes}`;
 }
 
 export default function ExchangeScreen() {
   const { theme } = useTheme();
   const isDark = theme === 'dark';
-  const { setActiveScreen, exchangeRates, setExchangeRates } = useAppStore();
+  const { user, setActiveScreen, exchangeRates, setExchangeRates } = useAppStore();
 
   const [lastUpdate, setLastUpdate] = useState<string>(new Date().toISOString());
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -36,6 +70,11 @@ export default function ExchangeScreen() {
   const [fromCurrency, setFromCurrency] = useState<'YER' | 'SAR' | 'USD'>('YER');
   const [toCurrency, setToCurrency] = useState<'YER' | 'SAR' | 'USD'>('SAR');
   const [conversionHistory, setConversionHistory] = useState<ConversionRecord[]>([]);
+
+  // Voucher state
+  const [showVoucher, setShowVoucher] = useState(false);
+  const [voucherData, setVoucherData] = useState<VoucherData | null>(null);
+  const [copiedRef, setCopiedRef] = useState(false);
 
   // Rate pairs with trend
   const [trends, setTrends] = useState<Record<string, 'up' | 'down' | 'stable'>>({
@@ -64,7 +103,7 @@ export default function ExchangeScreen() {
       }
     };
     fetchRates();
-  }, []);
+  }, [setExchangeRates]);
 
   // Calculate conversion result inline
   const getRate = (from: string, to: string): number => {
@@ -80,7 +119,8 @@ export default function ExchangeScreen() {
 
   const currentRate = getRate(fromCurrency, toCurrency);
   const rawResult = (parseFloat(fromAmount) || 0) * currentRate;
-  const result = rawResult * (1 - commission / 100);
+  const commissionAmount = rawResult * (commission / 100);
+  const result = rawResult - commissionAmount;
 
   const handleSwap = () => {
     const temp = fromCurrency;
@@ -119,11 +159,46 @@ export default function ExchangeScreen() {
 
   const handleSaveConversion = () => {
     if (!fromAmount || result === 0) return;
+
+    const refNum = generateReferenceNumber();
+    const now = new Date().toISOString();
+
     const record: ConversionRecord = {
       fromAmount: parseFloat(fromAmount) || 0,
-      fromCurrency, toAmount: result, toCurrency, rate: currentRate, commission, date: new Date().toISOString(),
+      fromCurrency,
+      toAmount: result,
+      toCurrency,
+      rate: currentRate,
+      commission,
+      date: now,
+      referenceNumber: refNum,
     };
     setConversionHistory(prev => [record, ...prev].slice(0, 10));
+
+    // Show voucher
+    setVoucherData({
+      fromAmount: parseFloat(fromAmount) || 0,
+      fromCurrency,
+      toAmount: result,
+      toCurrency,
+      rate: currentRate,
+      commission,
+      commissionAmount,
+      rawResult,
+      referenceNumber: refNum,
+      date: now,
+      userName: user?.name || 'مستخدم',
+      userId: user?.userId || '------',
+    });
+    setShowVoucher(true);
+  };
+
+  const handleCopyRef = () => {
+    if (voucherData) {
+      navigator.clipboard.writeText(voucherData.referenceNumber).catch(() => {});
+      setCopiedRef(true);
+      setTimeout(() => setCopiedRef(false), 2000);
+    }
   };
 
   const ratePairs = [
@@ -131,6 +206,10 @@ export default function ExchangeScreen() {
     { from: 'YER', to: 'USD', key: 'YER-USD' },
     { from: 'SAR', to: 'USD', key: 'SAR-USD' },
   ];
+
+  const voucherBg = isDark ? '#1A1A1A' : '#FFFFFF';
+  const voucherBorderColor = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.08)';
+  const voucherDividerColor = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';
 
   return (
     <div className="min-h-screen" style={{ background: isDark ? '#0F0F0F' : '#F5F5F5' }}>
@@ -143,7 +222,7 @@ export default function ExchangeScreen() {
               <ArrowLeft size={18} strokeWidth={1.5} color="#FFF" />
             </motion.button>
             <div className="flex-1">
-              <h1 className="text-white text-xl font-bold">أسعار الصرف</h1>
+              <h1 className="text-white text-xl font-bold">اسعار الصرف</h1>
               <p className="text-white/40 text-xs">تحديث مباشر للعملات</p>
             </div>
             <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'rgba(16,185,129,0.2)' }}>
@@ -160,10 +239,10 @@ export default function ExchangeScreen() {
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <div className="pulse-dot w-2 h-2 rounded-full" style={{ background: '#10B981' }} />
-              <span className="text-xs font-medium" style={{ color: '#10B981' }}>أسعار مباشرة</span>
+              <span className="text-xs font-medium" style={{ color: '#10B981' }}>اسعار مباشرة</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-[10px]" style={{ color: isDark ? '#666' : '#AAA' }}>آخر تحديث: {timeAgo(lastUpdate)}</span>
+              <span className="text-[10px]" style={{ color: isDark ? '#666' : '#AAA' }}>اخر تحديث: {timeAgo(lastUpdate)}</span>
               <motion.button whileTap={{ scale: 0.85 }} onClick={handleRefresh} animate={{ rotate: isRefreshing ? 360 : 0 }} transition={{ duration: 0.8 }}
                 className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.04)' }}>
                 <RefreshCw size={14} color={isDark ? '#AAA' : '#888'} />
@@ -256,7 +335,7 @@ export default function ExchangeScreen() {
 
             <motion.button whileTap={{ scale: 0.95 }} onClick={handleSaveConversion}
               className="w-full py-3 rounded-xl text-xs font-bold text-white" style={{ background: '#E60000' }}>
-              حفظ التحويل
+              تاكيد التحويل
             </motion.button>
           </div>
         </motion.div>
@@ -288,6 +367,226 @@ export default function ExchangeScreen() {
           </motion.div>
         )}
       </div>
+
+      {/* ═══════════════════════════════════════════════════════════
+          TRANSFER VOUCHER MODAL
+          ═══════════════════════════════════════════════════════════ */}
+      <AnimatePresence>
+        {showVoucher && voucherData && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-end justify-center"
+            style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)' }}
+            onClick={() => setShowVoucher(false)}
+          >
+            <motion.div
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 28, stiffness: 300 }}
+              className="w-full max-w-lg rounded-t-3xl overflow-hidden"
+              style={{ background: isDark ? '#0F0F0F' : '#F5F5F5', maxHeight: '90vh' }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Voucher Header */}
+              <div className="relative px-5 pt-5 pb-4" style={{ background: 'linear-gradient(145deg, #1A1A1A 0%, #2A0A0A 50%, #0F0F0F 100%)' }}>
+                <div className="absolute inset-0 opacity-30" style={{ background: 'radial-gradient(circle at 80% 20%, rgba(230,0,0,0.15), transparent 50%)' }} />
+                <div className="relative flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'rgba(16,185,129,0.2)' }}>
+                      <CheckCircle2 size={20} strokeWidth={1.5} color="#10B981" />
+                    </div>
+                    <div>
+                      <h2 className="text-white text-base font-bold">تم التحويل بنجاح</h2>
+                      <p className="text-white/40 text-[11px]">ايصال تحويل عملات</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setShowVoucher(false)}
+                    className="w-8 h-8 rounded-lg flex items-center justify-center"
+                    style={{ background: 'rgba(255,255,255,0.1)' }}
+                  >
+                    <X size={16} color="#FFF" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Voucher Body */}
+              <div className="px-5 py-4 overflow-y-auto" style={{ maxHeight: 'calc(90vh - 80px)' }}>
+                <div
+                  className="rounded-2xl overflow-hidden"
+                  style={{
+                    background: voucherBg,
+                    border: `1px solid ${voucherBorderColor}`,
+                    boxShadow: isDark ? 'none' : '0 4px 20px rgba(0,0,0,0.08)',
+                  }}
+                >
+                  {/* Logo + Brand Row */}
+                  <div className="flex items-center gap-3 p-4" style={{ borderBottom: `1px dashed ${voucherDividerColor}` }}>
+                    <div className="w-10 h-10 rounded-xl overflow-hidden flex items-center justify-center" style={{ background: 'rgba(230,0,0,0.1)' }}>
+                      <img src={LOGO_BASE64} alt="الجنوب" className="w-full h-full object-cover" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>محفظة الجنوب</p>
+                      <p className="text-[10px]" style={{ color: isDark ? '#666' : '#AAA' }}>ايصال تبديل عملات</p>
+                    </div>
+                    <div className="flex items-center gap-1 px-2 py-1 rounded-md" style={{ background: 'rgba(16,185,129,0.1)' }}>
+                      <CheckCircle2 size={10} color="#10B981" />
+                      <span className="text-[9px] font-bold" style={{ color: '#10B981' }}>مكتمل</span>
+                    </div>
+                  </div>
+
+                  {/* From -> To Section */}
+                  <div className="p-4" style={{ borderBottom: `1px dashed ${voucherDividerColor}` }}>
+                    <div className="flex items-center gap-3">
+                      {/* From */}
+                      <div className="flex-1 text-center">
+                        <p className="text-[10px] mb-1" style={{ color: isDark ? '#666' : '#999' }}>من</p>
+                        <div className="py-2 px-3 rounded-xl" style={{ background: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)' }}>
+                          <p className="text-lg font-bold" dir="ltr" style={{ color: currencyBadgeColors[voucherData.fromCurrency] }}>
+                            {formatBalance(voucherData.fromAmount, voucherData.fromCurrency)}
+                          </p>
+                          <p className="text-[10px] font-medium mt-0.5" style={{ color: isDark ? '#888' : '#AAA' }}>
+                            {currencyNames[voucherData.fromCurrency]} ({voucherData.fromCurrency})
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Arrow */}
+                      <div className="shrink-0 w-8 h-8 rounded-full flex items-center justify-center" style={{ background: 'rgba(230,0,0,0.1)' }}>
+                        <ArrowRightLeft size={14} color="#E60000" />
+                      </div>
+
+                      {/* To */}
+                      <div className="flex-1 text-center">
+                        <p className="text-[10px] mb-1" style={{ color: isDark ? '#666' : '#999' }}>الى</p>
+                        <div className="py-2 px-3 rounded-xl" style={{ background: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)' }}>
+                          <p className="text-lg font-bold" dir="ltr" style={{ color: '#10B981' }}>
+                            {voucherData.toAmount < 0.01 && voucherData.toAmount > 0 ? voucherData.toAmount.toFixed(6) : voucherData.toAmount < 1 ? voucherData.toAmount.toFixed(4) : formatBalance(voucherData.toAmount, voucherData.toCurrency)}
+                          </p>
+                          <p className="text-[10px] font-medium mt-0.5" style={{ color: isDark ? '#888' : '#AAA' }}>
+                            {currencyNames[voucherData.toCurrency]} ({voucherData.toCurrency})
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Details Rows */}
+                  <div className="p-4 space-y-0">
+                    {/* Exchange Rate */}
+                    <div className="flex items-center justify-between py-2.5" style={{ borderBottom: `1px solid ${voucherDividerColor}` }}>
+                      <span className="text-xs" style={{ color: isDark ? '#888' : '#888' }}>سعر الصرف</span>
+                      <span className="text-xs font-bold" dir="ltr" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>
+                        1 {currencySymbols[voucherData.fromCurrency]} = {voucherData.rate < 1 ? voucherData.rate.toFixed(4) : voucherData.rate.toFixed(2)} {currencySymbols[voucherData.toCurrency]}
+                      </span>
+                    </div>
+
+                    {/* Commission */}
+                    <div className="flex items-center justify-between py-2.5" style={{ borderBottom: `1px solid ${voucherDividerColor}` }}>
+                      <span className="text-xs" style={{ color: isDark ? '#888' : '#888' }}>العمولة ({voucherData.commission}%)</span>
+                      <span className="text-xs font-bold" dir="ltr" style={{ color: '#E60000' }}>
+                        {voucherData.commissionAmount < 1 ? voucherData.commissionAmount.toFixed(4) : formatNumber(parseFloat(voucherData.commissionAmount.toFixed(2)))} {currencySymbols[voucherData.toCurrency]}
+                      </span>
+                    </div>
+
+                    {/* Amount Before Commission */}
+                    <div className="flex items-center justify-between py-2.5" style={{ borderBottom: `1px solid ${voucherDividerColor}` }}>
+                      <span className="text-xs" style={{ color: isDark ? '#888' : '#888' }}>المبلغ قبل العمولة</span>
+                      <span className="text-xs font-bold" dir="ltr" style={{ color: isDark ? '#CCC' : '#555' }}>
+                        {voucherData.rawResult < 1 ? voucherData.rawResult.toFixed(4) : formatNumber(parseFloat(voucherData.rawResult.toFixed(2)))} {currencySymbols[voucherData.toCurrency]}
+                      </span>
+                    </div>
+
+                    {/* Net Amount */}
+                    <div className="flex items-center justify-between py-2.5" style={{ borderBottom: `1px solid ${voucherDividerColor}` }}>
+                      <span className="text-xs" style={{ color: isDark ? '#888' : '#888' }}>صافي المبلغ المحول</span>
+                      <span className="text-xs font-bold" dir="ltr" style={{ color: '#10B981' }}>
+                        {voucherData.toAmount < 1 ? voucherData.toAmount.toFixed(4) : formatNumber(parseFloat(voucherData.toAmount.toFixed(2)))} {currencySymbols[voucherData.toCurrency]}
+                      </span>
+                    </div>
+
+                    {/* Reference Number */}
+                    <div className="flex items-center justify-between py-2.5" style={{ borderBottom: `1px solid ${voucherDividerColor}` }}>
+                      <span className="text-xs" style={{ color: isDark ? '#888' : '#888' }}>رقم المرجع</span>
+                      <button
+                        onClick={handleCopyRef}
+                        className="flex items-center gap-1.5 px-2 py-1 rounded-md active:scale-95 transition-transform"
+                        style={{ background: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)' }}
+                      >
+                        <span className="text-[11px] font-mono font-bold" dir="ltr" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>
+                          {voucherData.referenceNumber}
+                        </span>
+                        {copiedRef ? (
+                          <CheckCircle2 size={12} color="#10B981" />
+                        ) : (
+                          <Copy size={12} color={isDark ? '#888' : '#AAA'} />
+                        )}
+                      </button>
+                    </div>
+
+                    {/* Date and Time */}
+                    <div className="flex items-center justify-between py-2.5" style={{ borderBottom: `1px solid ${voucherDividerColor}` }}>
+                      <span className="text-xs" style={{ color: isDark ? '#888' : '#888' }}>التاريخ والوقت</span>
+                      <span className="text-xs font-medium" dir="ltr" style={{ color: isDark ? '#CCC' : '#555' }}>
+                        {formatVoucherDate(voucherData.date)}
+                      </span>
+                    </div>
+
+                    {/* User Name */}
+                    <div className="flex items-center justify-between py-2.5" style={{ borderBottom: `1px solid ${voucherDividerColor}` }}>
+                      <span className="text-xs" style={{ color: isDark ? '#888' : '#888' }}>اسم المستخدم</span>
+                      <span className="text-xs font-medium" style={{ color: isDark ? '#CCC' : '#555' }}>
+                        {voucherData.userName}
+                      </span>
+                    </div>
+
+                    {/* Account Number */}
+                    <div className="flex items-center justify-between py-2.5">
+                      <span className="text-xs" style={{ color: isDark ? '#888' : '#888' }}>رقم الحساب</span>
+                      <span className="text-xs font-mono font-medium" dir="ltr" style={{ color: isDark ? '#CCC' : '#555' }}>
+                        {voucherData.userId}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Dashed line with circles (receipt tear-off style) */}
+                  <div className="relative h-6" style={{ borderTop: `2px dashed ${voucherDividerColor}` }}>
+                    <div className="absolute -left-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full" style={{ background: isDark ? '#0F0F0F' : '#F5F5F5' }} />
+                    <div className="absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full" style={{ background: isDark ? '#0F0F0F' : '#F5F5F5' }} />
+                  </div>
+
+                  {/* Footer */}
+                  <div className="px-4 pb-4 text-center">
+                    <p className="text-[10px]" style={{ color: isDark ? '#555' : '#BBB' }}>
+                      هذا الايصال صادر من محفظة الجنوب
+                    </p>
+                    <p className="text-[9px] mt-1" style={{ color: isDark ? '#444' : '#DDD' }}>
+                      {voucherData.referenceNumber}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Close Button */}
+                <motion.button
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setShowVoucher(false)}
+                  className="w-full mt-4 py-3.5 rounded-xl text-sm font-bold"
+                  style={{
+                    background: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)',
+                    color: isDark ? '#FFF' : '#1a1a1a',
+                    border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'}`,
+                  }}
+                >
+                  اغلاق
+                </motion.button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

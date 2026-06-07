@@ -10,10 +10,11 @@ import {
   AlertTriangle, RefreshCw, Crown, Server, Smartphone, Gamepad2, Wifi,
   CreditCard, DollarSign, Activity, FileText, Filter, Ban, UserCheck,
   UserX, ChevronLeft, ImagePlus, Package, Zap, Globe, Mail, Hash,
-  Key, HardDrive, Cloud, Archive, Copy, Unlock
+  Key, HardDrive, Cloud, Archive, Copy, Unlock, Link, ExternalLink,
+  BookOpen, Scale, HelpCircle, Phone, ShoppingBag, BadgeCheck, Lock
 } from 'lucide-react';
-import { useAppStore } from '@/lib/store';
-import { currencySymbols, formatNumber, generateReference, compressBase64Image } from '@/lib/utils';
+import { useAppStore, type Order, type ServiceProvider, type ProductPackage } from '@/lib/store';
+import { currencySymbols, currencyBadgeColors, formatNumber, generateReference, compressBase64Image, timeAgo } from '@/lib/utils';
 import { ref, set, get, update, remove, push, onValue } from 'firebase/database';
 import { database } from '@/lib/firebase';
 import { LOGO_BASE64 } from '@/lib/logo';
@@ -27,7 +28,7 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 
-type OwnerTab = 'overview' | 'sections' | 'subsections' | 'projectConfig' | 'adminMgmt' | 'activityLog' | 'backup' | 'appIcon';
+type OwnerTab = 'overview' | 'sections' | 'subsections' | 'sectionVisibility' | 'entertainment' | 'orders' | 'kyc' | 'socialLinks' | 'legalContent' | 'projectConfig' | 'adminMgmt' | 'activityLog' | 'backup' | 'appIcon';
 
 interface OwnerSection {
   id: string;
@@ -296,6 +297,44 @@ export default function OwnerScreen() {
   const appIconFileRef = useRef<HTMLInputElement>(null);
   const splashIconFileRef = useRef<HTMLInputElement>(null);
 
+  // Section Visibility state
+  const [sectionVisibility, setSectionVisibility] = useState<Record<string, boolean>>({
+    telecom: true, entertainment: true, cards: true, transfer: true,
+    recharge: true, electricity: true, government: true, internet: true,
+    crypto: true, 'crypto-invest': true, 'currency-exchange': true,
+  });
+  const [sectionVisibilitySaved, setSectionVisibilitySaved] = useState(false);
+
+  // Social Links state (owner can also manage)
+  const [socialLinks, setSocialLinks] = useState({
+    whatsapp: '', facebook: '', twitter: '', instagram: '',
+    telegram: '', youtube: '', contactAdmin: '',
+  });
+  const [socialLinksSaved, setSocialLinksSaved] = useState(false);
+
+  // Legal Content state (owner can also manage)
+  const [legalContent, setLegalContent] = useState({
+    faq: '', privacyPolicy: '', aboutApp: '',
+  });
+  const [legalContentSaved, setLegalContentSaved] = useState(false);
+
+  // Orders state (owner can view/manage orders)
+  const [firebaseOrders, setFirebaseOrders] = useState<Order[]>([]);
+  const [orderSearch, setOrderSearch] = useState('');
+  const [orderFilter, setOrderFilter] = useState<'all' | 'pending' | 'completed' | 'cancelled'>('all');
+
+  // KYC state (owner can verify users)
+  const [kycUsers, setKycUsers] = useState<{
+    id: string; name: string; email: string; phone: string; userId: string;
+    kycStatus: string; cardType?: string; cardNumber?: string; governorate?: string;
+    idPhotoUrl?: string; selfieUrl?: string;
+  }[]>([]);
+
+  // Entertainment products state
+  const [ownerProviders, setOwnerProviders] = useState<ServiceProvider[]>([]);
+  const [ownerPackages, setOwnerPackages] = useState<ProductPackage[]>([]);
+  const [ownerProductSearch, setOwnerProductSearch] = useState('');
+
   // Overview stats
   const [overviewStats, setOverviewStats] = useState({
     totalUsers: 0,
@@ -473,6 +512,138 @@ export default function OwnerScreen() {
       }
     });
     return () => unsub();
+  }, []);
+
+  // Listen to section visibility from Firebase
+  useEffect(() => {
+    const visRef = ref(database, 'adminSettings/sectionVisibility');
+    const unsub = onValue(visRef, (snapshot) => {
+      if (snapshot.exists()) {
+        const data = snapshot.val();
+        setSectionVisibility(prev => ({
+          ...prev,
+          ...data,
+        }));
+      }
+    });
+    return () => unsub();
+  }, []);
+
+  // Listen to social links from Firebase
+  useEffect(() => {
+    const linksRef = ref(database, 'adminSettings/socialLinks');
+    const unsub = onValue(linksRef, (snapshot) => {
+      if (snapshot.exists()) {
+        const data = snapshot.val();
+        setSocialLinks(prev => ({
+          ...prev,
+          whatsapp: data.whatsapp || '',
+          facebook: data.facebook || '',
+          twitter: data.twitter || '',
+          instagram: data.instagram || '',
+          telegram: data.telegram || '',
+          youtube: data.youtube || '',
+          contactAdmin: data.contactAdmin || '',
+        }));
+      }
+    });
+    return () => unsub();
+  }, []);
+
+  // Listen to legal content from Firebase
+  useEffect(() => {
+    const legalRef = ref(database, 'adminSettings/legalContent');
+    const unsub = onValue(legalRef, (snapshot) => {
+      if (snapshot.exists()) {
+        const data = snapshot.val();
+        setLegalContent(prev => ({
+          ...prev,
+          faq: data.faq || '',
+          privacyPolicy: data.privacyPolicy || '',
+          aboutApp: data.aboutApp || '',
+        }));
+      }
+    });
+    return () => unsub();
+  }, []);
+
+  // Listen to orders from Firebase
+  useEffect(() => {
+    const ordersRef = ref(database, 'orders');
+    const unsub = onValue(ordersRef, (snapshot) => {
+      if (snapshot.exists()) {
+        const data = snapshot.val();
+        const list = Object.values(data) as Order[];
+        setFirebaseOrders(list.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
+      } else {
+        setFirebaseOrders([]);
+      }
+    });
+    return () => unsub();
+  }, []);
+
+  // Listen to KYC users from Firebase
+  useEffect(() => {
+    const usersRef = ref(database, 'users');
+    const unsub = onValue(usersRef, (snapshot) => {
+      if (snapshot.exists()) {
+        const data = snapshot.val();
+        const list = Object.entries(data).map(([key, val]: [string, any]) => ({
+          id: key,
+          name: val.name || '',
+          email: val.email || '',
+          phone: val.phone || '',
+          userId: val.userId || key,
+          kycStatus: val.kycStatus || 'pending',
+          cardType: val.cardType,
+          cardNumber: val.cardNumber,
+          governorate: val.governorate,
+          idPhotoUrl: val.idPhotoUrl,
+          selfieUrl: val.selfieUrl,
+        }));
+        setKycUsers(list.filter(u => u.kycStatus === 'submitted'));
+      }
+    });
+    return () => unsub();
+  }, []);
+
+  // Listen to providers and packages for entertainment tab
+  useEffect(() => {
+    const provRef = ref(database, 'providers');
+    const unsub1 = onValue(provRef, (snapshot) => {
+      if (snapshot.exists()) {
+        const data = snapshot.val();
+        const list = Object.entries(data).map(([key, val]: [string, any]) => ({
+          id: key,
+          categoryId: val.categoryId || '',
+          name: val.name || '',
+          color: val.color || '#E60000',
+          icon: val.icon || '',
+          isActive: val.isActive !== false,
+          inputLabel: val.inputLabel || '',
+          inputType: val.inputType || 'text',
+          inputPrefix: val.inputPrefix || '',
+        }));
+        setOwnerProviders(list);
+      }
+    });
+    const pkgRef = ref(database, 'packages');
+    const unsub2 = onValue(pkgRef, (snapshot) => {
+      if (snapshot.exists()) {
+        const data = snapshot.val();
+        const list = Object.entries(data).map(([key, val]: [string, any]) => ({
+          id: key,
+          providerId: val.providerId || '',
+          name: val.name || '',
+          price: val.price || 0,
+          currency: val.currency || 'YER',
+          executionType: val.executionType || 'manual',
+          isActive: val.isActive !== false,
+        }));
+        setOwnerPackages(list);
+      }
+    });
+    return () => { unsub1(); unsub2(); };
   }, []);
 
   // Listen to overview stats
@@ -734,14 +905,20 @@ export default function OwnerScreen() {
   // ===== Tabs Definition =====
 
   const tabs: { id: OwnerTab; label: string; icon: typeof BarChart3 }[] = [
-    { id: 'overview', label: '\u0646\u0638\u0631\u0629 \u0639\u0627\u0645\u0629', icon: BarChart3 },
-    { id: 'sections', label: '\u0627\u0644\u0623\u0642\u0633\u0627\u0645', icon: Layers },
-    { id: 'subsections', label: '\u0641\u0631\u0639\u064A\u0629', icon: FolderTree },
-    { id: 'projectConfig', label: '\u0627\u0644\u0645\u0634\u0631\u0648\u0639', icon: Settings },
-    { id: 'adminMgmt', label: '\u0627\u0644\u0623\u062F\u0645\u0646', icon: ShieldCheck },
-    { id: 'activityLog', label: '\u0627\u0644\u0646\u0634\u0627\u0637', icon: Clock },
-    { id: 'backup', label: '\u0627\u0644\u0646\u0633\u062E', icon: Database },
-    { id: 'appIcon', label: '\u0623\u064A\u0642\u0648\u0646\u0629', icon: ImagePlus },
+    { id: 'overview', label: 'نظرة عامة', icon: BarChart3 },
+    { id: 'sections', label: 'الأقسام', icon: Layers },
+    { id: 'subsections', label: 'فرعية', icon: FolderTree },
+    { id: 'sectionVisibility', label: 'الظهور', icon: Eye },
+    { id: 'entertainment', label: 'الترفيهية', icon: Gamepad2 },
+    { id: 'orders', label: 'الطلبات', icon: ShoppingBag },
+    { id: 'kyc', label: 'التحقق', icon: ShieldCheck },
+    { id: 'socialLinks', label: 'التواصل', icon: Link },
+    { id: 'legalContent', label: 'المحتوى', icon: BookOpen },
+    { id: 'projectConfig', label: 'المشروع', icon: Settings },
+    { id: 'adminMgmt', label: 'الأدمن', icon: ShieldCheck },
+    { id: 'activityLog', label: 'النشاط', icon: Clock },
+    { id: 'backup', label: 'النسخ', icon: Database },
+    { id: 'appIcon', label: 'أيقونة', icon: ImagePlus },
   ];
 
   const activeTabInfo = tabs.find(t => t.id === activeTab);
@@ -1019,6 +1196,352 @@ export default function OwnerScreen() {
                     <p className="text-sm mt-2" style={{ color: isDark ? '#666' : '#AAA' }}>{'\u0627\u062E\u062A\u0631 \u0642\u0633\u0645 \u0623\u0628 \u0644\u0639\u0631\u0636 \u0627\u0644\u0623\u0642\u0633\u0627\u0645 \u0627\u0644\u0641\u0631\u0639\u064A\u0629'}</p>
                   </div>
                 )}
+              </motion.div>
+            )}
+
+            {/* === SECTION VISIBILITY === */}
+            {activeTab === 'sectionVisibility' && (
+              <motion.div key="sectionVisibility" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-3">
+                <div className="rounded-2xl p-4" style={cardStyle}>
+                  <div className="flex items-center gap-2 mb-2">
+                    <Eye size={16} color="#8B5CF6" />
+                    <h3 className="text-sm font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>ظهور الأقسام الرئيسية</h3>
+                  </div>
+                  <p className="text-xs mb-4" style={{ color: isDark ? '#888' : '#AAA' }}>تحكم بظهور الأقسام على الشاشة الرئيسية للمستخدمين</p>
+                  <div className="space-y-2">
+                    {[
+                      { key: 'telecom', label: 'الاتصالات', icon: Smartphone, color: '#E60000' },
+                      { key: 'internet', label: 'الإنترنت', icon: Wifi, color: '#3B82F6' },
+                      { key: 'entertainment', label: 'الخدمات الترفيهية', icon: Gamepad2, color: '#F59E0B' },
+                      { key: 'cards', label: 'البطاقات الرقمية', icon: CreditCard, color: '#8B5CF6' },
+                      { key: 'transfer', label: 'التحويل', icon: ArrowLeft, color: '#10B981' },
+                      { key: 'recharge', label: 'الشحن', icon: Zap, color: '#EC4899' },
+                      { key: 'electricity', label: 'الكهرباء والماء', icon: Zap, color: '#F59E0B' },
+                      { key: 'government', label: 'خدمات حكومية', icon: ShieldCheck, color: '#6B7280' },
+                      { key: 'crypto', label: 'الكريبتو', icon: DollarSign, color: '#F7931A' },
+                      { key: 'crypto-invest', label: 'استثمار الكريبتو', icon: Activity, color: '#10B981' },
+                      { key: 'currency-exchange', label: 'تبادل العملات', icon: RefreshCw, color: '#3B82F6' },
+                    ].map((section) => {
+                      const Icon = section.icon;
+                      const isVisible = sectionVisibility[section.key] !== false;
+                      return (
+                        <div key={section.key} className="flex items-center justify-between p-3 rounded-xl" style={{ background: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)', borderRight: isVisible ? `3px solid ${section.color}` : '3px solid transparent' }}>
+                          <div className="flex items-center gap-3">
+                            <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: `${section.color}18` }}>
+                              <Icon size={18} color={section.color} />
+                            </div>
+                            <div>
+                              <p className="text-sm font-medium" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>{section.label}</p>
+                              <p className="text-[10px]" style={{ color: isVisible ? '#10B981' : '#E60000' }}>{isVisible ? 'ظاهر' : 'مخفي'}</p>
+                            </div>
+                          </div>
+                          <button onClick={() => {
+                            const newVis = { ...sectionVisibility, [section.key]: !isVisible };
+                            setSectionVisibility(newVis);
+                          }}>
+                            {isVisible ? <ToggleRight size={24} color="#10B981" /> : <ToggleLeft size={24} color={isDark ? '#444' : '#CCC'} />}
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <motion.button whileTap={{ scale: 0.95 }} onClick={() => {
+                  try {
+                    set(ref(database, 'adminSettings/sectionVisibility'), sectionVisibility);
+                    setSectionVisibilitySaved(true);
+                    setTimeout(() => setSectionVisibilitySaved(false), 3000);
+                    const logId = generateReference();
+                    set(ref(database, `ownerSettings/activityLog/${logId}`), {
+                      id: logId, type: 'admin', action: 'تم تحديث اعدادات ظهور الأقسام',
+                      userId: user?.id, userName: user?.name, timestamp: new Date().toISOString(),
+                    });
+                  } catch {}
+                }} className="w-full py-3.5 rounded-2xl flex items-center justify-center gap-2 text-sm font-bold text-white"
+                  style={{ background: sectionVisibilitySaved ? '#10B981' : '#8B5CF6' }}>
+                  {sectionVisibilitySaved ? <CheckCircle2 size={18} /> : <Save size={18} />}
+                  <span>{sectionVisibilitySaved ? 'تم الحفظ' : 'حفظ اعدادات الظهور'}</span>
+                </motion.button>
+              </motion.div>
+            )}
+
+            {/* === ENTERTAINMENT PRODUCTS === */}
+            {activeTab === 'entertainment' && (
+              <motion.div key="entertainment" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-3">
+                <div className="flex items-center gap-2 px-4 py-2.5 rounded-2xl" style={cardStyle}>
+                  <Search size={16} color={isDark ? '#555' : '#AAA'} />
+                  <input type="text" placeholder="بحث في المنتجات..." value={ownerProductSearch} onChange={(e) => setOwnerProductSearch(e.target.value)} className="flex-1 bg-transparent outline-none text-sm" style={{ color: isDark ? '#FFF' : '#1a1a1a' }} />
+                </div>
+                {ownerProviders.filter(p => p.categoryId === 'entertainment' || p.categoryId === 'cards').map((provider) => {
+                  const providerProducts = ownerPackages.filter(p => p.providerId === provider.id && (!ownerProductSearch || p.name.toLowerCase().includes(ownerProductSearch.toLowerCase())));
+                  if (providerProducts.length === 0 && !ownerProductSearch) return null;
+                  return (
+                    <div key={provider.id} className="rounded-2xl overflow-hidden" style={cardStyle}>
+                      <div className="px-4 py-3 flex items-center gap-2" style={{ borderBottom: isDark ? '1px solid rgba(255,255,255,0.06)' : '1px solid rgba(0,0,0,0.06)' }}>
+                        <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: `${provider.color}18` }}>
+                          {provider.icon && provider.icon.startsWith('data:') ? (
+                            <img src={provider.icon} alt={provider.name} className="w-6 h-6 rounded object-cover" />
+                          ) : <span className="font-bold text-xs" style={{ color: provider.color }}>{provider.name.charAt(0)}</span>}
+                        </div>
+                        <span className="text-sm font-bold flex-1" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>{provider.name}</span>
+                        <span className="text-[10px]" style={{ color: isDark ? '#666' : '#AAA' }}>{providerProducts.length} منتج</span>
+                        <button onClick={async () => {
+                          try { await update(ref(database, `providers/${provider.id}`), { isActive: !provider.isActive }); } catch {}
+                        }}>
+                          {provider.isActive ? <ToggleRight size={20} color="#10B981" /> : <ToggleLeft size={20} color={isDark ? '#444' : '#CCC'} />}
+                        </button>
+                      </div>
+                      <div className="max-h-60 overflow-y-auto" style={{ scrollbarWidth: 'thin' }}>
+                        {providerProducts.map((product, index) => (
+                          <div key={product.id} className="flex items-center justify-between px-4 py-2.5" style={{ borderBottom: index < providerProducts.length - 1 ? (isDark ? '1px solid rgba(255,255,255,0.04)' : '1px solid rgba(0,0,0,0.04)') : 'none' }}>
+                            <div>
+                              <p className="text-sm font-medium" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>{product.name}</p>
+                              <div className="flex items-center gap-2 mt-0.5">
+                                <span className="text-xs font-bold" style={{ color: '#8B5CF6' }}>{product.price.toLocaleString()} {currencySymbols[product.currency]}</span>
+                                <span className="text-[10px] px-1.5 py-0.5 rounded" style={{ background: product.executionType === 'manual' ? 'rgba(245,158,11,0.15)' : 'rgba(16,185,129,0.15)', color: product.executionType === 'manual' ? '#F59E0B' : '#10B981' }}>
+                                  {product.executionType === 'manual' ? 'يدوي' : 'تلقائي'}
+                                </span>
+                              </div>
+                            </div>
+                            <button onClick={async () => {
+                              try { await update(ref(database, `packages/${product.id}`), { isActive: !product.isActive }); } catch {}
+                            }}>
+                              {product.isActive ? <ToggleRight size={20} color="#10B981" /> : <ToggleLeft size={20} color={isDark ? '#444' : '#CCC'} />}
+                            </button>
+                          </div>
+                        ))}
+                        {providerProducts.length === 0 && ownerProductSearch && (
+                          <p className="text-xs text-center py-3" style={{ color: isDark ? '#555' : '#BBB' }}>لا توجد نتائج</p>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+                {ownerProviders.filter(p => p.categoryId === 'entertainment' || p.categoryId === 'cards').length === 0 && (
+                  <div className="flex flex-col items-center py-8"><Gamepad2 size={40} strokeWidth={1.5} color={isDark ? '#333' : '#DDD'} /><p className="text-sm mt-2" style={{ color: isDark ? '#666' : '#AAA' }}>لا توجد خدمات ترفيهية</p></div>
+                )}
+              </motion.div>
+            )}
+
+            {/* === ORDERS === */}
+            {activeTab === 'orders' && (
+              <motion.div key="orders" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-3">
+                <div className="flex items-center gap-2 px-4 py-3 rounded-2xl" style={cardStyle}>
+                  <Search size={18} strokeWidth={1.5} color={isDark ? '#555' : '#AAA'} />
+                  <input type="text" placeholder="ابحث بالاسم، الرقم، الخدمة..." value={orderSearch} onChange={(e) => setOrderSearch(e.target.value)} className="flex-1 bg-transparent outline-none text-sm" style={{ color: isDark ? '#FFF' : '#1a1a1a' }} />
+                </div>
+                <div className="flex gap-2 overflow-x-auto pb-1">
+                  {(['all', 'pending', 'completed', 'cancelled'] as const).map((filter) => (
+                    <button key={filter} onClick={() => setOrderFilter(filter)}
+                      className="px-3 py-2 rounded-xl text-xs font-medium whitespace-nowrap"
+                      style={{ background: orderFilter === filter ? 'rgba(139,92,246,0.2)' : isDark ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.8)', color: orderFilter === filter ? '#FFF' : isDark ? '#BBB' : '#666', border: orderFilter === filter ? '1px solid rgba(139,92,246,0.3)' : isDark ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(0,0,0,0.06)' }}>
+                      {filter === 'all' ? 'الكل' : filter === 'pending' ? 'قيد الانتظار' : filter === 'completed' ? 'مكتمل' : 'ملغى'}
+                    </button>
+                  ))}
+                </div>
+                {firebaseOrders.filter(o => {
+                  if (orderFilter !== 'all' && o.status !== orderFilter) return false;
+                  if (orderSearch) {
+                    const q = orderSearch.toLowerCase();
+                    return o.userName?.toLowerCase().includes(q) || o.customerInput?.includes(q) || o.providerName?.includes(q) || o.packageName?.includes(q);
+                  }
+                  return true;
+                }).map((order) => {
+                  const statusStyles: Record<string, { bg: string; color: string; label: string }> = {
+                    pending: { bg: 'rgba(245,158,11,0.15)', color: '#F59E0B', label: 'قيد الانتظار' },
+                    completed: { bg: 'rgba(16,185,129,0.15)', color: '#10B981', label: 'مكتمل' },
+                    cancelled: { bg: 'rgba(230,0,0,0.15)', color: '#E60000', label: 'ملغى' },
+                  };
+                  const ss = statusStyles[order.status] || statusStyles.pending;
+                  return (
+                    <div key={order.id} className="rounded-2xl p-4" style={{ ...cardStyle, borderRight: order.status === 'pending' ? '3px solid #F59E0B' : undefined }}>
+                      <div className="flex items-start justify-between mb-2">
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>{order.packageName}</span>
+                            <span className="text-[10px] px-2 py-0.5 rounded-full font-medium" style={{ background: ss.bg, color: ss.color }}>{ss.label}</span>
+                          </div>
+                          <p className="text-xs" style={{ color: isDark ? '#888' : '#AAA' }}>{order.providerName}</p>
+                        </div>
+                        <div className="text-left">
+                          <p className="text-sm font-bold" style={{ color: '#8B5CF6' }}>{order.amount.toLocaleString()} {currencySymbols[order.currency]}</p>
+                          <p className="text-[10px]" style={{ color: isDark ? '#666' : '#AAA' }}>{timeAgo(order.createdAt)}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-4 p-2.5 rounded-xl" style={{ background: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)' }}>
+                        <div><p className="text-[10px]" style={{ color: isDark ? '#666' : '#AAA' }}>العميل</p><p className="text-xs font-medium" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>{order.userName}</p></div>
+                        <div className="w-px h-6" style={{ background: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)' }} />
+                        <div><p className="text-[10px]" style={{ color: isDark ? '#666' : '#AAA' }}>الرقم/المعرف</p><p className="text-xs font-medium" dir="ltr" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>{order.customerInput}</p></div>
+                      </div>
+                      {order.status === 'pending' && (
+                        <div className="flex gap-2 mt-3">
+                          <motion.button whileTap={{ scale: 0.95 }} onClick={async () => {
+                            try {
+                              await update(ref(database, `orders/${order.id}`), { status: 'completed', completedAt: new Date().toISOString() });
+                            } catch {}
+                          }} className="flex-1 flex items-center justify-center gap-1 py-2.5 rounded-xl text-xs font-bold text-white" style={{ background: '#10B981' }}>
+                            <CheckCircle2 size={14} /> تم التنفيذ
+                          </motion.button>
+                          <motion.button whileTap={{ scale: 0.95 }} onClick={async () => {
+                            try {
+                              await update(ref(database, `orders/${order.id}`), { status: 'cancelled' });
+                              const userRef = ref(database, `users/${order.userId}`);
+                              const snapshot = await get(userRef);
+                              if (snapshot.exists()) {
+                                const userData = snapshot.val();
+                                const balanceField = `balance${order.currency}`;
+                                const currentBalance = userData[balanceField] || 0;
+                                await update(userRef, { [balanceField]: currentBalance + order.amount });
+                              }
+                            } catch {}
+                          }} className="flex-1 flex items-center justify-center gap-1 py-2.5 rounded-xl text-xs font-bold" style={{ background: 'rgba(230,0,0,0.1)', color: '#E60000' }}>
+                            <XCircle size={14} /> إلغاء
+                          </motion.button>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+                {firebaseOrders.length === 0 && (
+                  <div className="flex flex-col items-center py-8"><ShoppingBag size={40} strokeWidth={1.5} color={isDark ? '#333' : '#DDD'} /><p className="text-sm mt-2" style={{ color: isDark ? '#666' : '#AAA' }}>لا توجد طلبات</p></div>
+                )}
+              </motion.div>
+            )}
+
+            {/* === KYC VERIFICATION === */}
+            {activeTab === 'kyc' && (
+              <motion.div key="kyc" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-3">
+                <div className="flex items-center gap-2 px-1">
+                  <ShieldCheck size={16} color="#8B5CF6" />
+                  <span className="text-xs" style={{ color: isDark ? '#888' : '#888' }}>طلبات التحقق: {kycUsers.length}</span>
+                </div>
+                {kycUsers.map((u) => (
+                  <div key={u.id} className="rounded-2xl p-4" style={{ ...cardStyle, borderRight: '3px solid #8B5CF6' }}>
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'rgba(139,92,246,0.1)' }}>
+                        <UserCheck size={18} color="#8B5CF6" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-sm font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>{u.name}</p>
+                        <p className="text-[10px]" style={{ color: isDark ? '#666' : '#AAA' }}>معرف: {u.userId}</p>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 mb-3">
+                      {u.cardType && <div className="p-2 rounded-lg" style={{ background: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)' }}><p className="text-[10px]" style={{ color: isDark ? '#666' : '#AAA' }}>نوع الوثيقة</p><p className="text-xs font-medium" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>{u.cardType}</p></div>}
+                      {u.cardNumber && <div className="p-2 rounded-lg" style={{ background: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)' }}><p className="text-[10px]" style={{ color: isDark ? '#666' : '#AAA' }}>رقم الوثيقة</p><p className="text-xs font-medium" dir="ltr" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>{u.cardNumber}</p></div>}
+                      {u.governorate && <div className="p-2 rounded-lg" style={{ background: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)' }}><p className="text-[10px]" style={{ color: isDark ? '#666' : '#AAA' }}>المحافظة</p><p className="text-xs font-medium" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>{u.governorate}</p></div>}
+                      <div className="p-2 rounded-lg" style={{ background: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)' }}><p className="text-[10px]" style={{ color: isDark ? '#666' : '#AAA' }}>الهاتف</p><p className="text-xs font-medium" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>{u.phone}</p></div>
+                    </div>
+                    <div className="flex gap-2">
+                      <motion.button whileTap={{ scale: 0.95 }} onClick={async () => {
+                        try {
+                          await update(ref(database, `users/${u.id}`), { kycStatus: 'verified' });
+                          const notifId = generateReference();
+                          await set(ref(database, `notifications/${u.id}/${notifId}`), {
+                            id: notifId, title: 'تم التحقق من هويتك', body: 'تم قبول وثائق التحقق الخاصة بك',
+                            type: 'security', isRead: false, createdAt: new Date().toISOString(),
+                          });
+                        } catch {}
+                      }} className="flex-1 flex items-center justify-center gap-1 py-2.5 rounded-xl text-xs font-bold text-white" style={{ background: '#10B981' }}>
+                        <BadgeCheck size={14} /> توثيق
+                      </motion.button>
+                      <motion.button whileTap={{ scale: 0.95 }} onClick={async () => {
+                        try {
+                          await update(ref(database, `users/${u.id}`), { kycStatus: 'rejected' });
+                        } catch {}
+                      }} className="flex-1 flex items-center justify-center gap-1 py-2.5 rounded-xl text-xs font-bold" style={{ background: 'rgba(230,0,0,0.1)', color: '#E60000' }}>
+                        <UserX size={14} /> رفض
+                      </motion.button>
+                    </div>
+                  </div>
+                ))}
+                {kycUsers.length === 0 && (
+                  <div className="flex flex-col items-center py-8"><ShieldCheck size={40} strokeWidth={1.5} color={isDark ? '#333' : '#DDD'} /><p className="text-sm mt-2" style={{ color: isDark ? '#666' : '#AAA' }}>لا توجد طلبات تحقق</p></div>
+                )}
+              </motion.div>
+            )}
+
+            {/* === SOCIAL LINKS === */}
+            {activeTab === 'socialLinks' && (
+              <motion.div key="socialLinks" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-3">
+                <div className="rounded-2xl p-4 space-y-3" style={cardStyle}>
+                  <div className="flex items-center gap-2 mb-2">
+                    <Link size={16} color="#8B5CF6" />
+                    <h3 className="text-sm font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>روابط التواصل الاجتماعي</h3>
+                  </div>
+                  {[
+                    { key: 'whatsapp' as const, label: 'واتساب', placeholder: 'رقم الواتساب', icon: Phone },
+                    { key: 'facebook' as const, label: 'فيسبوك', placeholder: 'رابط صفحة فيسبوك', icon: Globe },
+                    { key: 'twitter' as const, label: 'تويتر / X', placeholder: 'رابط حساب تويتر', icon: Globe },
+                    { key: 'instagram' as const, label: 'انستغرام', placeholder: 'رابط حساب انستغرام', icon: Globe },
+                    { key: 'telegram' as const, label: 'تيليغرام', placeholder: 'رابط قناة تيليغرام', icon: Globe },
+                    { key: 'youtube' as const, label: 'يوتيوب', placeholder: 'رابط قناة يوتيوب', icon: Globe },
+                    { key: 'contactAdmin' as const, label: 'تواصل مع الادمن', placeholder: 'رابط زر تواصل مع الادمن', icon: ExternalLink },
+                  ].map((field) => {
+                    const Icon = field.icon;
+                    return (
+                      <div key={field.key} className="flex items-center gap-2">
+                        <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'rgba(139,92,246,0.08)' }}>
+                          <Icon size={16} color="#8B5CF6" />
+                        </div>
+                        <div className="flex-1">
+                          <label className="text-[10px] font-medium block mb-0.5" style={{ color: isDark ? '#AAA' : '#888' }}>{field.label}</label>
+                          <input type="text" placeholder={field.placeholder} value={socialLinks[field.key]} onChange={(e) => setSocialLinks({ ...socialLinks, [field.key]: e.target.value })} className="w-full px-3 py-2 rounded-xl text-sm outline-none" style={inputStyle} dir="ltr" />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+                <motion.button whileTap={{ scale: 0.95 }} onClick={() => {
+                  try {
+                    set(ref(database, 'adminSettings/socialLinks'), socialLinks);
+                    setSocialLinksSaved(true);
+                    setTimeout(() => setSocialLinksSaved(false), 3000);
+                  } catch {}
+                }} className="w-full py-3.5 rounded-2xl flex items-center justify-center gap-2 text-sm font-bold text-white"
+                  style={{ background: socialLinksSaved ? '#10B981' : '#8B5CF6' }}>
+                  {socialLinksSaved ? <CheckCircle2 size={18} /> : <Save size={18} />}
+                  <span>{socialLinksSaved ? 'تم الحفظ' : 'حفظ روابط التواصل'}</span>
+                </motion.button>
+              </motion.div>
+            )}
+
+            {/* === LEGAL CONTENT === */}
+            {activeTab === 'legalContent' && (
+              <motion.div key="legalContent" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-3">
+                <div className="rounded-2xl p-4 space-y-3" style={cardStyle}>
+                  <div className="flex items-center gap-2 mb-1">
+                    <HelpCircle size={16} color="#8B5CF6" />
+                    <h3 className="text-sm font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>الاسئلة الشائعة</h3>
+                  </div>
+                  <textarea placeholder="اكتب محتوى الاسئلة الشائعة هنا..." value={legalContent.faq} onChange={(e) => setLegalContent({ ...legalContent, faq: e.target.value })} rows={6} className="w-full px-3 py-2.5 rounded-xl text-sm outline-none resize-none" style={inputStyle} />
+                </div>
+                <div className="rounded-2xl p-4 space-y-3" style={cardStyle}>
+                  <div className="flex items-center gap-2 mb-1">
+                    <Scale size={16} color="#8B5CF6" />
+                    <h3 className="text-sm font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>سياسة الخصوصية</h3>
+                  </div>
+                  <textarea placeholder="اكتب محتوى سياسة الخصوصية هنا..." value={legalContent.privacyPolicy} onChange={(e) => setLegalContent({ ...legalContent, privacyPolicy: e.target.value })} rows={6} className="w-full px-3 py-2.5 rounded-xl text-sm outline-none resize-none" style={inputStyle} />
+                </div>
+                <div className="rounded-2xl p-4 space-y-3" style={cardStyle}>
+                  <div className="flex items-center gap-2 mb-1">
+                    <BookOpen size={16} color="#8B5CF6" />
+                    <h3 className="text-sm font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>حول التطبيق</h3>
+                  </div>
+                  <textarea placeholder="اكتب محتوى حول التطبيق هنا..." value={legalContent.aboutApp} onChange={(e) => setLegalContent({ ...legalContent, aboutApp: e.target.value })} rows={6} className="w-full px-3 py-2.5 rounded-xl text-sm outline-none resize-none" style={inputStyle} />
+                </div>
+                <motion.button whileTap={{ scale: 0.95 }} onClick={() => {
+                  try {
+                    set(ref(database, 'adminSettings/legalContent'), legalContent);
+                    setLegalContentSaved(true);
+                    setTimeout(() => setLegalContentSaved(false), 3000);
+                  } catch {}
+                }} className="w-full py-3.5 rounded-2xl flex items-center justify-center gap-2 text-sm font-bold text-white"
+                  style={{ background: legalContentSaved ? '#10B981' : '#8B5CF6' }}>
+                  {legalContentSaved ? <CheckCircle2 size={18} /> : <Save size={18} />}
+                  <span>{legalContentSaved ? 'تم الحفظ' : 'حفظ المحتوى'}</span>
+                </motion.button>
               </motion.div>
             )}
 

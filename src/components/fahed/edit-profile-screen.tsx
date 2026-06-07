@@ -13,6 +13,8 @@ import {
   Save,
   Loader2,
   Lock,
+  CreditCard,
+  ShieldCheck,
 } from 'lucide-react';
 import { useAppStore } from '@/lib/store';
 import { governorates, compressBase64Image } from '@/lib/utils';
@@ -38,9 +40,15 @@ export default function EditProfileScreen() {
   const { user, setUser, setActiveScreen } = useAppStore();
   const { showToast } = useToast();
 
-  const [name, setName] = useState(user?.name || '');
+  const isVerified = user?.kycStatus === 'verified';
+
+  const [firstName, setFirstName] = useState(user?.firstName || '');
+  const [secondName, setSecondName] = useState(user?.secondName || '');
+  const [thirdName, setThirdName] = useState(user?.thirdName || '');
+  const [familyName, setFamilyName] = useState(user?.familyName || '');
   const [phone, setPhone] = useState(user?.phone ? user.phone.replace('+967', '') : '');
   const [email] = useState(user?.email || '');
+  const [nationalId] = useState(user?.nationalId || '');
   const [selectedGovernorate, setSelectedGovernorate] = useState(user?.governorate || '');
   const [avatar, setAvatar] = useState(user?.avatar || '');
   const [avatarPreview, setAvatarPreview] = useState(user?.avatar || '');
@@ -52,13 +60,17 @@ export default function EditProfileScreen() {
   const validate = (): boolean => {
     const newErrors: Record<string, string> = {};
 
-    if (!name.trim() || name.trim().length < 3) {
-      newErrors.name = 'الاسم يجب أن يكون 3 أحرف على الأقل';
-    }
-
-    const cleanedPhone = phone.replace(/\D/g, '');
-    if (cleanedPhone.length !== 9 || !cleanedPhone.startsWith('7')) {
-      newErrors.phone = 'رقم الهاتف يجب أن يبدأ بـ 7 ويتكون من 9 أرقام';
+    if (!isVerified) {
+      if (!firstName.trim() || firstName.trim().length < 2) {
+        newErrors.firstName = 'الاسم الأول يجب أن يكون حرفين على الأقل';
+      }
+      if (!familyName.trim() || familyName.trim().length < 2) {
+        newErrors.familyName = 'اسم العائلة يجب أن يكون حرفين على الأقل';
+      }
+      const cleanedPhone = phone.replace(/\D/g, '');
+      if (cleanedPhone && (cleanedPhone.length !== 9 || !cleanedPhone.startsWith('7'))) {
+        newErrors.phone = 'رقم الهاتف يجب أن يبدأ بـ 7 ويتكون من 9 أرقام';
+      }
     }
 
     if (!selectedGovernorate) {
@@ -105,13 +117,21 @@ export default function EditProfileScreen() {
 
     setIsLoading(true);
     try {
-      const fullPhone = `+967${phone}`;
-      const updates = {
-        name: name.trim(),
-        phone: fullPhone,
+      const fullPhone = phone ? `+967${phone}` : user.phone;
+      const fullName = [firstName, secondName, thirdName, familyName].filter(n => n.trim()).join(' ');
+      const updates: Record<string, unknown> = {
         governorate: selectedGovernorate,
         avatar,
       };
+
+      if (!isVerified) {
+        updates.name = fullName;
+        updates.firstName = firstName.trim();
+        updates.secondName = secondName.trim();
+        updates.thirdName = thirdName.trim();
+        updates.familyName = familyName.trim();
+        updates.phone = fullPhone;
+      }
 
       // Update Firebase
       try {
@@ -124,8 +144,14 @@ export default function EditProfileScreen() {
       // Update local store
       setUser({
         ...user,
-        name: name.trim(),
-        phone: fullPhone,
+        ...(isVerified ? {} : {
+          name: fullName,
+          firstName: firstName.trim(),
+          secondName: secondName.trim(),
+          thirdName: thirdName.trim(),
+          familyName: familyName.trim(),
+          phone: fullPhone,
+        }),
         governorate: selectedGovernorate,
         avatar,
       });
@@ -149,10 +175,46 @@ export default function EditProfileScreen() {
     border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'}`,
   };
 
+  const frozenInputContainerStyle = {
+    background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.015)',
+    backdropFilter: 'blur(20px)',
+    WebkitBackdropFilter: 'blur(20px)',
+    border: `1px solid ${isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)'}`,
+    opacity: 0.7,
+  };
+
   const inputErrorStyle = (field: string) =>
     errors[field]
       ? { border: '1px solid #E60000', boxShadow: '0 0 0 2px rgba(230,0,0,0.1)' }
       : {};
+
+  // Frozen field renderer - for verified users
+  const renderFrozenField = (label: string, value: string, icon: React.ReactNode) => (
+    <div>
+      <label
+        className="text-xs font-medium mb-1.5 flex items-center gap-1"
+        style={{ color: isDark ? '#AAA' : '#888' }}
+      >
+        {label}
+        <Lock size={10} strokeWidth={1.5} color={isDark ? '#555' : '#CCC'} />
+      </label>
+      <div
+        className="flex items-center gap-2 px-4 py-3.5 rounded-2xl"
+        style={frozenInputContainerStyle}
+      >
+        {icon}
+        <input
+          type="text"
+          value={value}
+          readOnly
+          disabled
+          className="flex-1 bg-transparent outline-none text-sm"
+          style={{ color: isDark ? '#777' : '#AAA' }}
+        />
+        <Lock size={14} strokeWidth={1.5} color={isDark ? '#555' : '#CCC'} />
+      </div>
+    </div>
+  );
 
   return (
     <div
@@ -197,7 +259,7 @@ export default function EditProfileScreen() {
               {avatarPreview ? (
                 <img
                   src={avatarPreview}
-                  alt={name}
+                  alt={firstName || user?.name || ''}
                   className="w-full h-full object-cover"
                 />
               ) : (
@@ -225,39 +287,146 @@ export default function EditProfileScreen() {
           </div>
         </motion.div>
 
+        {/* Frozen data notice */}
+        {isVerified && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-5 p-4 rounded-2xl"
+            style={{
+              background: 'rgba(16,185,129,0.08)',
+              border: '1px solid rgba(16,185,129,0.15)',
+            }}
+          >
+            <div className="flex items-center gap-2 mb-1.5">
+              <ShieldCheck size={16} strokeWidth={1.5} color="#10B981" />
+              <span className="text-xs font-bold" style={{ color: '#10B981' }}>حساب موثق</span>
+            </div>
+            <p className="text-xs leading-relaxed" style={{ color: isDark ? '#AAA' : '#666' }}>
+              هذه البيانات مجمدة بسبب اكتمال التوثيق. لا يمكن تعديل الاسم أو رقم الهاتف أو البريد الإلكتروني أو رقم البطاقة الشخصية. يمكنك فقط تعديل المحافظة والصورة الشخصية.
+            </p>
+          </motion.div>
+        )}
+
         {/* Form */}
         <div className="space-y-4">
-          {/* Name */}
+          {/* First Name */}
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.05 }}
           >
-            <label
-              className="text-xs font-medium mb-1.5 block"
-              style={{ color: isDark ? '#AAA' : '#888' }}
-            >
-              الاسم الكامل
-            </label>
-            <div
-              className="flex items-center gap-2 px-4 py-3.5 rounded-2xl"
-              style={{ ...inputContainerStyle, ...inputErrorStyle('name') }}
-            >
-              <User size={18} strokeWidth={1.5} color="#E60000" />
-              <input
-                type="text"
-                placeholder="الاسم الكامل"
-                value={name}
-                onChange={(e) => {
-                  setName(e.target.value);
-                  if (errors.name) setErrors((prev) => ({ ...prev, name: '' }));
-                }}
-                className="flex-1 bg-transparent outline-none text-sm"
-                style={{ color: isDark ? '#FFF' : '#1a1a1a' }}
-              />
-            </div>
-            {errors.name && (
-              <p className="text-[10px] mt-1" style={{ color: '#E60000' }}>{errors.name}</p>
+            {isVerified ? (
+              renderFrozenField('الاسم الأول', firstName, <User size={18} strokeWidth={1.5} color={isDark ? '#555' : '#CCC'} />)
+            ) : (
+              <>
+                <label className="text-xs font-medium mb-1.5 block" style={{ color: isDark ? '#AAA' : '#888' }}>
+                  الاسم الأول
+                </label>
+                <div className="flex items-center gap-2 px-4 py-3.5 rounded-2xl" style={{ ...inputContainerStyle, ...inputErrorStyle('firstName') }}>
+                  <User size={18} strokeWidth={1.5} color="#E60000" />
+                  <input
+                    type="text"
+                    placeholder="الاسم الأول"
+                    value={firstName}
+                    onChange={(e) => {
+                      setFirstName(e.target.value);
+                      if (errors.firstName) setErrors((prev) => ({ ...prev, firstName: '' }));
+                    }}
+                    className="flex-1 bg-transparent outline-none text-sm"
+                    style={{ color: isDark ? '#FFF' : '#1a1a1a' }}
+                  />
+                </div>
+                {errors.firstName && <p className="text-[10px] mt-1" style={{ color: '#E60000' }}>{errors.firstName}</p>}
+              </>
+            )}
+          </motion.div>
+
+          {/* Second Name */}
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.08 }}
+          >
+            {isVerified ? (
+              renderFrozenField('الاسم الثاني', secondName, <User size={18} strokeWidth={1.5} color={isDark ? '#555' : '#CCC'} />)
+            ) : (
+              <>
+                <label className="text-xs font-medium mb-1.5 block" style={{ color: isDark ? '#AAA' : '#888' }}>
+                  الاسم الثاني
+                </label>
+                <div className="flex items-center gap-2 px-4 py-3.5 rounded-2xl" style={inputContainerStyle}>
+                  <User size={18} strokeWidth={1.5} color={isDark ? '#666' : '#CCC'} />
+                  <input
+                    type="text"
+                    placeholder="الاسم الثاني"
+                    value={secondName}
+                    onChange={(e) => setSecondName(e.target.value)}
+                    className="flex-1 bg-transparent outline-none text-sm"
+                    style={{ color: isDark ? '#FFF' : '#1a1a1a' }}
+                  />
+                </div>
+              </>
+            )}
+          </motion.div>
+
+          {/* Third Name */}
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.11 }}
+          >
+            {isVerified ? (
+              renderFrozenField('الاسم الثالث', thirdName, <User size={18} strokeWidth={1.5} color={isDark ? '#555' : '#CCC'} />)
+            ) : (
+              <>
+                <label className="text-xs font-medium mb-1.5 block" style={{ color: isDark ? '#AAA' : '#888' }}>
+                  الاسم الثالث
+                </label>
+                <div className="flex items-center gap-2 px-4 py-3.5 rounded-2xl" style={inputContainerStyle}>
+                  <User size={18} strokeWidth={1.5} color={isDark ? '#666' : '#CCC'} />
+                  <input
+                    type="text"
+                    placeholder="الاسم الثالث"
+                    value={thirdName}
+                    onChange={(e) => setThirdName(e.target.value)}
+                    className="flex-1 bg-transparent outline-none text-sm"
+                    style={{ color: isDark ? '#FFF' : '#1a1a1a' }}
+                  />
+                </div>
+              </>
+            )}
+          </motion.div>
+
+          {/* Family Name */}
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.14 }}
+          >
+            {isVerified ? (
+              renderFrozenField('اسم العائلة', familyName, <User size={18} strokeWidth={1.5} color={isDark ? '#555' : '#CCC'} />)
+            ) : (
+              <>
+                <label className="text-xs font-medium mb-1.5 block" style={{ color: isDark ? '#AAA' : '#888' }}>
+                  اسم العائلة
+                </label>
+                <div className="flex items-center gap-2 px-4 py-3.5 rounded-2xl" style={{ ...inputContainerStyle, ...inputErrorStyle('familyName') }}>
+                  <User size={18} strokeWidth={1.5} color="#E60000" />
+                  <input
+                    type="text"
+                    placeholder="اسم العائلة"
+                    value={familyName}
+                    onChange={(e) => {
+                      setFamilyName(e.target.value);
+                      if (errors.familyName) setErrors((prev) => ({ ...prev, familyName: '' }));
+                    }}
+                    className="flex-1 bg-transparent outline-none text-sm"
+                    style={{ color: isDark ? '#FFF' : '#1a1a1a' }}
+                  />
+                </div>
+                {errors.familyName && <p className="text-[10px] mt-1" style={{ color: '#E60000' }}>{errors.familyName}</p>}
+              </>
             )}
           </motion.div>
 
@@ -265,57 +434,47 @@ export default function EditProfileScreen() {
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.1 }}
+            transition={{ delay: 0.17 }}
           >
-            <label
-              className="text-xs font-medium mb-1.5 block"
-              style={{ color: isDark ? '#AAA' : '#888' }}
-            >
-              رقم الهاتف
-            </label>
-            <div
-              className="flex items-center gap-2 px-4 py-3.5 rounded-2xl"
-              style={{ ...inputContainerStyle, ...inputErrorStyle('phone') }}
-            >
-              <Phone size={18} strokeWidth={1.5} color="#E60000" />
-              <YemenFlagIndicator />
-              <span
-                className="text-sm font-medium shrink-0"
-                style={{ color: isDark ? '#AAA' : '#888' }}
-                dir="ltr"
-              >
-                +967
-              </span>
-              <div
-                className="w-px h-5 shrink-0"
-                style={{ background: isDark ? '#444' : '#DDD' }}
-              />
-              <input
-                type="tel"
-                placeholder="7XX XXX XXX"
-                value={phone}
-                onChange={(e) => handlePhoneChange(e.target.value)}
-                className="flex-1 bg-transparent outline-none text-sm"
-                style={{ color: isDark ? '#FFF' : '#1a1a1a' }}
-                dir="ltr"
-              />
-            </div>
-            {errors.phone && (
-              <p className="text-[10px] mt-1" style={{ color: '#E60000' }}>{errors.phone}</p>
+            {isVerified ? (
+              renderFrozenField('رقم الهاتف', user?.phone || '', <Phone size={18} strokeWidth={1.5} color={isDark ? '#555' : '#CCC'} />)
+            ) : (
+              <>
+                <label className="text-xs font-medium mb-1.5 block" style={{ color: isDark ? '#AAA' : '#888' }}>
+                  رقم الهاتف
+                </label>
+                <div className="flex items-center gap-2 px-4 py-3.5 rounded-2xl" style={{ ...inputContainerStyle, ...inputErrorStyle('phone') }}>
+                  <Phone size={18} strokeWidth={1.5} color="#E60000" />
+                  <YemenFlagIndicator />
+                  <span className="text-sm font-medium shrink-0" style={{ color: isDark ? '#AAA' : '#888' }} dir="ltr">+967</span>
+                  <div className="w-px h-5 shrink-0" style={{ background: isDark ? '#444' : '#DDD' }} />
+                  <input
+                    type="tel"
+                    placeholder="7XX XXX XXX"
+                    value={phone}
+                    onChange={(e) => handlePhoneChange(e.target.value)}
+                    className="flex-1 bg-transparent outline-none text-sm"
+                    style={{ color: isDark ? '#FFF' : '#1a1a1a' }}
+                    dir="ltr"
+                  />
+                </div>
+                {errors.phone && <p className="text-[10px] mt-1" style={{ color: '#E60000' }}>{errors.phone}</p>}
+              </>
             )}
           </motion.div>
 
-          {/* Email (readonly) */}
+          {/* Email (always readonly) */}
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.15 }}
+            transition={{ delay: 0.2 }}
           >
             <label
-              className="text-xs font-medium mb-1.5 block"
+              className="text-xs font-medium mb-1.5 flex items-center gap-1"
               style={{ color: isDark ? '#AAA' : '#888' }}
             >
               البريد الإلكتروني
+              <Lock size={10} strokeWidth={1.5} color={isDark ? '#555' : '#CCC'} />
             </label>
             <div
               className="flex items-center gap-2 px-4 py-3.5 rounded-2xl"
@@ -340,11 +499,44 @@ export default function EditProfileScreen() {
             </p>
           </motion.div>
 
-          {/* Governorate */}
+          {/* National ID (frozen when verified) */}
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.2 }}
+            transition={{ delay: 0.23 }}
+          >
+            {isVerified ? (
+              renderFrozenField('رقم البطاقة الشخصية', nationalId, <CreditCard size={18} strokeWidth={1.5} color={isDark ? '#555' : '#CCC'} />)
+            ) : (
+              <>
+                <label className="text-xs font-medium mb-1.5 flex items-center gap-1" style={{ color: isDark ? '#AAA' : '#888' }}>
+                  رقم البطاقة الشخصية
+                  <Lock size={10} strokeWidth={1.5} color={isDark ? '#555' : '#CCC'} />
+                </label>
+                <div className="flex items-center gap-2 px-4 py-3.5 rounded-2xl" style={{ ...inputContainerStyle, opacity: 0.6 }}>
+                  <CreditCard size={18} strokeWidth={1.5} color="#E60000" />
+                  <input
+                    type="text"
+                    value={nationalId}
+                    readOnly
+                    className="flex-1 bg-transparent outline-none text-sm"
+                    style={{ color: isDark ? '#888' : '#AAA' }}
+                    dir="ltr"
+                  />
+                  <Lock size={14} strokeWidth={1.5} color={isDark ? '#555' : '#CCC'} />
+                </div>
+                <p className="text-[10px] mt-1" style={{ color: isDark ? '#555' : '#CCC' }}>
+                  لا يمكن تغيير رقم البطاقة بعد التسجيل
+                </p>
+              </>
+            )}
+          </motion.div>
+
+          {/* Governorate (always editable) */}
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.26 }}
           >
             <label
               className="text-xs font-medium mb-1.5 block"

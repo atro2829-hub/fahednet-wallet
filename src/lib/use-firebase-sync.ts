@@ -14,9 +14,10 @@ import { useAppStore } from '@/lib/store';
  * - On reconnect: Refreshes user data and transactions
  */
 export function useFirebaseSync() {
-  const { user, isAuthenticated, setUser, setTransactions } = useAppStore();
+  const { user, isAuthenticated, setUser, setTransactions, setNotifications, addNotification } = useAppStore();
   const unsubscribeRef = useRef<(() => void) | null>(null);
   const txUnsubscribeRef = useRef<(() => void) | null>(null);
+  const notifUnsubscribeRef = useRef<(() => void) | null>(null);
   const isRefreshing = useRef(false);
 
   // Fetch fresh user data from Firebase and update store
@@ -39,6 +40,11 @@ export function useFirebaseSync() {
           currentUser.balanceSAR !== (data.balanceSAR || 0) ||
           currentUser.balanceUSD !== (data.balanceUSD || 0) ||
           currentUser.name !== (data.name || '') ||
+          currentUser.firstName !== (data.firstName || '') ||
+          currentUser.secondName !== (data.secondName || '') ||
+          currentUser.thirdName !== (data.thirdName || '') ||
+          currentUser.familyName !== (data.familyName || '') ||
+          currentUser.nationalId !== (data.nationalId || '') ||
           currentUser.kycStatus !== (data.kycStatus || 'pending') ||
           currentUser.isBlocked !== (data.isBlocked || false) ||
           currentUser.phone !== (data.phone || '') ||
@@ -49,11 +55,17 @@ export function useFirebaseSync() {
           currentUser.role !== (data.role || 'user') ||
           currentUser.theme !== (data.theme || 'light')
         )) {
+          const fullName = [data.firstName, data.secondName, data.thirdName, data.familyName].filter((n: string) => n && n.trim()).join(' ') || data.name || '';
           setUser({
             id: user.id,
             email: data.email || currentUser.email,
             phone: data.phone || '',
-            name: data.name || '',
+            name: fullName,
+            firstName: data.firstName || '',
+            secondName: data.secondName || '',
+            thirdName: data.thirdName || '',
+            familyName: data.familyName || '',
+            nationalId: data.nationalId || '',
             avatar: data.avatar || '',
             role: data.role || 'user',
             userId: data.userId || '',
@@ -115,6 +127,36 @@ export function useFirebaseSync() {
     }
   }, [user?.id, isAuthenticated, setTransactions]);
 
+  // Fetch notifications from Firebase
+  const refreshNotifications = useCallback(async () => {
+    if (!user?.id || !isAuthenticated) return;
+
+    try {
+      const notifRef = ref(database, `notifications/${user.id}`);
+      const snapshot = await get(notifRef);
+
+      if (snapshot.exists()) {
+        const data = snapshot.val();
+        const notifications = Object.values(data)
+          .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+          .map((n: any) => ({
+            id: n.id || '',
+            title: n.title || '',
+            body: n.body || '',
+            type: n.type || 'info' as const,
+            isRead: n.isRead || false,
+            createdAt: n.createdAt || new Date().toISOString(),
+          }));
+
+        setNotifications(notifications);
+      } else {
+        setNotifications([]);
+      }
+    } catch (error) {
+      console.error('Firebase notifications sync error:', error);
+    }
+  }, [user?.id, isAuthenticated, setNotifications]);
+
   // Set up real-time listener for user data
   useEffect(() => {
     if (!user?.id || !isAuthenticated) {
@@ -126,6 +168,10 @@ export function useFirebaseSync() {
       if (txUnsubscribeRef.current) {
         txUnsubscribeRef.current();
         txUnsubscribeRef.current = null;
+      }
+      if (notifUnsubscribeRef.current) {
+        notifUnsubscribeRef.current();
+        notifUnsubscribeRef.current = null;
       }
       return;
     }
@@ -139,11 +185,17 @@ export function useFirebaseSync() {
         const currentUser = useAppStore.getState().user;
         
         if (currentUser) {
+          const fullName = [data.firstName, data.secondName, data.thirdName, data.familyName].filter((n: string) => n && n.trim()).join(' ') || data.name || '';
           setUser({
             id: currentUser.id,
             email: data.email || currentUser.email,
             phone: data.phone || '',
-            name: data.name || '',
+            name: fullName,
+            firstName: data.firstName || '',
+            secondName: data.secondName || '',
+            thirdName: data.thirdName || '',
+            familyName: data.familyName || '',
+            nationalId: data.nationalId || '',
             avatar: data.avatar || '',
             role: data.role || 'user',
             userId: data.userId || '',
@@ -200,26 +252,56 @@ export function useFirebaseSync() {
 
     txUnsubscribeRef.current = txUnsubscribe;
 
+    // Real-time listener for notifications
+    const notifRef = ref(database, `notifications/${user.id}`);
+    const notifUnsubscribe = onValue(notifRef, (snapshot) => {
+      if (snapshot.exists()) {
+        const data = snapshot.val();
+        const notifications = Object.values(data)
+          .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+          .map((n: any) => ({
+            id: n.id || '',
+            title: n.title || '',
+            body: n.body || '',
+            type: n.type || 'info' as const,
+            isRead: n.isRead || false,
+            createdAt: n.createdAt || new Date().toISOString(),
+          }));
+
+        setNotifications(notifications);
+      } else {
+        setNotifications([]);
+      }
+    }, (error) => {
+      console.error('Firebase notifications onValue error:', error);
+    });
+
+    notifUnsubscribeRef.current = notifUnsubscribe;
+
     return () => {
       unsubscribe();
       unsubscribeRef.current = null;
       txUnsubscribe();
       txUnsubscribeRef.current = null;
+      notifUnsubscribe();
+      notifUnsubscribeRef.current = null;
     };
-  }, [user?.id, isAuthenticated, setUser, setTransactions]);
+  }, [user?.id, isAuthenticated, setUser, setTransactions, setNotifications]);
 
   // Refresh on mount
   useEffect(() => {
     if (isAuthenticated && user?.id) {
       refreshUser();
+      refreshNotifications();
     }
-  }, [isAuthenticated, user?.id, refreshUser]);
+  }, [isAuthenticated, user?.id, refreshUser, refreshNotifications]);
 
   // Refresh on window focus (user returns to the app)
   useEffect(() => {
     const handleFocus = () => {
       if (isAuthenticated && user?.id) {
         refreshUser();
+        refreshNotifications();
       }
     };
 
@@ -229,6 +311,7 @@ export function useFirebaseSync() {
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible' && isAuthenticated && user?.id) {
         refreshUser();
+        refreshNotifications();
       }
     };
 
@@ -238,6 +321,7 @@ export function useFirebaseSync() {
     const handleOnline = () => {
       if (isAuthenticated && user?.id) {
         refreshUser();
+        refreshNotifications();
       }
     };
 
@@ -248,7 +332,7 @@ export function useFirebaseSync() {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('online', handleOnline);
     };
-  }, [isAuthenticated, user?.id, refreshUser]);
+  }, [isAuthenticated, user?.id, refreshUser, refreshNotifications]);
 
   return { refreshUser };
 }

@@ -22,6 +22,8 @@ import {
   CreditCard,
   Globe,
   LayoutDashboard,
+  HelpCircle,
+  Info,
 } from 'lucide-react';
 import { useAppStore } from '@/lib/store';
 import { database } from '@/lib/firebase';
@@ -84,8 +86,10 @@ const settingsSections: SettingsSection[] = [
     icon: FileText,
     iconColor: '#2563EB',
     items: [
-      { id: 'terms', label: 'الشروط والأحكام', icon: FileText, color: '#2563EB' },
-      { id: 'privacy-policy', label: 'سياسة الخصوصية', icon: Shield, color: '#8B5CF6' },
+      { id: 'terms', label: 'الشروط والأحكام', icon: FileText, color: '#2563EB', screen: 'legal' },
+      { id: 'privacy-policy', label: 'سياسة الخصوصية', icon: Shield, color: '#8B5CF6', screen: 'legal' },
+      { id: 'faq', label: 'الأسئلة الشائعة', icon: HelpCircle, color: '#F59E0B', screen: 'legal' },
+      { id: 'about', label: 'لمحة عن التطبيق', icon: Info, color: '#10B981', screen: 'legal' },
     ],
   },
   {

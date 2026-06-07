@@ -63,7 +63,7 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
       {phase !== 'exiting' ? (
         <motion.div
           className="fixed inset-0 flex flex-col items-center justify-center overflow-hidden"
-          style={{ background: '#FFFFFF' }}
+          style={{ background: 'linear-gradient(145deg, #E60000 0%, #8B0000 60%, #5C0000 100%)' }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.4, ease: 'easeInOut' }}
         >
@@ -111,10 +111,10 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
                       style={{
                         width: '100%',
                         height: '100%',
-                        background: '#E8E8E8',
+                        background: 'rgba(255,255,255,0.2)',
                         borderRadius: 4,
                         transform: 'rotate(45deg) scale(0.7)',
-                        border: '1.5px solid #D0D0D0',
+                        border: '1.5px solid rgba(255,255,255,0.3)',
                       }}
                     />
                   </motion.div>
@@ -142,10 +142,10 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
                 style={{
                   width: '100%',
                   height: '100%',
-                  background: '#E60000',
+                  background: '#FFFFFF',
                   borderRadius: 6,
                   transform: 'rotate(45deg) scale(0.7)',
-                  boxShadow: '0 4px 12px rgba(230,0,0,0.3)',
+                  boxShadow: '0 4px 12px rgba(255,255,255,0.5)',
                 }}
               />
             </motion.div>
@@ -169,20 +169,20 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
             >
               <img src={LOGO_BASE64} alt="محفظة الجنوب" className="w-full h-full object-cover" />
             </div>
-            <h1 className="text-2xl font-bold" style={{ color: '#1a1a1a' }}>محفظة الجنوب</h1>
-            <p className="text-sm mt-1" style={{ color: '#999' }}>محفظتك الرقمية الموثوقة</p>
+            <h1 className="text-2xl font-bold" style={{ color: '#FFFFFF' }}>محفظة الجنوب</h1>
+            <p className="text-sm mt-1" style={{ color: 'rgba(255,255,255,0.7)' }}>محفظتك الرقمية الموثوقة</p>
           </motion.div>
 
           {/* Loading bar */}
           <div className="absolute bottom-16 left-12 right-12">
             <div
               className="h-[3px] rounded-full overflow-hidden"
-              style={{ background: 'rgba(0,0,0,0.06)' }}
+              style={{ background: 'rgba(255,255,255,0.2)' }}
             >
               <motion.div
                 className="h-full rounded-full"
                 style={{
-                  background: '#E60000',
+                  background: '#FFFFFF',
                   width: `${progress}%`,
                 }}
                 transition={{ duration: 0.05 }}
@@ -193,7 +193,7 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
       ) : (
         <motion.div
           className="fixed inset-0"
-          style={{ background: '#FFFFFF' }}
+          style={{ background: 'linear-gradient(145deg, #E60000 0%, #8B0000 60%, #5C0000 100%)' }}
           initial={{ opacity: 1 }}
           animate={{ opacity: 0 }}
           transition={{ duration: 0.4, ease: 'easeInOut' }}

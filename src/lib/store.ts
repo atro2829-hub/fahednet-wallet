@@ -5,7 +5,12 @@ interface User {
   id: string;
   email: string;
   phone: string;
-  name: string;
+  name: string; // computed: ${firstName} ${secondName} ${thirdName} ${familyName}
+  firstName: string;
+  secondName: string;
+  thirdName: string;
+  familyName: string;
+  nationalId: string;
   avatar: string;
   role: 'user' | 'admin' | 'owner';
   userId: string;
@@ -354,14 +359,10 @@ const defaultProviders: ServiceProvider[] = [
   { id: 'tron', categoryId: 'crypto', name: 'ترون TRX', color: '#FF0013', icon: '', isActive: true, inputLabel: 'محفظة ترون', inputType: 'text' },
 
   // استثمار الكريبتو
-  { id: 'btc-daily', categoryId: 'crypto-invest', name: 'بيتكوين يومي', color: '#F7931A', icon: '', isActive: true, inputLabel: 'مبلغ الاستثمار', inputType: 'text' },
-  { id: 'btc-weekly', categoryId: 'crypto-invest', name: 'بيتكوين أسبوعي', color: '#F7931A', icon: '', isActive: true, inputLabel: 'مبلغ الاستثمار', inputType: 'text' },
-  { id: 'btc-monthly', categoryId: 'crypto-invest', name: 'بيتكوين شهري', color: '#F7931A', icon: '', isActive: true, inputLabel: 'مبلغ الاستثمار', inputType: 'text' },
-  { id: 'eth-daily', categoryId: 'crypto-invest', name: 'إيثريوم يومي', color: '#627EEA', icon: '', isActive: true, inputLabel: 'مبلغ الاستثمار', inputType: 'text' },
-  { id: 'eth-weekly', categoryId: 'crypto-invest', name: 'إيثريوم أسبوعي', color: '#627EEA', icon: '', isActive: true, inputLabel: 'مبلغ الاستثمار', inputType: 'text' },
-  { id: 'eth-monthly', categoryId: 'crypto-invest', name: 'إيثريوم شهري', color: '#627EEA', icon: '', isActive: true, inputLabel: 'مبلغ الاستثمار', inputType: 'text' },
   { id: 'usdt-daily', categoryId: 'crypto-invest', name: 'USDT يومي', color: '#26A17B', icon: '', isActive: true, inputLabel: 'مبلغ الاستثمار', inputType: 'text' },
+  { id: 'usdt-weekly', categoryId: 'crypto-invest', name: 'USDT أسبوعي', color: '#26A17B', icon: '', isActive: true, inputLabel: 'مبلغ الاستثمار', inputType: 'text' },
   { id: 'usdt-monthly', categoryId: 'crypto-invest', name: 'USDT شهري', color: '#26A17B', icon: '', isActive: true, inputLabel: 'مبلغ الاستثمار', inputType: 'text' },
+  { id: 'usdt-quarterly', categoryId: 'crypto-invest', name: 'USDT ربع سنوي', color: '#26A17B', icon: '', isActive: true, inputLabel: 'مبلغ الاستثمار', inputType: 'text' },
 ];
 
 // Default packages — comprehensive product catalog with real YER market prices
@@ -628,26 +629,23 @@ const defaultPackages: ProductPackage[] = [
   { id: 'mun-1', providerId: 'municipal', name: 'رسوم رخصة تجارية', price: 500, currency: 'YER', executionType: 'manual', isActive: true },
   { id: 'mun-2', providerId: 'municipal', name: 'رسوم بناء', price: 1000, currency: 'YER', executionType: 'manual', isActive: true },
 
-  // ═══════════════════════════════════════════════════════════
-  //  CRYPTO INVESTMENT PLANS
-  // ═══════════════════════════════════════════════════════════
-  // BTC investment plans
-  { id: 'btc-d-1', providerId: 'btc-daily', name: 'خطة يومية 1% - 50$', price: 77500, currency: 'YER', executionType: 'manual', isActive: true },
-  { id: 'btc-d-2', providerId: 'btc-daily', name: 'خطة يومية 1% - 100$', price: 155000, currency: 'YER', executionType: 'manual', isActive: true },
-  { id: 'btc-d-3', providerId: 'btc-daily', name: 'خطة يومية 1.5% - 500$', price: 775000, currency: 'YER', executionType: 'manual', isActive: true },
-  { id: 'btc-w-1', providerId: 'btc-weekly', name: 'خطة أسبوعية 8% - 100$', price: 155000, currency: 'YER', executionType: 'manual', isActive: true },
-  { id: 'btc-w-2', providerId: 'btc-weekly', name: 'خطة أسبوعية 10% - 500$', price: 775000, currency: 'YER', executionType: 'manual', isActive: true },
-  { id: 'btc-m-1', providerId: 'btc-monthly', name: 'خطة شهرية 25% - 200$', price: 310000, currency: 'YER', executionType: 'manual', isActive: true },
-  { id: 'btc-m-2', providerId: 'btc-monthly', name: 'خطة شهرية 35% - 1000$', price: 1550000, currency: 'YER', executionType: 'manual', isActive: true },
-  // ETH investment plans
-  { id: 'eth-d-1', providerId: 'eth-daily', name: 'خطة يومية 1% - 50$', price: 77500, currency: 'YER', executionType: 'manual', isActive: true },
-  { id: 'eth-d-2', providerId: 'eth-daily', name: 'خطة يومية 1.5% - 200$', price: 310000, currency: 'YER', executionType: 'manual', isActive: true },
-  { id: 'eth-w-1', providerId: 'eth-weekly', name: 'خطة أسبوعية 8% - 100$', price: 155000, currency: 'YER', executionType: 'manual', isActive: true },
-  { id: 'eth-m-1', providerId: 'eth-monthly', name: 'خطة شهرية 25% - 300$', price: 465000, currency: 'YER', executionType: 'manual', isActive: true },
-  // USDT investment plans
-  { id: 'usdt-d-1', providerId: 'usdt-daily', name: 'خطة يومية 0.8% - 100$', price: 155000, currency: 'YER', executionType: 'manual', isActive: true },
-  { id: 'usdt-d-2', providerId: 'usdt-daily', name: 'خطة يومية 1.2% - 500$', price: 775000, currency: 'YER', executionType: 'manual', isActive: true },
-  { id: 'usdt-m-1', providerId: 'usdt-monthly', name: 'خطة شهرية 20% - 200$', price: 310000, currency: 'YER', executionType: 'manual', isActive: true },
+  // USDT Investment Plans
+  { id: 'usdt-inv-daily-1', providerId: 'usdt-daily', name: 'خطة يومية 10 USDT', price: 15500, currency: 'YER', executionType: 'manual', isActive: true },
+  { id: 'usdt-inv-daily-2', providerId: 'usdt-daily', name: 'خطة يومية 25 USDT', price: 38750, currency: 'YER', executionType: 'manual', isActive: true },
+  { id: 'usdt-inv-daily-3', providerId: 'usdt-daily', name: 'خطة يومية 50 USDT', price: 77500, currency: 'YER', executionType: 'manual', isActive: true },
+  { id: 'usdt-inv-daily-4', providerId: 'usdt-daily', name: 'خطة يومية 100 USDT', price: 155000, currency: 'YER', executionType: 'manual', isActive: true },
+  { id: 'usdt-inv-weekly-1', providerId: 'usdt-weekly', name: 'خطة أسبوعية 25 USDT', price: 38750, currency: 'YER', executionType: 'manual', isActive: true },
+  { id: 'usdt-inv-weekly-2', providerId: 'usdt-weekly', name: 'خطة أسبوعية 50 USDT', price: 77500, currency: 'YER', executionType: 'manual', isActive: true },
+  { id: 'usdt-inv-weekly-3', providerId: 'usdt-weekly', name: 'خطة أسبوعية 100 USDT', price: 155000, currency: 'YER', executionType: 'manual', isActive: true },
+  { id: 'usdt-inv-weekly-4', providerId: 'usdt-weekly', name: 'خطة أسبوعية 250 USDT', price: 387500, currency: 'YER', executionType: 'manual', isActive: true },
+  { id: 'usdt-inv-monthly-1', providerId: 'usdt-monthly', name: 'خطة شهرية 50 USDT', price: 77500, currency: 'YER', executionType: 'manual', isActive: true },
+  { id: 'usdt-inv-monthly-2', providerId: 'usdt-monthly', name: 'خطة شهرية 100 USDT', price: 155000, currency: 'YER', executionType: 'manual', isActive: true },
+  { id: 'usdt-inv-monthly-3', providerId: 'usdt-monthly', name: 'خطة شهرية 250 USDT', price: 387500, currency: 'YER', executionType: 'manual', isActive: true },
+  { id: 'usdt-inv-monthly-4', providerId: 'usdt-monthly', name: 'خطة شهرية 500 USDT', price: 775000, currency: 'YER', executionType: 'manual', isActive: true },
+  { id: 'usdt-inv-quarterly-1', providerId: 'usdt-quarterly', name: 'خطة ربع سنوية 100 USDT', price: 155000, currency: 'YER', executionType: 'manual', isActive: true },
+  { id: 'usdt-inv-quarterly-2', providerId: 'usdt-quarterly', name: 'خطة ربع سنوية 250 USDT', price: 387500, currency: 'YER', executionType: 'manual', isActive: true },
+  { id: 'usdt-inv-quarterly-3', providerId: 'usdt-quarterly', name: 'خطة ربع سنوية 500 USDT', price: 775000, currency: 'YER', executionType: 'manual', isActive: true },
+  { id: 'usdt-inv-quarterly-4', providerId: 'usdt-quarterly', name: 'خطة ربع سنوية 1000 USDT', price: 1550000, currency: 'YER', executionType: 'manual', isActive: true },
 
   // ═══════════════════════════════════════════════════════════
   //  CRYPTO BUY/SELL

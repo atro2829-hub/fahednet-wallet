@@ -336,6 +336,7 @@ export const serviceIcons: Record<string, string> = {
   // Additional Services
   'deposit': svgToDataUrl(depositSvg),
   'exchange': svgToDataUrl(exchangeSvg),
+  'currency-exchange': svgToDataUrl(exchangeSvg),
   'savings': svgToDataUrl(savingsSvg),
 };
 

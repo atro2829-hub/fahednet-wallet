@@ -85,6 +85,7 @@ const homeServices = [
   { id: 'digital-wallet', label: 'المحفظة الرقمية', iconKey: 'digital-wallet' },
   { id: 'crypto', label: '\u0627\u0644\u0643\u0631\u064A\u0628\u062A\u0648', iconKey: 'crypto-category' },
   { id: 'crypto-invest', label: '\u0627\u0633\u062A\u062B\u0645\u0627\u0631 \u0627\u0644\u0643\u0631\u064A\u0628\u062A\u0648', iconKey: 'crypto-invest-category' },
+  { id: 'currency-exchange', label: '\u062A\u0628\u062F\u064A\u0644 \u0627\u0644\u0639\u0645\u0644\u0627\u062A', iconKey: 'currency-exchange' },
 ];
 
 const promoItems = [
@@ -406,9 +407,6 @@ export default function HomeScreen() {
   }, []);
 
   const handleServiceClick = (serviceId: string) => {
-    // Category IDs that navigate to dedicated category-detail screens
-    const categoryIds = ['telecom', 'entertainment', 'cards', 'electricity', 'government', 'internet', 'crypto', 'crypto-invest'];
-    
     switch (serviceId) {
       case 'transfer':
         setTransferOpen(true);
@@ -419,8 +417,17 @@ export default function HomeScreen() {
       case 'digital-wallet':
         useAppStore.getState().setActiveTab('wallet');
         break;
-      default:
-        // All category services navigate to their dedicated screen
+      case 'crypto':
+      case 'crypto-invest':
+        useAppStore.getState().setSelectedCategory(serviceId);
+        useAppStore.getState().setActiveScreen('category-detail');
+        break;
+      case 'currency-exchange':
+        setActiveScreen('exchange');
+        break;
+      default: {
+        // Other category services navigate to their dedicated screen
+        const categoryIds = ['telecom', 'entertainment', 'cards', 'electricity', 'government', 'internet'];
         if (categoryIds.includes(serviceId)) {
           useAppStore.getState().setSelectedCategory(serviceId);
           useAppStore.getState().setActiveScreen('category-detail');
@@ -428,6 +435,7 @@ export default function HomeScreen() {
           useAppStore.getState().setActiveTab('services');
         }
         break;
+      }
     }
   };
 
@@ -638,19 +646,18 @@ export default function HomeScreen() {
             ))}
           </div>
 
-          {/* Pagination Dots */}
+          {/* Pagination Dots - Tiny Circles */}
           <div className="flex items-center justify-center gap-1.5 mt-4" dir="rtl">
             {balanceCards.map((_, index) => (
-              <motion.button
+              <div
                 key={index}
+                className="rounded-full transition-all duration-300 cursor-pointer"
                 onClick={() => snapToCard(index)}
-                className="rounded-full"
-                animate={{
-                  width: activeCardIndex === index ? 8 : 3,
-                  backgroundColor: activeCardIndex === index ? balanceCards[index].accentColor : (isDark ? '#333' : '#D4D4D4'),
+                style={{
+                  width: activeCardIndex === index ? 5 : 3,
+                  height: activeCardIndex === index ? 5 : 3,
+                  background: activeCardIndex === index ? balanceCards[index].accentColor : (isDark ? '#333' : '#D4D4D4'),
                 }}
-                transition={{ duration: 0.3, ease: 'easeInOut' }}
-                style={{ height: activeCardIndex === index ? 3 : 3 }}
               />
             ))}
           </div>
@@ -729,8 +736,8 @@ export default function HomeScreen() {
                   <button
                     key={i}
                     onClick={(e) => { e.stopPropagation(); setBannerIndex(i); }}
-                    className="h-[3px] rounded-full transition-all duration-300"
-                    style={{ width: i === bannerIndex ? 12 : 4, background: i === bannerIndex ? 'rgba(255,255,255,0.8)' : 'rgba(255,255,255,0.25)' }}
+                    className="rounded-full transition-all duration-300"
+                    style={{ width: i === bannerIndex ? 5 : 3, height: i === bannerIndex ? 5 : 3, background: i === bannerIndex ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.3)' }}
                   />
                 ))}
               </div>
@@ -783,7 +790,7 @@ export default function HomeScreen() {
 
             <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex items-center gap-1">
               {promoItems.map((_, i) => (
-                <div key={i} className="h-[3px] rounded-full transition-all duration-300" style={{ width: i === promoIndex ? 12 : 4, background: i === promoIndex ? 'rgba(255,255,255,0.8)' : 'rgba(255,255,255,0.25)' }} />
+                <div key={i} className="rounded-full transition-all duration-300" style={{ width: i === promoIndex ? 5 : 3, height: i === promoIndex ? 5 : 3, background: i === promoIndex ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.3)' }} />
               ))}
             </div>
           </div>
