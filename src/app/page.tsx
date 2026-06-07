@@ -213,6 +213,61 @@ function AppContent() {
     }
   }, [storeTheme, setTheme]);
 
+  // Initialize Capacitor Push Notifications (safe, non-blocking, won't crash)
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    const initPushNotifications = async () => {
+      try {
+        // Check if running in Capacitor native environment
+        const win = window as unknown as { Capacitor?: { isNativePlatform?: () => boolean } };
+        if (!win.Capacitor || !win.Capacitor.isNativePlatform || !win.Capacitor.isNativePlatform()) {
+          return; // Not a native platform, skip
+        }
+
+        const { PushNotifications } = await import('@capacitor/push-notifications');
+
+        // Request permission
+        const permResult = await PushNotifications.requestPermissions();
+        if (permResult.receive !== 'granted') {
+          return; // Permission denied, that's OK
+        }
+
+        // Register for push notifications
+        await PushNotifications.register();
+
+        // Listen for registration token
+        PushNotifications.addListener('registration', (token) => {
+          console.log('Push registration success, token:', token.value);
+          localStorage.setItem('notification-permission', 'granted');
+        });
+
+        // Listen for registration errors (don't crash, just log)
+        PushNotifications.addListener('registrationError', (error) => {
+          console.warn('Push registration error (non-fatal):', error);
+        });
+
+        // Listen for push notification received
+        PushNotifications.addListener('pushNotificationReceived', (notification) => {
+          console.log('Push notification received:', notification);
+        });
+
+        // Listen for push notification action
+        PushNotifications.addListener('pushNotificationActionPerformed', (action) => {
+          console.log('Push notification action:', action);
+        });
+
+      } catch (error) {
+        // If anything fails, just log it and continue - don't crash the app
+        console.warn('Push notifications initialization failed (non-fatal):', error);
+      }
+    };
+
+    // Delay initialization to avoid interfering with app startup
+    const timer = setTimeout(initPushNotifications, 3000);
+    return () => clearTimeout(timer);
+  }, [isAuthenticated]);
+
   const handleSplashComplete = () => {
     setSplashDone(true);
     // Phase transition will happen in the useEffect below
