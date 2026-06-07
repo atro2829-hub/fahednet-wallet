@@ -46,7 +46,7 @@ interface Notification {
 export interface ServiceCategory {
   id: string;
   name: string;
-  type: 'telecom' | 'internet' | 'games' | 'cards' | 'electricity' | 'government';
+  type: 'telecom' | 'internet' | 'games' | 'cards' | 'electricity' | 'government' | 'crypto';
   icon: string; // Base64 or icon key
 }
 
@@ -285,6 +285,8 @@ const defaultCategories: ServiceCategory[] = [
   { id: 'cards', name: 'بطاقات الرقمية', type: 'cards', icon: 'cards' },
   { id: 'electricity', name: 'الكهرباء والماء', type: 'electricity', icon: 'electricity' },
   { id: 'government', name: 'خدمات حكومية', type: 'government', icon: 'government' },
+  { id: 'crypto', name: 'الكريبتو', type: 'crypto', icon: 'crypto' },
+  { id: 'crypto-invest', name: 'استثمار الكريبتو', type: 'crypto', icon: 'crypto-invest' },
 ];
 
 // Default service providers for Yemen
@@ -342,6 +344,24 @@ const defaultProviders: ServiceProvider[] = [
   { id: 'passport', categoryId: 'government', name: 'جواز السفر', color: '#1E40AF', icon: '', isActive: true, inputLabel: 'رقم الجواز', inputType: 'text' },
   { id: 'traffic', categoryId: 'government', name: 'المرور', color: '#DC2626', icon: '', isActive: true, inputLabel: 'رقم اللوحة', inputType: 'text' },
   { id: 'municipal', categoryId: 'government', name: 'البلدية', color: '#059669', icon: '', isActive: true, inputLabel: 'رقم الرخصة', inputType: 'text' },
+
+  // الكريبتو
+  { id: 'bitcoin', categoryId: 'crypto', name: 'بيتكوين BTC', color: '#F7931A', icon: '', isActive: true, inputLabel: 'محفظة البيتكوين', inputType: 'text' },
+  { id: 'ethereum', categoryId: 'crypto', name: 'إيثريوم ETH', color: '#627EEA', icon: '', isActive: true, inputLabel: 'محفظة الإيثريوم', inputType: 'text' },
+  { id: 'usdt', categoryId: 'crypto', name: 'تيثر USDT', color: '#26A17B', icon: '', isActive: true, inputLabel: 'محفظة USDT', inputType: 'text' },
+  { id: 'bnb', categoryId: 'crypto', name: 'بينانس BNB', color: '#F3BA2F', icon: '', isActive: true, inputLabel: 'محفظة بينانس', inputType: 'text' },
+  { id: 'solana', categoryId: 'crypto', name: 'سولانا SOL', color: '#9945FF', icon: '', isActive: true, inputLabel: 'محفظة سولانا', inputType: 'text' },
+  { id: 'tron', categoryId: 'crypto', name: 'ترون TRX', color: '#FF0013', icon: '', isActive: true, inputLabel: 'محفظة ترون', inputType: 'text' },
+
+  // استثمار الكريبتو
+  { id: 'btc-daily', categoryId: 'crypto-invest', name: 'بيتكوين يومي', color: '#F7931A', icon: '', isActive: true, inputLabel: 'مبلغ الاستثمار', inputType: 'text' },
+  { id: 'btc-weekly', categoryId: 'crypto-invest', name: 'بيتكوين أسبوعي', color: '#F7931A', icon: '', isActive: true, inputLabel: 'مبلغ الاستثمار', inputType: 'text' },
+  { id: 'btc-monthly', categoryId: 'crypto-invest', name: 'بيتكوين شهري', color: '#F7931A', icon: '', isActive: true, inputLabel: 'مبلغ الاستثمار', inputType: 'text' },
+  { id: 'eth-daily', categoryId: 'crypto-invest', name: 'إيثريوم يومي', color: '#627EEA', icon: '', isActive: true, inputLabel: 'مبلغ الاستثمار', inputType: 'text' },
+  { id: 'eth-weekly', categoryId: 'crypto-invest', name: 'إيثريوم أسبوعي', color: '#627EEA', icon: '', isActive: true, inputLabel: 'مبلغ الاستثمار', inputType: 'text' },
+  { id: 'eth-monthly', categoryId: 'crypto-invest', name: 'إيثريوم شهري', color: '#627EEA', icon: '', isActive: true, inputLabel: 'مبلغ الاستثمار', inputType: 'text' },
+  { id: 'usdt-daily', categoryId: 'crypto-invest', name: 'USDT يومي', color: '#26A17B', icon: '', isActive: true, inputLabel: 'مبلغ الاستثمار', inputType: 'text' },
+  { id: 'usdt-monthly', categoryId: 'crypto-invest', name: 'USDT شهري', color: '#26A17B', icon: '', isActive: true, inputLabel: 'مبلغ الاستثمار', inputType: 'text' },
 ];
 
 // Default packages — comprehensive product catalog with real YER market prices
@@ -607,6 +627,40 @@ const defaultPackages: ProductPackage[] = [
   { id: 'trf-2', providerId: 'traffic', name: 'تجديد رخصة قيادة', price: 2000, currency: 'YER', executionType: 'manual', isActive: true },
   { id: 'mun-1', providerId: 'municipal', name: 'رسوم رخصة تجارية', price: 500, currency: 'YER', executionType: 'manual', isActive: true },
   { id: 'mun-2', providerId: 'municipal', name: 'رسوم بناء', price: 1000, currency: 'YER', executionType: 'manual', isActive: true },
+
+  // ═══════════════════════════════════════════════════════════
+  //  CRYPTO INVESTMENT PLANS
+  // ═══════════════════════════════════════════════════════════
+  // BTC investment plans
+  { id: 'btc-d-1', providerId: 'btc-daily', name: 'خطة يومية 1% - 50$', price: 77500, currency: 'YER', executionType: 'manual', isActive: true },
+  { id: 'btc-d-2', providerId: 'btc-daily', name: 'خطة يومية 1% - 100$', price: 155000, currency: 'YER', executionType: 'manual', isActive: true },
+  { id: 'btc-d-3', providerId: 'btc-daily', name: 'خطة يومية 1.5% - 500$', price: 775000, currency: 'YER', executionType: 'manual', isActive: true },
+  { id: 'btc-w-1', providerId: 'btc-weekly', name: 'خطة أسبوعية 8% - 100$', price: 155000, currency: 'YER', executionType: 'manual', isActive: true },
+  { id: 'btc-w-2', providerId: 'btc-weekly', name: 'خطة أسبوعية 10% - 500$', price: 775000, currency: 'YER', executionType: 'manual', isActive: true },
+  { id: 'btc-m-1', providerId: 'btc-monthly', name: 'خطة شهرية 25% - 200$', price: 310000, currency: 'YER', executionType: 'manual', isActive: true },
+  { id: 'btc-m-2', providerId: 'btc-monthly', name: 'خطة شهرية 35% - 1000$', price: 1550000, currency: 'YER', executionType: 'manual', isActive: true },
+  // ETH investment plans
+  { id: 'eth-d-1', providerId: 'eth-daily', name: 'خطة يومية 1% - 50$', price: 77500, currency: 'YER', executionType: 'manual', isActive: true },
+  { id: 'eth-d-2', providerId: 'eth-daily', name: 'خطة يومية 1.5% - 200$', price: 310000, currency: 'YER', executionType: 'manual', isActive: true },
+  { id: 'eth-w-1', providerId: 'eth-weekly', name: 'خطة أسبوعية 8% - 100$', price: 155000, currency: 'YER', executionType: 'manual', isActive: true },
+  { id: 'eth-m-1', providerId: 'eth-monthly', name: 'خطة شهرية 25% - 300$', price: 465000, currency: 'YER', executionType: 'manual', isActive: true },
+  // USDT investment plans
+  { id: 'usdt-d-1', providerId: 'usdt-daily', name: 'خطة يومية 0.8% - 100$', price: 155000, currency: 'YER', executionType: 'manual', isActive: true },
+  { id: 'usdt-d-2', providerId: 'usdt-daily', name: 'خطة يومية 1.2% - 500$', price: 775000, currency: 'YER', executionType: 'manual', isActive: true },
+  { id: 'usdt-m-1', providerId: 'usdt-monthly', name: 'خطة شهرية 20% - 200$', price: 310000, currency: 'YER', executionType: 'manual', isActive: true },
+
+  // ═══════════════════════════════════════════════════════════
+  //  CRYPTO BUY/SELL
+  // ═══════════════════════════════════════════════════════════
+  { id: 'btc-buy-1', providerId: 'bitcoin', name: 'شراء 0.001 BTC', price: 1550, currency: 'YER', executionType: 'manual', isActive: true },
+  { id: 'btc-buy-2', providerId: 'bitcoin', name: 'شراء 0.01 BTC', price: 15500, currency: 'YER', executionType: 'manual', isActive: true },
+  { id: 'eth-buy-1', providerId: 'ethereum', name: 'شراء 0.01 ETH', price: 3500, currency: 'YER', executionType: 'manual', isActive: true },
+  { id: 'eth-buy-2', providerId: 'ethereum', name: 'شراء 0.1 ETH', price: 35000, currency: 'YER', executionType: 'manual', isActive: true },
+  { id: 'usdt-buy-1', providerId: 'usdt', name: 'شراء 10 USDT', price: 15500, currency: 'YER', executionType: 'manual', isActive: true },
+  { id: 'usdt-buy-2', providerId: 'usdt', name: 'شراء 50 USDT', price: 77500, currency: 'YER', executionType: 'manual', isActive: true },
+  { id: 'bnb-buy-1', providerId: 'bnb', name: 'شراء 0.1 BNB', price: 4000, currency: 'YER', executionType: 'manual', isActive: true },
+  { id: 'sol-buy-1', providerId: 'solana', name: 'شراء 1 SOL', price: 2000, currency: 'YER', executionType: 'manual', isActive: true },
+  { id: 'trx-buy-1', providerId: 'tron', name: 'شراء 100 TRX', price: 1500, currency: 'YER', executionType: 'manual', isActive: true },
 ];
 
 // Default promo codes

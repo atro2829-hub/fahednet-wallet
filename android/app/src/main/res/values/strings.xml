@@ -2,6 +2,6 @@
 <resources>
     <string name="app_name">محفظة الجنوب</string>
     <string name="title_activity_main">محفظة الجنوب</string>
-    <string name="package_name">com.fahednet.wallet</string>
-    <string name="custom_url_scheme">com.fahednet.wallet</string>
+    <string name="package_name">com.fahd.net</string>
+    <string name="custom_url_scheme">com.fahd.net</string>
 </resources>

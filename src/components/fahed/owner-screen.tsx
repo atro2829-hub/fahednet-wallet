@@ -27,7 +27,7 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 
-type OwnerTab = 'overview' | 'sections' | 'subsections' | 'projectConfig' | 'adminMgmt' | 'activityLog' | 'backup';
+type OwnerTab = 'overview' | 'sections' | 'subsections' | 'projectConfig' | 'adminMgmt' | 'activityLog' | 'backup' | 'appIcon';
 
 interface OwnerSection {
   id: string;
@@ -289,6 +289,13 @@ export default function OwnerScreen() {
   const [importLoading, setImportLoading] = useState(false);
   const importFileRef = useRef<HTMLInputElement>(null);
 
+  // App Icon state
+  const [appIcon, setAppIcon] = useState<string>('');
+  const [splashIcon, setSplashIcon] = useState<string>('');
+  const [iconSaving, setIconSaving] = useState(false);
+  const appIconFileRef = useRef<HTMLInputElement>(null);
+  const splashIconFileRef = useRef<HTMLInputElement>(null);
+
   // Overview stats
   const [overviewStats, setOverviewStats] = useState({
     totalUsers: 0,
@@ -437,6 +444,32 @@ export default function OwnerScreen() {
         setBackups(list.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()));
       } else {
         setBackups([]);
+      }
+    });
+    return () => unsub();
+  }, []);
+
+  // Listen to app icon settings
+  useEffect(() => {
+    const iconRef = ref(database, 'ownerSettings/appIcon');
+    const unsub = onValue(iconRef, (snapshot) => {
+      if (snapshot.exists()) {
+        setAppIcon(snapshot.val());
+      } else {
+        setAppIcon('');
+      }
+    });
+    return () => unsub();
+  }, []);
+
+  // Listen to splash icon settings
+  useEffect(() => {
+    const splashRef = ref(database, 'ownerSettings/splashIcon');
+    const unsub = onValue(splashRef, (snapshot) => {
+      if (snapshot.exists()) {
+        setSplashIcon(snapshot.val());
+      } else {
+        setSplashIcon('');
       }
     });
     return () => unsub();
@@ -708,6 +741,7 @@ export default function OwnerScreen() {
     { id: 'adminMgmt', label: '\u0627\u0644\u0623\u062F\u0645\u0646', icon: ShieldCheck },
     { id: 'activityLog', label: '\u0627\u0644\u0646\u0634\u0627\u0637', icon: Clock },
     { id: 'backup', label: '\u0627\u0644\u0646\u0633\u062E', icon: Database },
+    { id: 'appIcon', label: '\u0623\u064A\u0642\u0648\u0646\u0629', icon: ImagePlus },
   ];
 
   const activeTabInfo = tabs.find(t => t.id === activeTab);
@@ -1210,6 +1244,164 @@ export default function OwnerScreen() {
             )}
 
             {/* === BACKUP === */}
+            {activeTab === 'appIcon' && (
+              <motion.div key="appIcon" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-4">
+                {/* App Icon */}
+                <div className="rounded-2xl p-4" style={cardStyle}>
+                  <div className="flex items-center gap-2 mb-4">
+                    <Smartphone size={16} color="#8B5CF6" />
+                    <h3 className="text-sm font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>{'\u0623\u064A\u0642\u0648\u0646\u0629 \u0627\u0644\u062A\u0637\u0628\u064A\u0642'}</h3>
+                  </div>
+                  <p className="text-xs mb-4" style={{ color: isDark ? '#888' : '#AAA' }}>{'\u062A\u063A\u064A\u064A\u0631 \u0623\u064A\u0642\u0648\u0646\u0629 \u0627\u0644\u062A\u0637\u0628\u064A\u0642 \u0627\u0644\u0631\u0626\u064A\u0633\u064A\u0629 \u0627\u0644\u062A\u064A \u062A\u0638\u0647\u0631 \u0639\u0644\u0649 \u0634\u0627\u0634\u0629 \u0627\u0644\u0647\u0627\u062A\u0641'}</p>
+                  
+                  {/* Current Icon Preview */}
+                  <div className="flex flex-col items-center mb-4">
+                    <div 
+                      className="w-24 h-24 rounded-3xl overflow-hidden flex items-center justify-center" 
+                      style={{ 
+                        background: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)',
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+                      }}
+                    >
+                      {appIcon ? (
+                        <img src={appIcon} alt="App Icon" className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center" style={{ background: '#E60000' }}>
+                          <span className="text-white text-2xl font-bold">{'\u0627\u0644\u062C\u0646\u0648\u0628'}</span>
+                        </div>
+                      )}
+                    </div>
+                    <span className="text-[10px] mt-2" style={{ color: isDark ? '#666' : '#AAA' }}>{'\u0627\u0644\u0623\u064A\u0642\u0648\u0646\u0629 \u0627\u0644\u062D\u0627\u0644\u064A\u0629'}</span>
+                  </div>
+
+                  {/* Upload Button */}
+                  <input 
+                    type="file" 
+                    ref={appIconFileRef} 
+                    accept="image/*" 
+                    className="hidden" 
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      const reader = new FileReader();
+                      reader.onloadend = async () => {
+                        const base64 = reader.result as string;
+                        setAppIcon(base64);
+                      };
+                      reader.readAsDataURL(file);
+                    }} 
+                  />
+                  <motion.button 
+                    whileTap={{ scale: 0.95 }} 
+                    onClick={() => appIconFileRef.current?.click()}
+                    className="w-full py-3 rounded-xl text-sm font-medium flex items-center justify-center gap-2"
+                    style={{ background: 'rgba(139,92,246,0.1)', color: '#8B5CF6', border: '1px solid rgba(139,92,246,0.2)' }}
+                  >
+                    <Upload size={16} />
+                    <span>{'\u0627\u062E\u062A\u0631 \u0623\u064A\u0642\u0648\u0646\u0629 \u062C\u062F\u064A\u062F\u0629'}</span>
+                  </motion.button>
+                </div>
+
+                {/* Splash Icon */}
+                <div className="rounded-2xl p-4" style={cardStyle}>
+                  <div className="flex items-center gap-2 mb-4">
+                    <ImagePlus size={16} color="#10B981" />
+                    <h3 className="text-sm font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>{'\u0634\u0627\u0634\u0629 \u0627\u0644\u0628\u062F\u0627\u064A\u0629'}</h3>
+                  </div>
+                  <p className="text-xs mb-4" style={{ color: isDark ? '#888' : '#AAA' }}>{'\u062A\u063A\u064A\u064A\u0631 \u0623\u064A\u0642\u0648\u0646\u0629 \u0634\u0627\u0634\u0629 \u0627\u0644\u0628\u062F\u0627\u064A\u0629 \u0627\u0644\u062A\u064A \u062A\u0638\u0647\u0631 \u0639\u0646\u062F \u0641\u062A\u062D \u0627\u0644\u062A\u0637\u0628\u064A\u0642'}</p>
+                  
+                  {/* Current Splash Preview */}
+                  <div className="flex flex-col items-center mb-4">
+                    <div 
+                      className="w-full h-48 rounded-2xl overflow-hidden flex items-center justify-center" 
+                      style={{ 
+                        background: '#E60000',
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+                      }}
+                    >
+                      {splashIcon ? (
+                        <img src={splashIcon} alt="Splash Icon" className="w-24 h-24 object-contain" />
+                      ) : (
+                        <div className="flex flex-col items-center justify-center">
+                          <div className="w-20 h-20 rounded-2xl overflow-hidden flex items-center justify-center mb-2">
+                            <img src={LOGO_BASE64} alt="" className="w-full h-full object-cover" />
+                          </div>
+                          <span className="text-white text-sm font-bold">{'\u0645\u062D\u0641\u0638\u0629 \u0627\u0644\u062C\u0646\u0648\u0628'}</span>
+                        </div>
+                      )}
+                    </div>
+                    <span className="text-[10px] mt-2" style={{ color: isDark ? '#666' : '#AAA' }}>{'\u0634\u0627\u0634\u0629 \u0627\u0644\u0628\u062F\u0627\u064A\u0629 \u0627\u0644\u062D\u0627\u0644\u064A\u0629'}</span>
+                  </div>
+
+                  {/* Upload Button */}
+                  <input 
+                    type="file" 
+                    ref={splashIconFileRef} 
+                    accept="image/*" 
+                    className="hidden" 
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      const reader = new FileReader();
+                      reader.onloadend = async () => {
+                        const base64 = reader.result as string;
+                        setSplashIcon(base64);
+                      };
+                      reader.readAsDataURL(file);
+                    }} 
+                  />
+                  <motion.button 
+                    whileTap={{ scale: 0.95 }} 
+                    onClick={() => splashIconFileRef.current?.click()}
+                    className="w-full py-3 rounded-xl text-sm font-medium flex items-center justify-center gap-2"
+                    style={{ background: 'rgba(16,185,129,0.1)', color: '#10B981', border: '1px solid rgba(16,185,129,0.2)' }}
+                  >
+                    <Upload size={16} />
+                    <span>{'\u0627\u062E\u062A\u0631 \u0623\u064A\u0642\u0648\u0646\u0629 \u0634\u0627\u0634\u0629 \u0628\u062F\u0627\u064A\u0629 \u062C\u062F\u064A\u062F\u0629'}</span>
+                  </motion.button>
+                </div>
+
+                {/* Save Button */}
+                <motion.button 
+                  whileTap={{ scale: 0.95 }} 
+                  onClick={async () => {
+                    setIconSaving(true);
+                    try {
+                      if (appIcon) {
+                        const compressed = await compressBase64Image(appIcon);
+                        await set(ref(database, 'ownerSettings/appIcon'), compressed);
+                      } else {
+                        await remove(ref(database, 'ownerSettings/appIcon'));
+                      }
+                      if (splashIcon) {
+                        const compressed = await compressBase64Image(splashIcon);
+                        await set(ref(database, 'ownerSettings/splashIcon'), compressed);
+                      } else {
+                        await remove(ref(database, 'ownerSettings/splashIcon'));
+                      }
+                      // Log activity
+                      const logId = generateReference();
+                      await set(ref(database, `ownerSettings/activityLog/${logId}`), {
+                        id: logId, type: 'admin', action: '\u062A\u0645 \u062A\u062D\u062F\u064A\u062B \u0623\u064A\u0642\u0648\u0646\u0629 \u0627\u0644\u062A\u0637\u0628\u064A\u0642 \u0648\u0634\u0627\u0634\u0629 \u0627\u0644\u0628\u062F\u0627\u064A\u0629',
+                        userId: user?.id, userName: user?.name, timestamp: new Date().toISOString(),
+                      });
+                    } catch {}
+                    setIconSaving(false);
+                  }}
+                  disabled={iconSaving}
+                  className="w-full py-3.5 rounded-2xl font-bold text-white text-sm flex items-center justify-center gap-2"
+                  style={{ background: iconSaving ? '#666' : 'linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%)' }}
+                >
+                  {iconSaving ? (
+                    <RefreshCw size={16} className="animate-spin" />
+                  ) : (
+                    <Save size={16} />
+                  )}
+                  <span>{iconSaving ? '\u062C\u0627\u0631\u064A \u0627\u0644\u062D\u0641\u0638...' : '\u062D\u0641\u0638 \u0627\u0644\u062A\u063A\u064A\u064A\u0631\u0627\u062A'}</span>
+                </motion.button>
+              </motion.div>
+            )}
+
             {activeTab === 'backup' && (
               <motion.div key="backup" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-3">
                 {/* Export */}

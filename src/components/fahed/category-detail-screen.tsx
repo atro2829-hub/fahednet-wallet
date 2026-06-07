@@ -16,6 +16,8 @@ const categoryNames: Record<string, string> = {
   electricity: 'الكهرباء والماء',
   government: 'خدمات حكومية',
   internet: 'الإنترنت',
+  crypto: 'الكريبتو',
+  'crypto-invest': 'استثمار الكريبتو',
 };
 
 // ─── Sub-section icon keys (maps to productIcons or serviceIcons) ───
@@ -35,6 +37,10 @@ const subSectionIcons: Record<string, string> = {
   identity: 'civil-registry',
   'traffic-municipal': 'traffic',
   providers: 'yemen-net',
+  'buy-sell': 'bitcoin',
+  'btc-plans': 'bitcoin',
+  'eth-plans': 'ethereum',
+  'usdt-plans': 'usdt',
 };
 
 // ─── Sub-sections with provider IDs ─────────────────────────────────
@@ -74,6 +80,14 @@ const categorySubSections: Record<string, SubSection[]> = {
   ],
   internet: [
     { id: 'providers', name: 'مزودي الإنترنت', description: 'يمن نت، واي نت، سبأفون نت', providerIds: ['yemen-net', 'y-net-internet', 'sabafon-internet'], iconKey: 'yemen-net', color: '#8B5CF6' },
+  ],
+  crypto: [
+    { id: 'buy-sell', name: 'شراء وبيع', description: 'بيتكوين، إيثريوم، USDT والمزيد', providerIds: ['bitcoin', 'ethereum', 'usdt', 'bnb', 'solana', 'tron'], iconKey: 'bitcoin', color: '#F7931A' },
+  ],
+  'crypto-invest': [
+    { id: 'btc-plans', name: 'خطط بيتكوين', description: 'خطط استثمارية يومية وأسبوعية وشهرية', providerIds: ['btc-daily', 'btc-weekly', 'btc-monthly'], iconKey: 'bitcoin', color: '#F7931A' },
+    { id: 'eth-plans', name: 'خطط إيثريوم', description: 'خطط استثمارية يومية وأسبوعية وشهرية', providerIds: ['eth-daily', 'eth-weekly', 'eth-monthly'], iconKey: 'ethereum', color: '#627EEA' },
+    { id: 'usdt-plans', name: 'خطط USDT', description: 'خطط استثمارية يومية وشهرية', providerIds: ['usdt-daily', 'usdt-monthly'], iconKey: 'usdt', color: '#26A17B' },
   ],
 };
 
@@ -130,6 +144,10 @@ const STARTING_PRICES: Record<string, number> = {
   'yemen-net': 150, 'y-net-internet': 250, 'sabafon-internet': 400,
   'elec-sanaa': 500, 'elec-aden': 500, 'water-sanaa': 300, 'water-aden': 300,
   'civil-registry': 1000, 'passport': 5000, 'traffic': 500, 'municipal': 500,
+  'bitcoin': 1550, 'ethereum': 3500, 'usdt': 15500, 'bnb': 4000, 'solana': 2000, 'tron': 1500,
+  'btc-daily': 77500, 'btc-weekly': 155000, 'btc-monthly': 310000,
+  'eth-daily': 77500, 'eth-weekly': 155000, 'eth-monthly': 465000,
+  'usdt-daily': 155000, 'usdt-monthly': 310000,
 };
 
 // ─── Icon fallback mapping ──────────────────────────────────────────
@@ -137,6 +155,11 @@ const iconFallbackMap: Record<string, string> = {
   'elec-sanaa': 'electricity', 'elec-aden': 'electricity',
   'water-sanaa': 'water', 'water-aden': 'water',
   'y-net-internet': 'y-net-internet', 'sabafon-internet': 'sabafon-internet',
+  'bitcoin': 'bitcoin', 'ethereum': 'ethereum', 'usdt': 'usdt',
+  'bnb': 'bitcoin', 'solana': 'bitcoin', 'tron': 'bitcoin',
+  'btc-daily': 'bitcoin', 'btc-weekly': 'bitcoin', 'btc-monthly': 'bitcoin',
+  'eth-daily': 'ethereum', 'eth-weekly': 'ethereum', 'eth-monthly': 'ethereum',
+  'usdt-daily': 'usdt', 'usdt-monthly': 'usdt',
 };
 
 // Telecom provider IDs that navigate to recharge screen

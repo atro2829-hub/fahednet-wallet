@@ -1,7 +1,7 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.fahednet.wallet',
+  appId: 'com.fahd.net',
   appName: 'محفظة الجنوب',
   webDir: 'out',
   server: {

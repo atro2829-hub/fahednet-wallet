@@ -1,4 +1,4 @@
-package com.fahednet.wallet;
+package com.fahd.net;
 
 import com.getcapacitor.BridgeActivity;
 

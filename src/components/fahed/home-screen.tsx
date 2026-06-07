@@ -83,6 +83,8 @@ const homeServices = [
   { id: 'government', label: 'خدمات حكومية', iconKey: 'government-category' },
   { id: 'internet', label: 'الإنترنت', iconKey: 'internet-category' },
   { id: 'digital-wallet', label: 'المحفظة الرقمية', iconKey: 'digital-wallet' },
+  { id: 'crypto', label: '\u0627\u0644\u0643\u0631\u064A\u0628\u062A\u0648', iconKey: 'crypto-category' },
+  { id: 'crypto-invest', label: '\u0627\u0633\u062A\u062B\u0645\u0627\u0631 \u0627\u0644\u0643\u0631\u064A\u0628\u062A\u0648', iconKey: 'crypto-invest-category' },
 ];
 
 const promoItems = [
@@ -405,7 +407,7 @@ export default function HomeScreen() {
 
   const handleServiceClick = (serviceId: string) => {
     // Category IDs that navigate to dedicated category-detail screens
-    const categoryIds = ['telecom', 'entertainment', 'cards', 'electricity', 'government', 'internet'];
+    const categoryIds = ['telecom', 'entertainment', 'cards', 'electricity', 'government', 'internet', 'crypto', 'crypto-invest'];
     
     switch (serviceId) {
       case 'transfer':
@@ -637,18 +639,18 @@ export default function HomeScreen() {
           </div>
 
           {/* Pagination Dots */}
-          <div className="flex items-center justify-center gap-2 mt-4" dir="rtl">
+          <div className="flex items-center justify-center gap-1.5 mt-4" dir="rtl">
             {balanceCards.map((_, index) => (
               <motion.button
                 key={index}
                 onClick={() => snapToCard(index)}
                 className="rounded-full"
                 animate={{
-                  width: activeCardIndex === index ? 14 : 6,
+                  width: activeCardIndex === index ? 8 : 3,
                   backgroundColor: activeCardIndex === index ? balanceCards[index].accentColor : (isDark ? '#333' : '#D4D4D4'),
                 }}
                 transition={{ duration: 0.3, ease: 'easeInOut' }}
-                style={{ height: 6 }}
+                style={{ height: activeCardIndex === index ? 3 : 3 }}
               />
             ))}
           </div>

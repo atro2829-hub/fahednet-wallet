@@ -2,20 +2,21 @@
 
 import { useEffect, useRef, useCallback } from 'react';
 import { database } from '@/lib/firebase';
-import { ref, get, onValue } from 'firebase/database';
+import { ref, get, onValue, query, orderByChild, equalTo, limitToLast } from 'firebase/database';
 import { useAppStore } from '@/lib/store';
 
 /**
- * Syncs user data from Firebase Realtime Database to the local Zustand store.
+ * Syncs user data and transactions from Firebase Realtime Database to the local Zustand store.
  * 
- * - On mount: Fetches fresh user data from Firebase
- * - Real-time: Listens for balance changes via onValue
- * - On window focus: Refreshes user data
- * - On reconnect: Refreshes user data
+ * - On mount: Fetches fresh user data and transactions from Firebase
+ * - Real-time: Listens for balance changes and new transactions via onValue
+ * - On window focus: Refreshes user data and transactions
+ * - On reconnect: Refreshes user data and transactions
  */
 export function useFirebaseSync() {
-  const { user, isAuthenticated, setUser } = useAppStore();
+  const { user, isAuthenticated, setUser, setTransactions } = useAppStore();
   const unsubscribeRef = useRef<(() => void) | null>(null);
+  const txUnsubscribeRef = useRef<(() => void) | null>(null);
   const isRefreshing = useRef(false);
 
   // Fetch fresh user data from Firebase and update store
@@ -69,12 +70,50 @@ export function useFirebaseSync() {
           });
         }
       }
+
+      // Also refresh transactions
+      await refreshTransactions();
     } catch (error) {
       console.error('Firebase sync error:', error);
     } finally {
       isRefreshing.current = false;
     }
   }, [user?.id, isAuthenticated, setUser]);
+
+  // Fetch transactions from Firebase
+  const refreshTransactions = useCallback(async () => {
+    if (!user?.id || !isAuthenticated) return;
+    
+    try {
+      const txRef = ref(database, 'transactions');
+      const snapshot = await get(txRef);
+      
+      if (snapshot.exists()) {
+        const data = snapshot.val();
+        const userTx = Object.values(data).filter((tx: any) => 
+          tx.fromUserId === user.id || tx.toUserId === user.id
+        ) as any[];
+        
+        const transactions = userTx
+          .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+          .map((tx: any) => ({
+            id: tx.id,
+            fromUserId: tx.fromUserId || '',
+            toUserId: tx.toUserId || '',
+            amount: tx.amount || 0,
+            currency: tx.currency || 'YER',
+            type: tx.type || 'order',
+            status: tx.status || 'completed',
+            description: tx.description || '',
+            createdAt: tx.createdAt || new Date().toISOString(),
+          }));
+
+        setTransactions(transactions);
+      }
+    } catch (error) {
+      console.error('Firebase transactions sync error:', error);
+    }
+  }, [user?.id, isAuthenticated, setTransactions]);
 
   // Set up real-time listener for user data
   useEffect(() => {
@@ -83,6 +122,10 @@ export function useFirebaseSync() {
       if (unsubscribeRef.current) {
         unsubscribeRef.current();
         unsubscribeRef.current = null;
+      }
+      if (txUnsubscribeRef.current) {
+        txUnsubscribeRef.current();
+        txUnsubscribeRef.current = null;
       }
       return;
     }
@@ -123,11 +166,47 @@ export function useFirebaseSync() {
 
     unsubscribeRef.current = unsubscribe;
 
+    // Real-time listener for transactions
+    const txRef = ref(database, 'transactions');
+    const txUnsubscribe = onValue(txRef, (snapshot) => {
+      if (snapshot.exists() && user?.id) {
+        const data = snapshot.val();
+        const userId = useAppStore.getState().user?.id;
+        if (!userId) return;
+        
+        const userTx = Object.values(data).filter((tx: any) => 
+          tx.fromUserId === userId || tx.toUserId === userId
+        ) as any[];
+        
+        const transactions = userTx
+          .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+          .map((tx: any) => ({
+            id: tx.id,
+            fromUserId: tx.fromUserId || '',
+            toUserId: tx.toUserId || '',
+            amount: tx.amount || 0,
+            currency: tx.currency || 'YER',
+            type: tx.type || 'order',
+            status: tx.status || 'completed',
+            description: tx.description || '',
+            createdAt: tx.createdAt || new Date().toISOString(),
+          }));
+
+        setTransactions(transactions);
+      }
+    }, (error) => {
+      console.error('Firebase transactions onValue error:', error);
+    });
+
+    txUnsubscribeRef.current = txUnsubscribe;
+
     return () => {
       unsubscribe();
       unsubscribeRef.current = null;
+      txUnsubscribe();
+      txUnsubscribeRef.current = null;
     };
-  }, [user?.id, isAuthenticated, setUser]);
+  }, [user?.id, isAuthenticated, setUser, setTransactions]);
 
   // Refresh on mount
   useEffect(() => {

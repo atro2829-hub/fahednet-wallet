@@ -533,6 +533,46 @@ export const productIcons: Record<string, string> = {
   'electricity-category': svgToDataUrl(electricityCategorySvg),
   'government-category': svgToDataUrl(governmentCategorySvg),
   'internet-category': svgToDataUrl(internetCategorySvg),
+  'crypto-category': svgToDataUrl(`<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" fill="none">
+  <rect x="2" y="2" width="44" height="44" rx="12" fill="white"/>
+  <circle cx="24" cy="24" r="12" stroke="#1a1a1a" stroke-width="1.8" fill="none"/>
+  <text x="24" y="28" text-anchor="middle" font-family="Arial,sans-serif" font-weight="bold" font-size="10" fill="#F7931A">B</text>
+  <path d="M20 16L28 16" stroke="#F7931A" stroke-width="1.5" stroke-linecap="round"/>
+  <path d="M19 24H29" stroke="#F7931A" stroke-width="1" stroke-linecap="round"/>
+  <path d="M20 32L28 32" stroke="#F7931A" stroke-width="1.5" stroke-linecap="round"/>
+  <path d="M8 14C6.5 16 6 18 6 20" stroke="#F7931A" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+  <path d="M40 14C41.5 16 42 18 42 20" stroke="#F7931A" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+</svg>`),
+  'crypto-invest-category': svgToDataUrl(`<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" fill="none">
+  <rect x="2" y="2" width="44" height="44" rx="12" fill="white"/>
+  <path d="M24 10V38" stroke="#1a1a1a" stroke-width="1.5" stroke-linecap="round"/>
+  <path d="M14 20L24 14L34 20" stroke="#10B981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <path d="M14 30L24 24L34 30" stroke="#10B981" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <circle cx="24" cy="20" r="3" fill="#10B981" fill-opacity="0.2" stroke="#10B981" stroke-width="1.2"/>
+  <path d="M16 34L20 38L24 34" stroke="#10B981" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+</svg>`),
+
+  // Crypto provider icons
+  'bitcoin': svgToDataUrl(`<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" fill="none">
+  <rect x="2" y="2" width="44" height="44" rx="12" fill="white"/>
+  <circle cx="24" cy="24" r="12" stroke="#F7931A" stroke-width="1.8" fill="none"/>
+  <text x="24" y="29" text-anchor="middle" font-family="Arial,sans-serif" font-weight="bold" font-size="14" fill="#F7931A">B</text>
+  <line x1="21" y1="14" x2="21" y2="18" stroke="#F7931A" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="27" y1="14" x2="27" y2="18" stroke="#F7931A" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="21" y1="30" x2="21" y2="34" stroke="#F7931A" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="27" y1="30" x2="27" y2="34" stroke="#F7931A" stroke-width="1.5" stroke-linecap="round"/>
+</svg>`),
+  'ethereum': svgToDataUrl(`<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" fill="none">
+  <rect x="2" y="2" width="44" height="44" rx="12" fill="white"/>
+  <path d="M24 10L34 24L24 30L14 24Z" stroke="#627EEA" stroke-width="1.8" fill="none" stroke-linejoin="round"/>
+  <path d="M24 30L34 24L24 38L14 24Z" fill="#627EEA" fill-opacity="0.15" stroke="#627EEA" stroke-width="1.2" stroke-linejoin="round"/>
+</svg>`),
+  'usdt': svgToDataUrl(`<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" fill="none">
+  <rect x="2" y="2" width="44" height="44" rx="12" fill="white"/>
+  <circle cx="24" cy="24" r="12" stroke="#26A17B" stroke-width="1.8" fill="none"/>
+  <text x="24" y="28" text-anchor="middle" font-family="Arial,sans-serif" font-weight="bold" font-size="10" fill="#26A17B">T</text>
+  <line x1="20" y1="20" x2="28" y2="20" stroke="#26A17B" stroke-width="2" stroke-linecap="round"/>
+</svg>`),
 
   // General Service Icons
   'y-net-internet': svgToDataUrl(yNetInternetSvg),
