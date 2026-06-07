@@ -1053,123 +1053,135 @@ export default function QRScreen() {
                 </div>
               )}
 
-              {/* QR Card */}
+              {/* QR Card - Premium Wallet Card */}
               <motion.div
                 layout
-                className="relative rounded-3xl overflow-hidden p-6"
+                className="relative rounded-3xl overflow-hidden"
                 style={{
-                  background: isDark
-                    ? 'rgba(255,255,255,0.06)'
-                    : 'rgba(255,255,255,0.7)',
-                  backdropFilter: 'blur(20px)',
-                  WebkitBackdropFilter: 'blur(20px)',
-                  border: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.06)'}`,
-                  boxShadow: '0 8px 32px rgba(0,0,0,0.08)',
+                  background: 'linear-gradient(145deg, #0A1A3A 0%, #0D2248 40%, #0A1630 100%)',
+                  boxShadow: '0 12px 40px rgba(10,26,58,0.5), 0 2px 8px rgba(0,0,0,0.3)',
+                  border: '1px solid rgba(201,168,76,0.2)',
                 }}
               >
-                {/* Logo Watermark */}
-                <div className="absolute inset-0 flex items-center justify-center opacity-[0.03] pointer-events-none">
-                  <img src={LOGO_BASE64} alt="" className="w-48 h-48 object-contain" />
-                </div>
+                {/* Decorative gold line at top */}
+                <div className="h-1" style={{ background: 'linear-gradient(90deg, transparent 0%, #C9A84C 30%, #C9A84C 70%, transparent 100%)' }} />
 
-                {/* QR Code */}
-                <div className="flex justify-center mb-4">
-                  <motion.div
-                    initial={{ scale: 0.8, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    transition={{ type: 'spring', stiffness: 200, damping: 15 }}
-                    className="flex flex-col items-center gap-3"
-                  >
-                    <div
-                      className="p-4 rounded-2xl"
+                <div className="px-6 pt-5 pb-6">
+                  {/* Logo and App Name */}
+                  <div className="flex flex-col items-center mb-4">
+                    <div className="w-12 h-12 rounded-xl overflow-hidden mb-2 flex items-center justify-center" style={{ boxShadow: '0 4px 16px rgba(201,168,76,0.3)', border: '1px solid rgba(201,168,76,0.3)' }}>
+                      <img src={LOGO_BASE64} alt="الحبيلين" className="w-full h-full object-cover" />
+                    </div>
+                    <h3 className="text-sm font-bold" style={{ color: '#C9A84C' }}>الحبيلين اونلاين</h3>
+                    <p className="text-[10px]" style={{ color: 'rgba(201,168,76,0.6)' }}>محفظتك الرقمية الموثوقة</p>
+                  </div>
+
+                  {/* User Info Section */}
+                  <div className="flex flex-col items-center text-center mb-4">
+                    <p className="text-lg font-bold" style={{ color: '#FFFFFF' }}>
+                      {user?.name || 'مستخدم'}
+                    </p>
+                    <p className="text-2xl font-bold mt-1 tracking-wider" style={{ color: '#C9A84C' }} dir="ltr">
+                      {user?.userId || '------'}
+                    </p>
+                    {user?.phone && (
+                      <p className="text-xs mt-1.5 font-medium" style={{ color: 'rgba(255,255,255,0.6)' }} dir="ltr">
+                        {user.phone}
+                      </p>
+                    )}
+                    {user?.kycStatus === 'verified' && (
+                      <div className="flex items-center gap-1.5 mt-2 px-3 py-1 rounded-full" style={{ background: 'rgba(16,185,129,0.15)', border: '1px solid rgba(16,185,129,0.3)' }}>
+                        <CheckCircle2 size={12} strokeWidth={2} color="#10B981" />
+                        <span className="text-[10px] font-bold" style={{ color: '#10B981' }}>موثق</span>
+                      </div>
+                    )}
+                    {amount && (
+                      <div className="mt-2 px-4 py-1.5 rounded-xl" style={{ background: 'rgba(201,168,76,0.1)', border: '1px solid rgba(201,168,76,0.2)' }}>
+                        <p className="text-sm font-bold" style={{ color: '#C9A84C' }}>
+                          {parseInt(amount).toLocaleString('ar-SA')} {currencySymbols[currency]}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* QR Code Section */}
+                  <div className="flex justify-center mb-4">
+                    <motion.div
+                      initial={{ scale: 0.8, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      transition={{ type: 'spring', stiffness: 200, damping: 15 }}
+                    >
+                      <div
+                        className="p-3 rounded-2xl"
+                        style={{
+                          background: '#FFFFFF',
+                          boxShadow: '0 4px 24px rgba(0,0,0,0.3), 0 0 0 1px rgba(201,168,76,0.15)',
+                        }}
+                      >
+                        <QRCodeSVG
+                          value={qrData}
+                          size={180}
+                          level="H"
+                          bgColor="#FFFFFF"
+                          fgColor="#0A1A3A"
+                          marginSize={0}
+                          imageSettings={{
+                            src: LOGO_BASE64,
+                            height: 36,
+                            width: 36,
+                            excavate: true,
+                          }}
+                        />
+                      </div>
+                    </motion.div>
+                  </div>
+
+                  {/* Decorative divider */}
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="flex-1 h-px" style={{ background: 'linear-gradient(90deg, transparent, rgba(201,168,76,0.3), transparent)' }} />
+                    <span className="text-[9px] font-bold" style={{ color: 'rgba(201,168,76,0.5)' }}>الحبيلين اونلاين</span>
+                    <div className="flex-1 h-px" style={{ background: 'linear-gradient(90deg, transparent, rgba(201,168,76,0.3), transparent)' }} />
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex gap-2">
+                    <button
+                      onClick={handleCopy}
+                      className="flex-1 py-3 rounded-2xl flex items-center justify-center gap-2 text-sm font-medium transition-all active:scale-[0.98]"
                       style={{
-                        background: '#FFFFFF',
-                        boxShadow: '0 4px 24px rgba(0,0,0,0.08)',
+                        background: 'rgba(255,255,255,0.08)',
+                        color: '#FFFFFF',
+                        border: '1px solid rgba(201,168,76,0.2)',
                       }}
                     >
-                      <QRCodeSVG
-                        value={qrData}
-                        size={200}
-                        level="H"
-                        bgColor="#FFFFFF"
-                        fgColor="#0F0F0F"
-                        marginSize={0}
-                        imageSettings={{
-                          src: LOGO_BASE64,
-                          height: 40,
-                          width: 40,
-                          excavate: true,
-                        }}
-                      />
-                    </div>
-                  </motion.div>
-                </div>
-
-                {/* User Info */}
-                <div className="flex flex-col items-center text-center relative z-10">
-                  <p
-                    className="text-sm font-medium"
-                    style={{ color: isDark ? '#FFF' : '#1a1a1a' }}
-                  >
-                    {user?.name || 'مستخدم'}
-                  </p>
-                  <p
-                    className="text-3xl font-bold mt-1 tracking-wider"
-                    style={{ color: '#E60000' }}
-                    dir="ltr"
-                  >
-                    {user?.userId || '100000'}
-                  </p>
-                  {amount && (
-                    <p
-                      className="text-sm mt-2"
-                      style={{ color: isDark ? '#AAA' : '#888' }}
+                      {copied ? (
+                        <>
+                          <CheckCircle2 size={16} strokeWidth={1.5} color="#10B981" />
+                          <span style={{ color: '#10B981' }}>تم النسخ</span>
+                        </>
+                      ) : (
+                        <>
+                          <Copy size={16} strokeWidth={1.5} />
+                          <span>نسخ</span>
+                        </>
+                      )}
+                    </button>
+                    <button
+                      onClick={handleShare}
+                      className="flex-1 py-3 rounded-2xl flex items-center justify-center gap-2 text-sm font-medium text-white transition-all active:scale-[0.98]"
+                      style={{
+                        background: 'linear-gradient(135deg, #C9A84C 0%, #A88A3A 100%)',
+                        boxShadow: '0 4px 16px rgba(201,168,76,0.3)',
+                      }}
                     >
-                      {parseInt(amount).toLocaleString('ar-SA')} {currencySymbols[currency]}
-                    </p>
-                  )}
-                  <div className="flex items-center gap-1.5 mt-2">
-                    <span className="text-[10px] font-bold text-white px-2 py-0.5 rounded-full" style={{ background: '#E60000' }}>
-                      الحبيلين
-                    </span>
+                      <Share2 size={16} strokeWidth={1.5} />
+                      <span>مشاركة</span>
+                    </button>
                   </div>
                 </div>
 
-                {/* Actions */}
-                <div className="flex gap-2 mt-4 relative z-10">
-                  <button
-                    onClick={handleCopy}
-                    className="flex-1 py-3 rounded-2xl flex items-center justify-center gap-2 text-sm font-medium"
-                    style={{
-                      background: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.03)',
-                      color: isDark ? '#FFF' : '#1a1a1a',
-                      border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'}`,
-                    }}
-                  >
-                    {copied ? (
-                      <>
-                        <CheckCircle2 size={16} strokeWidth={1.5} color="#10B981" />
-                        <span style={{ color: '#10B981' }}>تم النسخ</span>
-                      </>
-                    ) : (
-                      <>
-                        <Copy size={16} strokeWidth={1.5} />
-                        <span>نسخ</span>
-                      </>
-                    )}
-                  </button>
-                  <button
-                    onClick={handleShare}
-                    className="flex-1 py-3 rounded-2xl flex items-center justify-center gap-2 text-sm font-medium text-white"
-                    style={{
-                      background: 'linear-gradient(135deg, #E60000 0%, #CC0000 100%)',
-                      boxShadow: '0 4px 12px rgba(230,0,0,0.3)',
-                    }}
-                  >
-                    <Share2 size={16} strokeWidth={1.5} />
-                    <span>مشاركة</span>
-                  </button>
-                </div>
+                {/* Decorative gold line at bottom */}
+                <div className="h-0.5" style={{ background: 'linear-gradient(90deg, transparent 0%, rgba(201,168,76,0.3) 30%, rgba(201,168,76,0.3) 70%, transparent 100%)' }} />
               </motion.div>
 
 

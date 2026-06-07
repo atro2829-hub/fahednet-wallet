@@ -890,11 +890,12 @@ export const useAppStore = create<AppState>()(
 
           // Increment usedCount atomically
           await runTransaction(giftCodeRef, (currentData) => {
-            if (currentData && currentData.usedCount < currentData.maxUses) {
+            if (currentData === null) return currentData;
+            if (currentData.usedCount < currentData.maxUses) {
               currentData.usedCount++;
               return currentData;
             }
-            return; // Abort transaction
+            return currentData; // Return unchanged data instead of aborting
           });
 
           // Record the redemption
@@ -941,7 +942,7 @@ export const useAppStore = create<AppState>()(
           // Add notification
           state.addNotification({
             id: `gift-${Date.now()}`,
-            title: 'تم استرداد كود الهدية! 🎁',
+            title: 'تم استرداد كود الهدية!',
             body: `تم إضافة ${giftData.amount} ${giftData.currency === 'YER' ? 'ر.ي' : giftData.currency === 'SAR' ? 'ر.س' : '$'} إلى رصيدك`,
             type: 'promo',
             isRead: false,

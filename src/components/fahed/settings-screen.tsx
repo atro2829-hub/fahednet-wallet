@@ -71,7 +71,7 @@ const settingsSections: SettingsSection[] = [
     iconColor: '#E60000',
     items: [
       { id: 'auto-login', label: 'تسجيل الدخول تلقائياً', icon: Shield, color: '#10B981', toggle: true },
-      { id: 'change-password', label: 'تبديل كلمة المرور', icon: Lock, color: '#E60000' },
+      { id: 'change-password', label: 'تغيير كلمة المرور', icon: Lock, color: '#E60000' },
       { id: 'fingerprint', label: 'استخدام بصمة الأصبع لتسجيل الدخول', icon: Fingerprint, color: '#E60000', toggle: true },
       { id: 'face-id', label: 'استخدام بصمة الوجه لتسجيل الدخول', icon: Eye, color: '#E60000', toggle: true },
       { id: 'notif-alerts', label: 'الإشعارات والتنبيهات', icon: Bell, color: '#2563EB', screen: 'notifications' },

@@ -7,11 +7,11 @@ import { Mail, Lock, User, Eye, EyeOff, ArrowLeft, ShieldCheck, Phone, Heart, Cr
 import { useAppStore } from '@/lib/store';
 import { auth, database } from '@/lib/firebase';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
-import { ref, set, get, update, query, orderByChild, equalTo } from 'firebase/database';
+import { ref, get, update } from 'firebase/database';
 import { generateUserId } from '@/lib/utils';
 import { LOGO_BASE64 } from '@/lib/logo';
 
-type AuthStep = 'login' | 'register-step1' | 'register-step2' | 'otp' | 'password-recovery';
+type AuthStep = 'login' | 'register-step1' | 'register-step2' | 'password-recovery';
 
 // Yemen flag indicator
 function YemenFlagIndicator() {
@@ -50,9 +50,6 @@ export default function AuthScreen() {
   const [regPassword, setRegPassword] = useState('');
   const [regPasswordConfirm, setRegPasswordConfirm] = useState('');
   const [regPhone, setRegPhone] = useState('');
-  const [otp, setOtp] = useState(['', '', '', '']);
-  const [firebaseUid, setFirebaseUid] = useState('');
-  const [generatedUserId, setGeneratedUserId] = useState('');
 
   // Password recovery fields
   const [recoveryNationalId, setRecoveryNationalId] = useState('');
@@ -164,9 +161,7 @@ export default function AuthScreen() {
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, regEmail, regPassword);
       const uid = userCredential.user.uid;
-      setFirebaseUid(uid);
       const newUserId = generateUserId();
-      setGeneratedUserId(newUserId);
       const isAdminEmail = regEmail.toLowerCase().includes('admin');
       const fullName = getFullName();
       const userData = {
@@ -203,7 +198,17 @@ export default function AuthScreen() {
         firebaseUpdates[`nationalIds/${regNationalId.trim()}`] = uid;
       }
       await update(ref(database), firebaseUpdates);
-      setStep('otp');
+      setUser({
+        id: uid, email: regEmail, phone: regPhone ? `+967${regPhone}` : '',
+        name: fullName, firstName: regFirstName.trim(), secondName: regSecondName.trim(),
+        thirdName: regThirdName.trim(), familyName: regFamilyName.trim(),
+        nationalId: regNationalId.trim(), avatar: '', role: isAdminEmail ? 'admin' : 'user',
+        userId: newUserId, kycStatus: 'pending',
+        isBlocked: false, balanceYER: 0, balanceSAR: 0, balanceUSD: 0,
+        cardType: '', cardNumber: '',
+        cardIssuedAt: '', governorate: '',
+        theme: 'light',
+      });
     } catch (err: unknown) {
       const firebaseError = err as { code?: string };
       if (firebaseError.code === 'auth/email-already-in-use') setError('البريد الإلكتروني مسجل مسبقاً');
@@ -212,46 +217,6 @@ export default function AuthScreen() {
     } finally { setIsLoading(false); }
   };
 
-  const handleOtpVerify = async () => {
-    const otpCode = otp.join('');
-    if (otpCode.length !== 4) { setError('يرجى إدخال رمز التحقق'); return; }
-    setIsLoading(true);
-    setError('');
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    if (otpCode !== '1234') { setError('رمز التحقق غير صحيح (استخدم 1234)'); setIsLoading(false); return; }
-    try {
-      const userRef = ref(database, `users/${firebaseUid}`);
-      const snapshot = await get(userRef);
-      if (snapshot.exists()) {
-        const userData = snapshot.val();
-        const fullName = [userData.firstName, userData.secondName, userData.thirdName, userData.familyName].filter((n: string) => n && n.trim()).join(' ') || userData.name || '';
-        setUser({
-          id: firebaseUid, email: userData.email || regEmail, phone: userData.phone || '',
-          name: fullName, firstName: userData.firstName || regFirstName,
-          secondName: userData.secondName || regSecondName,
-          thirdName: userData.thirdName || regThirdName,
-          familyName: userData.familyName || regFamilyName,
-          nationalId: userData.nationalId || regNationalId,
-          avatar: userData.avatar || '', role: userData.role || 'user',
-          userId: userData.userId || generatedUserId,
-          kycStatus: userData.kycStatus || 'pending',
-          isBlocked: userData.isBlocked || false,
-          balanceYER: userData.balanceYER || 0, balanceSAR: userData.balanceSAR || 0,
-          balanceUSD: userData.balanceUSD || 0, cardType: userData.cardType || '',
-          cardNumber: userData.cardNumber || '', cardIssuedAt: userData.cardIssuedAt || '',
-          governorate: userData.governorate || '', theme: userData.theme || 'light',
-        });
-      }
-    } catch { setError('حدث خطأ في الاتصال'); setIsLoading(false); }
-  };
-
-  const handleOtpChange = (value: string, index: number) => {
-    if (value.length > 1) return;
-    const newOtp = [...otp];
-    newOtp[index] = value;
-    setOtp(newOtp);
-    if (value && index < 3) { document.getElementById(`otp-${index + 1}`)?.focus(); }
-  };
 
   const handlePhoneChange = (value: string) => {
     const cleaned = value.replace(/\D/g, '').slice(0, 9);
@@ -674,40 +639,7 @@ export default function AuthScreen() {
             </motion.div>
           )}
 
-          {/* OTP STEP */}
-          {step === 'otp' && (
-            <motion.div key="otp" initial={{ x: 300, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: -300, opacity: 0 }} transition={{ type: 'spring', stiffness: 200, damping: 25 }} className="space-y-4">
-              <div className="flex items-center gap-2 mb-4">
-                <button onClick={() => { setStep('register-step2'); setError(''); }} className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: isDark ? '#1A1A1A' : '#F0F0F0' }}>
-                  <ArrowLeft size={16} strokeWidth={1.5} color={isDark ? '#FFF' : '#666'} />
-                </button>
-                <h2 className="text-lg font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>التحقق من الرمز</h2>
-              </div>
-              <div className="flex flex-col items-center">
-                <div className="w-14 h-14 rounded-full flex items-center justify-center mb-4" style={{ background: 'rgba(230,0,0,0.1)' }}>
-                  <ShieldCheck size={28} strokeWidth={1.5} color="#E60000" />
-                </div>
-                <p className="text-sm text-center" style={{ color: isDark ? '#AAA' : '#888' }}>أدخل رمز التحقق المرسل إلى بريدك</p>
-                <p className="text-sm font-bold mt-1" style={{ color: isDark ? '#FFF' : '#1a1a1a' }} dir="ltr">{regEmail}</p>
-                {generatedUserId && (
-                  <div className="mt-3 px-4 py-2 rounded-xl" style={{ background: 'rgba(230,0,0,0.1)' }}>
-                    <p className="text-xs" style={{ color: isDark ? '#AAA' : '#888' }}>رقم حسابك</p>
-                    <p className="text-lg font-bold" style={{ color: '#E60000' }} dir="ltr">{generatedUserId}</p>
-                  </div>
-                )}
-              </div>
-              <div className="flex justify-center gap-3">
-                {otp.map((digit, index) => (
-                  <input key={index} id={`otp-${index}`} type="tel" maxLength={1} value={digit} onChange={(e) => handleOtpChange(e.target.value, index)} className="w-14 h-14 rounded-2xl text-center text-xl font-bold outline-none" style={{ background: isDark ? '#1A1A1A' : '#F8F8F8', border: digit ? '2px solid #E60000' : isDark ? '1px solid #333' : '1px solid #EEE', color: isDark ? '#FFF' : '#1a1a1a' }} />
-                ))}
-              </div>
-              <p className="text-xs text-center" style={{ color: isDark ? '#666' : '#CCC' }}>الرمز التجريبي: 1234</p>
-              {error && <motion.p initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} className="text-xs text-center" style={{ color: '#E60000' }}>{error}</motion.p>}
-              <button onClick={handleOtpVerify} disabled={isLoading} className="w-full py-4 rounded-2xl flex items-center justify-center gap-2 font-bold text-white transition-all active:scale-[0.98] disabled:opacity-50" style={{ background: 'linear-gradient(135deg, #E60000 0%, #B30000 100%)', boxShadow: '0 4px 16px rgba(230,0,0,0.3)' }}>
-                {isLoading ? <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: 'linear' }} className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full" /> : <span>تحقق</span>}
-              </button>
-            </motion.div>
-          )}
+
         </AnimatePresence>
       </div>
     </div>
