@@ -26,7 +26,6 @@ import {
   Smartphone,
   Gamepad2,
   ShoppingBag,
-  Shield,
   ShieldAlert,
   Wallet,
   ArrowRightLeft,
@@ -35,7 +34,6 @@ import {
   Receipt,
   FileText,
   ChevronRight,
-  X,
   Gift,
   ScanLine,
   Zap as RechargeIcon,
@@ -180,52 +178,6 @@ function CountdownTimer({ targetDate }: { targetDate: Date }) {
         </div>
       ))}
     </div>
-  );
-}
-
-// Verification Banner Component for Home Screen
-function VerificationBanner({ isDark }: { isDark: boolean }) {
-  const [dismissed, setDismissed] = useState(false);
-  const { user, setActiveScreen } = useAppStore();
-
-  // Reappears on next app open since dismissed is local state
-  if (dismissed) return null;
-  if (!user || user.kycStatus === 'verified') return null;
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: -10 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="mx-4 mt-2 rounded-2xl overflow-hidden relative"
-      style={{
-        background: 'linear-gradient(135deg, #F59E0B 0%, #D97706 100%)',
-        boxShadow: '0 4px 12px rgba(245,158,11,0.3)',
-      }}
-    >
-      <button
-        onClick={() => setDismissed(true)}
-        className="absolute top-2 left-2 w-6 h-6 rounded-full flex items-center justify-center"
-        style={{ background: 'rgba(0,0,0,0.15)' }}
-      >
-        <X size={12} color="#FFF" />
-      </button>
-      <div className="p-4 pr-8">
-        <div className="flex items-center gap-2 mb-2">
-          <Shield size={18} color="#FFF" />
-          <span className="text-white text-sm font-bold">تنبيه التوثيق</span>
-        </div>
-        <p className="text-white text-xs leading-relaxed mb-3">
-          لا يمكنك استخدام مميزات التطبيق إلا بعد التوثيق
-        </p>
-        <button
-          onClick={() => setActiveScreen('kyc')}
-          className="px-4 py-2 rounded-xl text-xs font-bold"
-          style={{ background: 'rgba(0,0,0,0.2)', color: '#FFF' }}
-        >
-          توثيق الحساب
-        </button>
-      </div>
-    </motion.div>
   );
 }
 
@@ -626,16 +578,6 @@ export default function HomeScreen() {
           </div>
         </div>
       </motion.div>
-
-      {/* ========================================
-          VERIFICATION GATE BANNER
-          Shows when user is NOT verified
-          ======================================== */}
-      <AnimatePresence>
-        {user && user.kycStatus !== 'verified' && (
-          <VerificationBanner isDark={isDark} />
-        )}
-      </AnimatePresence>
 
       {/* ========================================
           BALANCE CARD CAROUSEL - Jaib Style
