@@ -36,6 +36,9 @@ import {
   FileText,
   ChevronRight,
   X,
+  Gift,
+  ScanLine,
+  Zap as RechargeIcon,
 } from 'lucide-react';
 import { useAppStore } from '@/lib/store';
 import { formatBalance, formatNumber, currencySymbols, currencyNames, currencyBadgeColors, timeAgo, transactionTypeLabels, transactionTypeColors } from '@/lib/utils';
@@ -260,6 +263,7 @@ export default function HomeScreen() {
     providers: {},
     features: {},
   });
+  const [fabOpen, setFabOpen] = useState(false);
 
   // Touch/drag tracking
   const isDragging = useRef(false);
@@ -587,8 +591,16 @@ export default function HomeScreen() {
             </button>
           </div>
 
-          {/* Left side - Notifications + Support */}
+          {/* Left side - Gift Code + Notifications + Support */}
           <div className="flex items-center gap-2">
+            <button
+              onClick={() => setActiveScreen('promo')}
+              className="w-10 h-10 rounded-xl flex items-center justify-center active:scale-95 transition-transform"
+              style={{ background: 'rgba(230,0,0,0.08)' }}
+              title="كود هدية"
+            >
+              <Gift size={20} strokeWidth={1.5} color="#E60000" />
+            </button>
             <button
               onClick={() => setActiveScreen('notifications')}
               className="relative w-10 h-10 rounded-xl flex items-center justify-center active:scale-95 transition-transform"
@@ -1073,6 +1085,141 @@ export default function HomeScreen() {
           </div>
         )}
       </motion.div>
+
+      {/* ========================================
+          FLOATING ACTION BUTTON (FAB)
+          Quick actions: Transfer, Scan QR, Recharge
+          ======================================== */}
+      <div className="fixed bottom-20 left-4 z-50" style={{ direction: 'ltr' }}>
+        <AnimatePresence>
+          {fabOpen && (
+            <>
+              {/* Backdrop */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 z-40"
+                style={{ background: 'rgba(0,0,0,0.3)' }}
+                onClick={() => setFabOpen(false)}
+              />
+
+              {/* Quick Transfer */}
+              <motion.button
+                initial={{ opacity: 0, scale: 0.3, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.3, y: 20 }}
+                transition={{ duration: 0.2 }}
+                onClick={() => { setFabOpen(false); setTransferOpen(true); }}
+                className="absolute bottom-24 left-0 flex items-center gap-2 z-50"
+              >
+                <span
+                  className="text-[11px] font-bold px-3 py-1.5 rounded-xl whitespace-nowrap"
+                  style={{
+                    background: isDark ? '#1A1A1A' : '#FFFFFF',
+                    color: isDark ? '#FFF' : '#1a1a1a',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                    border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}`,
+                  }}
+                >
+                  تحويل سريع
+                </span>
+                <div
+                  className="w-12 h-12 rounded-full flex items-center justify-center"
+                  style={{
+                    background: 'linear-gradient(135deg, #E60000 0%, #8B0000 100%)',
+                    boxShadow: '0 4px 12px rgba(230,0,0,0.4)',
+                  }}
+                >
+                  <Send size={20} color="#FFF" />
+                </div>
+              </motion.button>
+
+              {/* Quick Scan QR */}
+              <motion.button
+                initial={{ opacity: 0, scale: 0.3, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.3, y: 20 }}
+                transition={{ duration: 0.2, delay: 0.05 }}
+                onClick={() => { setFabOpen(false); setActiveScreen('qr'); }}
+                className="absolute bottom-12 left-0 flex items-center gap-2 z-50"
+              >
+                <span
+                  className="text-[11px] font-bold px-3 py-1.5 rounded-xl whitespace-nowrap"
+                  style={{
+                    background: isDark ? '#1A1A1A' : '#FFFFFF',
+                    color: isDark ? '#FFF' : '#1a1a1a',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                    border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}`,
+                  }}
+                >
+                  مسح QR
+                </span>
+                <div
+                  className="w-12 h-12 rounded-full flex items-center justify-center"
+                  style={{
+                    background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
+                    boxShadow: '0 4px 12px rgba(16,185,129,0.4)',
+                  }}
+                >
+                  <ScanLine size={20} color="#FFF" />
+                </div>
+              </motion.button>
+
+              {/* Quick Recharge */}
+              <motion.button
+                initial={{ opacity: 0, scale: 0.3, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.3, y: 20 }}
+                transition={{ duration: 0.2, delay: 0.1 }}
+                onClick={() => { setFabOpen(false); setActiveScreen('recharge'); }}
+                className="absolute left-0 flex items-center gap-2 z-50"
+                style={{ bottom: '0px' }}
+              >
+                <span
+                  className="text-[11px] font-bold px-3 py-1.5 rounded-xl whitespace-nowrap"
+                  style={{
+                    background: isDark ? '#1A1A1A' : '#FFFFFF',
+                    color: isDark ? '#FFF' : '#1a1a1a',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                    border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}`,
+                  }}
+                >
+                  شحن سريع
+                </span>
+                <div
+                  className="w-12 h-12 rounded-full flex items-center justify-center"
+                  style={{
+                    background: 'linear-gradient(135deg, #F59E0B 0%, #D97706 100%)',
+                    boxShadow: '0 4px 12px rgba(245,158,11,0.4)',
+                  }}
+                >
+                  <Zap size={20} color="#FFF" />
+                </div>
+              </motion.button>
+            </>
+          )}
+        </AnimatePresence>
+
+        {/* Main FAB Button */}
+        <motion.button
+          whileTap={{ scale: 0.9 }}
+          onClick={() => setFabOpen(!fabOpen)}
+          className="w-14 h-14 rounded-full flex items-center justify-center z-50 relative"
+          style={{
+            background: fabOpen ? (isDark ? '#333' : '#444') : 'linear-gradient(135deg, #E60000 0%, #8B0000 100%)',
+            boxShadow: fabOpen ? '0 4px 12px rgba(0,0,0,0.3)' : '0 6px 20px rgba(230,0,0,0.5)',
+            transition: 'all 0.3s ease',
+          }}
+        >
+          <motion.div
+            animate={{ rotate: fabOpen ? 45 : 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            <Plus size={24} color="#FFF" strokeWidth={2.5} />
+          </motion.div>
+        </motion.button>
+      </div>
     </div>
   );
 }

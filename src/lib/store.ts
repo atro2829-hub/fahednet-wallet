@@ -147,6 +147,18 @@ export interface PromoCode {
   isActive: boolean;
 }
 
+export interface GiftCode {
+  id: string;
+  code: string;
+  amount: number;
+  currency: 'YER' | 'SAR' | 'USD';
+  maxUses: number;
+  usedCount: number;
+  expiresAt: string;
+  isActive: boolean;
+  description?: string;
+}
+
 export interface SavingsGoal {
   id: string;
   name: string;
@@ -277,6 +289,9 @@ interface AppState {
   // Promo codes
   promoCodes: PromoCode[];
   applyPromoCode: (code: string) => PromoCode | null;
+
+  // Gift codes
+  redeemGiftCode: (code: string) => Promise<{ success: boolean; message: string; amount?: number; currency?: string }>;
 
   // Savings goals
   savingsGoals: SavingsGoal[];
@@ -829,6 +844,115 @@ export const useAppStore = create<AppState>()(
           return promo;
         }
         return null;
+      },
+
+      // Gift codes
+      redeemGiftCode: async (code) => {
+        const state = get();
+        const currentUser = state.user;
+        if (!currentUser) {
+          return { success: false, message: 'يجب تسجيل الدخول أولاً' };
+        }
+        if (!code.trim()) {
+          return { success: false, message: 'يرجى إدخال كود الهدية' };
+        }
+        try {
+          const { database } = await import('@/lib/firebase');
+          const { ref, get, runTransaction } = await import('firebase/database');
+
+          // Look up the gift code in Firebase
+          const giftCodeRef = ref(database, `giftCodes/${code.trim().toUpperCase()}`);
+          const snapshot = await get(giftCodeRef);
+
+          if (!snapshot.exists()) {
+            return { success: false, message: 'كود الهدية غير صالح' };
+          }
+
+          const giftData = snapshot.val() as GiftCode;
+
+          // Validate the gift code
+          if (!giftData.isActive) {
+            return { success: false, message: 'هذا الكود غير مفعّل' };
+          }
+          if (giftData.usedCount >= giftData.maxUses) {
+            return { success: false, message: 'تم استخدام هذا الكود الحد الأقصى من المرات' };
+          }
+          if (new Date(giftData.expiresAt) < new Date()) {
+            return { success: false, message: 'انتهت صلاحية هذا الكود' };
+          }
+
+          // Check if user already redeemed this code
+          const redeemRef = ref(database, `giftCodeRedemptions/${code.trim().toUpperCase()}/${currentUser.id}`);
+          const redeemSnapshot = await get(redeemRef);
+          if (redeemSnapshot.exists()) {
+            return { success: false, message: 'لقد استخدمت هذا الكود من قبل' };
+          }
+
+          // Increment usedCount atomically
+          await runTransaction(giftCodeRef, (currentData) => {
+            if (currentData && currentData.usedCount < currentData.maxUses) {
+              currentData.usedCount++;
+              return currentData;
+            }
+            return; // Abort transaction
+          });
+
+          // Record the redemption
+          const { set: firebaseSet } = await import('firebase/database');
+          await firebaseSet(redeemRef, {
+            redeemedAt: new Date().toISOString(),
+            userId: currentUser.id,
+            userName: currentUser.name,
+          });
+
+          // Add balance to user
+          const balanceField = `balance${giftData.currency}` as keyof typeof currentUser;
+          const newBalance = ((currentUser[balanceField] as number) || 0) + giftData.amount;
+
+          const updatedUser = {
+            ...currentUser,
+            [balanceField]: newBalance,
+          };
+
+          // Update user balance in Firebase
+          const userBalanceRef = ref(database, `users/${currentUser.id}/${balanceField}`);
+          await firebaseSet(userBalanceRef, newBalance);
+
+          // Add transaction record
+          const txId = `gift-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+          const transaction = {
+            id: txId,
+            fromUserId: 'GIFT',
+            toUserId: currentUser.id,
+            amount: giftData.amount,
+            currency: giftData.currency as 'YER' | 'SAR' | 'USD',
+            type: 'deposit' as const,
+            status: 'completed' as const,
+            description: `استرداد كود هدية: ${code.trim().toUpperCase()}`,
+            createdAt: new Date().toISOString(),
+          };
+
+          // Update store
+          set({
+            user: updatedUser,
+            transactions: [transaction, ...state.transactions],
+          });
+
+          // Add notification
+          state.addNotification({
+            id: `gift-${Date.now()}`,
+            title: 'تم استرداد كود الهدية! 🎁',
+            body: `تم إضافة ${giftData.amount} ${giftData.currency === 'YER' ? 'ر.ي' : giftData.currency === 'SAR' ? 'ر.س' : '$'} إلى رصيدك`,
+            type: 'promo',
+            isRead: false,
+            createdAt: new Date().toISOString(),
+          });
+
+          return { success: true, message: `تم إضافة ${giftData.amount} ${giftData.currency === 'YER' ? 'ر.ي' : giftData.currency === 'SAR' ? 'ر.س' : '$'} إلى رصيدك`, amount: giftData.amount, currency: giftData.currency };
+        } catch (error) {
+          console.error('Gift code redemption error:', error);
+          return { success: false, message: 'حدث خطأ، يرجى المحاولة لاحقاً' };
+        }
       },
 
       // Savings goals

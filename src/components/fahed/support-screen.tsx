@@ -6,15 +6,16 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   ArrowLeft, MessageSquare, Search, ChevronDown, ChevronUp, Plus,
   Send, ImagePlus, X, Clock, CheckCircle2, AlertCircle, HelpCircle,
-  Headphones, Paperclip, Tag, Phone, Globe, ExternalLink
+  Headphones, Paperclip, Tag, Phone, Globe, ExternalLink,
+  Bot, Sparkles, MessageCircle, FileText, Ticket
 } from 'lucide-react';
 import { useAppStore, type SupportTicket } from '@/lib/store';
 import { timeAgo, generateReference, compressBase64Image, faqItems } from '@/lib/utils';
 import { ref, set, get, update, push, onValue, remove } from 'firebase/database';
 import { database } from '@/lib/firebase';
 
-type SupportView = 'main' | 'ticket-detail' | 'create-ticket';
-type MainTab = 'faq' | 'tickets';
+type SupportView = 'main' | 'ticket-detail' | 'create-ticket' | 'chat';
+type MainTab = 'faq' | 'tickets' | 'chat';
 
 interface TicketMessage {
   sender: 'user' | 'support';
@@ -35,6 +36,29 @@ interface FirebaseTicket {
   createdAt: string;
   image?: string;
 }
+
+// Bot responses for simulated live chat
+const botResponses = [
+  { trigger: /مرحبا|أهلا|هلا|السلام|صباح|مساء/, response: 'أهلاً وسهلاً بك! 👋 أنا المساعد الذكي للحبيلين اونلاين. كيف يمكنني مساعدتك اليوم؟' },
+  { trigger: /تحويل|ارسال|إرسال|حوالة/, response: 'لإجراء تحويل، اذهب إلى الصفحة الرئيسية واضغط على "تحويل الأموال". تأكد من توثيق حسابك أولاً. هل تحتاج مساعدة إضافية؟' },
+  { trigger: /رصيد|حساب|فلوس|مال/, response: 'يمكنك عرض رصيدك في الصفحة الرئيسية. إذا كان هناك مشكلة في الرصيد، يرجى إنشاء تذكرة دعم وسيقوم فريقنا بالتحقق. هل تريد إنشاء تذكرة؟' },
+  { trigger: /توثيق|verify|كيو سي|kyc/, response: 'لتوثيق حسابك، اذهب إلى قسم "بياناتي" في الحساب واتبع الخطوات. التوثيق يتيح لك جميع ميزات التطبيق. هل تحتاج تفاصيل أكثر؟' },
+  { trigger: /مشكلة|عطل|خطأ|لا يعمل/, response: 'أعتذر عن أي إزعاج! 🙏 يرجى إنشاء تذكرة دعم فنية مع وصف المشكلة وسيقوم فريقنا بمساعدتك في أقرب وقت.' },
+  { trigger: /شكر|شكرا|جزاك/, response: 'العفو! 😊 سعيد أنني استطعت المساعدة. هل لديك استفسار آخر؟' },
+  { trigger: /watson|واتساب|whatsapp/, response: 'يمكنك التواصل معنا عبر واتساب مباشرة! اضغط على زر واتساب أدناه للتواصل المباشر مع فريق الدعم.' },
+];
+
+const defaultBotResponse = 'شكراً لتواصلك! سأقوم بتحويل رسالتك لفريق الدعم. يمكنك أيضاً إنشاء تذكرة دعم للحصول على متابعة أسرع. هل تحتاج مساعدة في شيء آخر؟';
+
+// FAQ quick links
+const faqQuickLinks = [
+  { icon: '🔄', label: 'كيف أقوم بتحويل أموال؟' },
+  { icon: '🔐', label: 'كيف أوثق حسابي؟' },
+  { icon: '💳', label: 'كيف أشحن رصيدي؟' },
+  { icon: '📊', label: 'كيف أتحقق من رصيدي؟' },
+  { icon: '🛡️', label: 'هل تطبيقي آمن؟' },
+  { icon: '📞', label: 'كيف أتواصل مع الدعم؟' },
+];
 
 export default function SupportScreen() {
   const { theme } = useTheme();
@@ -77,7 +101,15 @@ export default function SupportScreen() {
   const [newMessage, setNewMessage] = useState('');
   const [newImage, setNewImage] = useState('');
 
+  // Live chat
+  const [chatMessages, setChatMessages] = useState<{ sender: 'user' | 'bot'; text: string; time: string }[]>([
+    { sender: 'bot', text: 'أهلاً بك في الدعم المباشر! 👋 أنا المساعد الذكي للحبيلين اونلاين. كيف يمكنني مساعدتك؟', time: new Date().toISOString() },
+  ]);
+  const [chatInput, setChatInput] = useState('');
+  const [isBotTyping, setIsBotTyping] = useState(false);
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const chatEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Listen to tickets from Firebase
@@ -103,6 +135,11 @@ export default function SupportScreen() {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [selectedTicket?.messages?.length]);
+
+  // Auto-scroll chat
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [chatMessages.length, isBotTyping]);
 
   const filteredFaq = faqItems.filter(item => {
     if (!faqSearch) return true;
@@ -135,6 +172,27 @@ export default function SupportScreen() {
     } catch {}
     setSelectedTicket(updatedTicket);
     setMessageInput('');
+  };
+
+  // Chat bot handler
+  const handleSendChat = () => {
+    if (!chatInput.trim()) return;
+    const userMsg = { sender: 'user' as const, text: chatInput, time: new Date().toISOString() };
+    setChatMessages(prev => [...prev, userMsg]);
+    setChatInput('');
+    setIsBotTyping(true);
+
+    // Simulate bot thinking
+    setTimeout(() => {
+      const matchedResponse = botResponses.find(r => r.trigger.test(chatInput));
+      const botMsg = {
+        sender: 'bot' as const,
+        text: matchedResponse?.response || defaultBotResponse,
+        time: new Date().toISOString(),
+      };
+      setIsBotTyping(false);
+      setChatMessages(prev => [...prev, botMsg]);
+    }, 800 + Math.random() * 1200);
   };
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -193,28 +251,58 @@ export default function SupportScreen() {
       {/* Main View */}
       {view === 'main' && (
         <div className="px-5 mt-4 pb-8">
-          {/* Tab Toggle */}
+          {/* Tab Toggle - Now 3 tabs */}
           <div className="flex gap-2 mb-4">
             {([
               { id: 'faq' as MainTab, label: 'مركز المساعدة', icon: HelpCircle },
+              { id: 'chat' as MainTab, label: 'دردشة مباشرة', icon: Bot },
               { id: 'tickets' as MainTab, label: 'تذاكر الدعم', icon: MessageSquare },
             ]).map(tab => {
               const Icon = tab.icon;
               return (
                 <motion.button key={tab.id} whileTap={{ scale: 0.95 }} onClick={() => setActiveTab(tab.id)}
-                  className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-medium"
+                  className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-[11px] font-medium"
                   style={{
                     background: activeTab === tab.id ? 'rgba(230,0,0,0.15)' : isDark ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.8)',
                     border: activeTab === tab.id ? '1px solid rgba(230,0,0,0.3)' : isDark ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(0,0,0,0.06)',
                     color: activeTab === tab.id ? '#FFF' : isDark ? '#BBB' : '#666',
                     backdropFilter: 'blur(20px)',
                   }}>
-                  <Icon size={16} />
+                  <Icon size={14} />
                   <span>{tab.label}</span>
                 </motion.button>
               );
             })}
           </div>
+
+          {/* WhatsApp Direct Contact */}
+          {socialLinks.whatsapp && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-4"
+            >
+              <a
+                href={`https://wa.me/${socialLinks.whatsapp.replace(/[^0-9]/g, '')}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-3 p-3 rounded-2xl"
+                style={{
+                  background: 'rgba(37,211,102,0.1)',
+                  border: '1px solid rgba(37,211,102,0.2)',
+                }}
+              >
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: '#25D366' }}>
+                  <Phone size={20} color="#FFF" />
+                </div>
+                <div className="flex-1 text-right">
+                  <p className="text-sm font-bold" style={{ color: '#25D366' }}>تواصل عبر واتساب</p>
+                  <p className="text-[10px]" style={{ color: isDark ? '#888' : '#999' }}>رد سريع من فريق الدعم</p>
+                </div>
+                <ExternalLink size={16} color="#25D366" />
+              </a>
+            </motion.div>
+          )}
 
           <AnimatePresence mode="wait">
             {/* FAQ Tab */}
@@ -224,6 +312,24 @@ export default function SupportScreen() {
                 <div className="flex items-center gap-2 px-4 py-3 rounded-2xl" style={{ background: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.85)', backdropFilter: 'blur(20px)', border: isDark ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(0,0,0,0.06)' }}>
                   <Search size={16} color={isDark ? '#555' : '#AAA'} />
                   <input type="text" placeholder="ابحث في الأسئلة الشائعة..." value={faqSearch} onChange={e => setFaqSearch(e.target.value)} className="flex-1 bg-transparent outline-none text-sm" style={{ color: isDark ? '#FFF' : '#1a1a1a' }} />
+                </div>
+
+                {/* FAQ Quick Links */}
+                <div className="rounded-2xl p-4" style={{ background: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.85)', backdropFilter: 'blur(20px)', border: isDark ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(0,0,0,0.06)' }}>
+                  <h3 className="text-xs font-bold mb-3" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>الأسئلة الأكثر شيوعاً</h3>
+                  <div className="grid grid-cols-2 gap-2">
+                    {faqQuickLinks.map((link, i) => (
+                      <button
+                        key={i}
+                        onClick={() => setFaqSearch(link.label.replace(/[؟?]/g, '').replace('كيف ', ''))}
+                        className="flex items-center gap-2 px-3 py-2.5 rounded-xl text-[11px] text-right"
+                        style={{ background: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)' }}
+                      >
+                        <span>{link.icon}</span>
+                        <span style={{ color: isDark ? '#CCC' : '#444' }}>{link.label}</span>
+                      </button>
+                    ))}
+                  </div>
                 </div>
 
                 {/* FAQ Items */}
@@ -257,7 +363,7 @@ export default function SupportScreen() {
                 </motion.button>
 
                 {/* Contact Admin Section */}
-                {(socialLinks.whatsapp || socialLinks.contactAdmin || socialLinks.contactAdminMessage) && (
+                {(socialLinks.contactAdmin || socialLinks.contactAdminMessage) && (
                   <div className="rounded-2xl p-4 mt-3" style={{ background: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.85)', backdropFilter: 'blur(20px)', border: isDark ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(0,0,0,0.06)' }}>
                     <div className="flex items-center gap-2 mb-3">
                       <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'rgba(139,92,246,0.12)' }}>
@@ -270,34 +376,122 @@ export default function SupportScreen() {
                         {socialLinks.contactAdminMessage}
                       </p>
                     )}
-                    <div className="flex gap-2">
-                      {socialLinks.whatsapp && (
-                        <a
-                          href={`https://wa.me/${socialLinks.whatsapp.replace(/[^0-9]/g, '')}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-xs font-bold text-white"
-                          style={{ background: '#25D366' }}
-                        >
-                          <Phone size={16} />
-                          <span>واتساب</span>
-                        </a>
-                      )}
-                      {socialLinks.contactAdmin && (
-                        <a
-                          href={socialLinks.contactAdmin}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-xs font-bold"
-                          style={{ background: 'rgba(139,92,246,0.1)', color: '#8B5CF6' }}
-                        >
-                          <ExternalLink size={16} />
-                          <span>تواصل مباشر</span>
-                        </a>
-                      )}
-                    </div>
+                    {socialLinks.contactAdmin && (
+                      <a
+                        href={socialLinks.contactAdmin}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center justify-center gap-2 py-3 rounded-xl text-xs font-bold w-full"
+                        style={{ background: 'rgba(139,92,246,0.1)', color: '#8B5CF6' }}
+                      >
+                        <ExternalLink size={16} />
+                        <span>تواصل مباشر</span>
+                      </a>
+                    )}
                   </div>
                 )}
+              </motion.div>
+            )}
+
+            {/* Live Chat Tab */}
+            {activeTab === 'chat' && (
+              <motion.div key="chat" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="flex flex-col" style={{ height: 'calc(100vh - 180px)' }}>
+                {/* Chat messages area */}
+                <div className="flex-1 overflow-y-auto space-y-3 pb-3">
+                  {chatMessages.map((msg, i) => (
+                    <motion.div
+                      key={i}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: i * 0.02 }}
+                      className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
+                    >
+                      <div className="max-w-[85%]">
+                        {msg.sender === 'bot' && (
+                          <div className="flex items-center gap-1.5 mb-1">
+                            <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: 'rgba(230,0,0,0.15)' }}>
+                              <Bot size={12} color="#E60000" />
+                            </div>
+                            <span className="text-[10px] font-bold" style={{ color: '#E60000' }}>المساعد الذكي</span>
+                          </div>
+                        )}
+                        <div
+                          className="rounded-2xl p-3"
+                          style={{
+                            background: msg.sender === 'user' ? '#E60000' : isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)',
+                            borderBottomRightRadius: msg.sender === 'user' ? '4px' : '16px',
+                            borderBottomLeftRadius: msg.sender === 'bot' ? '4px' : '16px',
+                          }}
+                        >
+                          <p className="text-xs leading-relaxed" style={{ color: msg.sender === 'user' ? '#FFF' : isDark ? '#CCC' : '#333' }}>
+                            {msg.text}
+                          </p>
+                        </div>
+                        <p className="text-[9px] mt-1 text-left" dir="ltr" style={{ color: isDark ? '#555' : '#BBB' }}>
+                          {timeAgo(msg.time)}
+                        </p>
+                      </div>
+                    </motion.div>
+                  ))}
+
+                  {/* Bot typing indicator */}
+                  {isBotTyping && (
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      className="flex justify-start"
+                    >
+                      <div className="max-w-[85%]">
+                        <div className="flex items-center gap-1.5 mb-1">
+                          <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: 'rgba(230,0,0,0.15)' }}>
+                            <Bot size={12} color="#E60000" />
+                          </div>
+                          <span className="text-[10px] font-bold" style={{ color: '#E60000' }}>المساعد الذكي</span>
+                        </div>
+                        <div className="rounded-2xl p-3" style={{ background: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)', borderBottomLeftRadius: '4px' }}>
+                          <div className="flex items-center gap-1.5">
+                            <div className="w-2 h-2 rounded-full" style={{ background: isDark ? '#555' : '#AAA', animation: 'pulse 1s ease-in-out infinite' }} />
+                            <div className="w-2 h-2 rounded-full" style={{ background: isDark ? '#555' : '#AAA', animation: 'pulse 1s ease-in-out 0.2s infinite' }} />
+                            <div className="w-2 h-2 rounded-full" style={{ background: isDark ? '#555' : '#AAA', animation: 'pulse 1s ease-in-out 0.4s infinite' }} />
+                          </div>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                  <div ref={chatEndRef} />
+                </div>
+
+                {/* Chat quick actions */}
+                <div className="flex gap-2 mb-2 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
+                  {['تحويل أموال', 'مشكلة تقنية', 'توثيق حساب', 'استفسار عام'].map((quick, i) => (
+                    <button
+                      key={i}
+                      onClick={() => { setChatInput(quick); }}
+                      className="shrink-0 px-3 py-1.5 rounded-full text-[10px] font-medium"
+                      style={{
+                        background: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)',
+                        color: isDark ? '#CCC' : '#666',
+                        border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'}`,
+                      }}
+                    >
+                      {quick}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Chat input bar */}
+                <div className="flex items-center gap-2">
+                  <div className="flex-1 flex items-center gap-2 px-4 py-3 rounded-2xl" style={{ background: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)' }}>
+                    <input type="text" placeholder="اكتب رسالتك..." value={chatInput} onChange={e => setChatInput(e.target.value)}
+                      onKeyDown={e => e.key === 'Enter' && handleSendChat()}
+                      className="flex-1 bg-transparent outline-none text-sm" style={{ color: isDark ? '#FFF' : '#1a1a1a' }} />
+                  </div>
+                  <motion.button whileTap={{ scale: 0.85 }} onClick={handleSendChat}
+                    className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0"
+                    style={{ background: '#E60000' }}>
+                    <Send size={16} color="#FFF" />
+                  </motion.button>
+                </div>
               </motion.div>
             )}
 

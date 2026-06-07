@@ -32,6 +32,14 @@ import {
   Globe,
   ExternalLink,
   Mail,
+  Gift,
+  Copy,
+  Check,
+  BadgeCheck,
+  Moon,
+  Sun,
+  Clock,
+  Star,
 } from 'lucide-react';
 import { useAppStore } from '@/lib/store';
 import { database } from '@/lib/firebase';
@@ -93,8 +101,15 @@ const accountSections: Section[] = [
   },
 ];
 
+// Account tier info
+const accountTiers: Record<string, { label: string; color: string; bg: string; icon: typeof Star; description: string }> = {
+  basic: { label: 'أساسي', color: '#999', bg: 'rgba(153,153,153,0.12)', icon: User, description: 'حساب غير موثق' },
+  verified: { label: 'موثق', color: '#10B981', bg: 'rgba(16,185,129,0.12)', icon: BadgeCheck, description: 'حساب موثق بالكامل' },
+  premium: { label: 'مميز', color: '#F59E0B', bg: 'rgba(245,158,11,0.12)', icon: Crown, description: 'حساب مميز مع امتيازات إضافية' },
+};
+
 export default function AccountScreen() {
-  const { theme } = useTheme();
+  const { theme, setTheme } = useTheme();
   const isDark = theme === 'dark';
   const { user, setActiveScreen, logout, balanceVisible, toggleBalance, setUser } = useAppStore();
   const [isAdmin, setIsAdmin] = useState(user?.role === 'admin' || user?.role === 'owner');
@@ -104,7 +119,12 @@ export default function AccountScreen() {
     'auto-login': true,
     'fingerprint': true,
     'face-id': false,
+    'dark-mode': isDark,
+    'notifications-toggle': true,
   });
+  const [copiedReferral, setCopiedReferral] = useState(false);
+  const [showQRCard, setShowQRCard] = useState(false);
+  const [lastLoginTime, setLastLoginTime] = useState<string>('');
 
   // Social links from Firebase
   const [socialLinks, setSocialLinks] = useState<{
@@ -112,6 +132,15 @@ export default function AccountScreen() {
     telegram: string; youtube: string; supportEmail: string; contactAdmin: string;
     contactAdminMessage: string;
   } | null>(null);
+
+  // Determine account tier
+  const getAccountTier = (): string => {
+    if (!user) return 'basic';
+    if (user.kycStatus === 'verified') return 'verified';
+    // Premium could be based on a future field, but for now verified is the highest
+    return 'verified';
+  };
+  const tier = accountTiers[getAccountTier()];
 
   useEffect(() => {
     const linksRef = ref(database, 'adminSettings/socialLinks');
@@ -132,6 +161,19 @@ export default function AccountScreen() {
       }
     });
     return () => unsubscribe();
+  }, []);
+
+  // Last login time
+  useEffect(() => {
+    const now = new Date();
+    const formatted = now.toLocaleDateString('ar-YE', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+    setLastLoginTime(formatted);
   }, []);
 
   // Check admin/owner role directly from Firebase
@@ -170,12 +212,26 @@ export default function AccountScreen() {
   };
 
   const handleToggle = (itemId: string) => {
+    if (itemId === 'dark-mode') {
+      setTheme(isDark ? 'light' : 'dark');
+    }
     setToggleStates(prev => ({ ...prev, [itemId]: !prev[itemId] }));
   };
 
   const handleItemClick = (item: SectionItem) => {
     if (item.screen) {
       setActiveScreen(item.screen);
+    }
+  };
+
+  const handleShareProfile = () => {
+    const text = `📱 حسابي في الحبيلين اونلاين\n🆔 رقم الحساب: ${user?.userId || ''}\n👤 الاسم: ${user?.name || ''}`;
+    if (navigator.share) {
+      navigator.share({ text }).catch(() => {
+        navigator.clipboard?.writeText(text);
+      });
+    } else {
+      navigator.clipboard?.writeText(text);
     }
   };
 
@@ -190,7 +246,7 @@ export default function AccountScreen() {
         <h1 className="text-xl font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>الحساب</h1>
       </motion.div>
 
-      {/* Profile Card - Jaib Style */}
+      {/* Profile Card - Enhanced */}
       <motion.div
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
@@ -208,7 +264,7 @@ export default function AccountScreen() {
           <div className="flex items-center gap-4">
             {/* Avatar */}
             <div
-              className="w-16 h-16 rounded-2xl flex items-center justify-center overflow-hidden shrink-0"
+              className="w-16 h-16 rounded-2xl flex items-center justify-center overflow-hidden shrink-0 relative"
               style={{
                 background: user?.avatar ? 'transparent' : 'linear-gradient(135deg, #E60000 0%, #8B0000 100%)',
                 boxShadow: '0 4px 12px rgba(230,0,0,0.2)',
@@ -219,13 +275,27 @@ export default function AccountScreen() {
               ) : (
                 <User size={28} strokeWidth={1.5} color="#FFF" />
               )}
+              {/* Verified badge overlay */}
+              {user?.kycStatus === 'verified' && (
+                <div
+                  className="absolute -bottom-1 -left-1 w-6 h-6 rounded-full flex items-center justify-center"
+                  style={{ background: '#10B981', border: '2px solid ' + (isDark ? '#1A1A1A' : '#FFFFFF') }}
+                >
+                  <BadgeCheck size={12} color="#FFF" />
+                </div>
+              )}
             </div>
 
-            {/* Name + Phone */}
+            {/* Name + Phone + Tier */}
             <div className="flex-1 min-w-0">
-              <h2 className="text-lg font-bold truncate" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>
-                {user?.name || 'مستخدم'}
-              </h2>
+              <div className="flex items-center gap-2">
+                <h2 className="text-lg font-bold truncate" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>
+                  {user?.name || 'مستخدم'}
+                </h2>
+                {user?.kycStatus === 'verified' && (
+                  <BadgeCheck size={18} strokeWidth={2} color="#10B981" />
+                )}
+              </div>
               <div className="flex items-center gap-2 mt-1">
                 <Phone size={12} strokeWidth={1.5} color="#E60000" />
                 <span className="text-sm font-medium" style={{ color: '#E60000' }} dir="ltr">
@@ -250,6 +320,38 @@ export default function AccountScreen() {
             </button>
           </div>
 
+          {/* Account Tier Badge */}
+          <div className="mt-3">
+            <div
+              className="flex items-center gap-2 px-3 py-2 rounded-xl"
+              style={{ background: tier.bg }}
+            >
+              {(() => {
+                const TierIcon = tier.icon;
+                return <TierIcon size={16} strokeWidth={1.5} color={tier.color} />;
+              })()}
+              <div className="flex-1">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold" style={{ color: tier.color }}>
+                    حساب {tier.label}
+                  </span>
+                </div>
+                <span className="text-[10px]" style={{ color: isDark ? '#888' : '#999' }}>
+                  {tier.description}
+                </span>
+              </div>
+              {getAccountTier() === 'basic' && (
+                <button
+                  onClick={() => setActiveScreen('kyc')}
+                  className="text-[10px] px-2 py-1 rounded-lg font-bold"
+                  style={{ background: 'rgba(230,0,0,0.1)', color: '#E60000' }}
+                >
+                  توثيق
+                </button>
+              )}
+            </div>
+          </div>
+
           {/* Action Buttons Row */}
           <div className="flex items-center gap-2 mt-4">
             <button
@@ -265,17 +367,281 @@ export default function AccountScreen() {
               </span>
             </button>
             <button
-              onClick={() => setActiveScreen('settings')}
+              onClick={handleShareProfile}
               className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl"
               style={{
                 background: 'rgba(230,0,0,0.08)',
               }}
             >
-              <Settings size={16} strokeWidth={1.5} color="#E60000" />
+              <Share2 size={16} strokeWidth={1.5} color="#E60000" />
               <span className="text-xs font-medium" style={{ color: '#E60000' }}>
+                مشاركة الملف
+              </span>
+            </button>
+            <button
+              onClick={() => setActiveScreen('settings')}
+              className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl"
+              style={{
+                background: 'rgba(16,185,129,0.08)',
+              }}
+            >
+              <Settings size={16} strokeWidth={1.5} color="#10B981" />
+              <span className="text-xs font-medium" style={{ color: '#10B981' }}>
                 الإعدادات
               </span>
             </button>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* QR Code Card for Receiving Money */}
+      <motion.div
+        initial={{ opacity: 0, y: 15 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.12 }}
+        className="px-4 mt-3"
+      >
+        <button
+          onClick={() => setShowQRCard(!showQRCard)}
+          className="w-full rounded-2xl overflow-hidden"
+          style={{
+            background: isDark ? '#1A1A1A' : '#FFFFFF',
+            border: `1px solid ${isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.05)'}`,
+          }}
+        >
+          <div className="flex items-center gap-3 p-4">
+            <div
+              className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+              style={{ background: 'rgba(230,0,0,0.1)' }}
+            >
+              <QrCode size={20} strokeWidth={1.5} color="#E60000" />
+            </div>
+            <div className="flex-1 text-right">
+              <h3 className="text-sm font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>رمز الاستقبال</h3>
+              <p className="text-[11px] mt-0.5" style={{ color: isDark ? '#888' : '#999' }}>اعرض رمز QR لاستقبال الأموال</p>
+            </div>
+            {showQRCard ? (
+              <ChevronUp size={18} strokeWidth={1.5} color={isDark ? '#555' : '#AAA'} />
+            ) : (
+              <ChevronDown size={18} strokeWidth={1.5} color={isDark ? '#555' : '#AAA'} />
+            )}
+          </div>
+        </button>
+
+        <AnimatePresence>
+          {showQRCard && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.25 }}
+              className="overflow-hidden"
+            >
+              <div
+                className="mt-2 rounded-2xl p-5 flex flex-col items-center"
+                style={{
+                  background: isDark ? '#1A1A1A' : '#FFFFFF',
+                  border: `1px solid ${isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.05)'}`,
+                }}
+              >
+                {/* QR Code placeholder - a styled box representing QR */}
+                <div
+                  className="w-40 h-40 rounded-2xl flex items-center justify-center mb-3"
+                  style={{
+                    background: '#FFFFFF',
+                    boxShadow: '0 4px 16px rgba(0,0,0,0.1)',
+                  }}
+                >
+                  <div className="flex flex-col items-center">
+                    <QrCode size={64} strokeWidth={1} color="#1a1a1a" />
+                    <img src={LOGO_BASE64} alt="" className="w-8 h-8 mt-1 rounded" />
+                  </div>
+                </div>
+                <p className="text-sm font-bold mb-1" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>
+                  {user?.name || 'مستخدم'}
+                </p>
+                <p className="text-xs font-mono" style={{ color: '#E60000' }} dir="ltr">
+                  {user?.userId || '------'}
+                </p>
+                <button
+                  onClick={() => setActiveScreen('qr')}
+                  className="mt-3 px-4 py-2 rounded-xl text-xs font-bold"
+                  style={{ background: 'rgba(230,0,0,0.1)', color: '#E60000' }}
+                >
+                  عرض رمز QR الكامل
+                </button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.div>
+
+      {/* Quick Settings Toggles */}
+      <motion.div
+        initial={{ opacity: 0, y: 15 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.13 }}
+        className="px-4 mt-3"
+      >
+        <div
+          className="rounded-2xl overflow-hidden"
+          style={{
+            background: isDark ? '#1A1A1A' : '#FFFFFF',
+            border: `1px solid ${isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.05)'}`,
+          }}
+        >
+          {/* Dark Mode Toggle */}
+          <button
+            onClick={() => handleToggle('dark-mode')}
+            className="w-full flex items-center gap-3 px-4 py-3.5"
+          >
+            <div
+              className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+              style={{ background: isDark ? 'rgba(139,92,246,0.12)' : 'rgba(245,158,11,0.12)' }}
+            >
+              {isDark ? <Moon size={18} strokeWidth={1.5} color="#8B5CF6" /> : <Sun size={18} strokeWidth={1.5} color="#F59E0B" />}
+            </div>
+            <span className="flex-1 text-right text-sm" style={{ color: isDark ? '#DDD' : '#444' }}>
+              الوضع الداكن
+            </span>
+            <div
+              className="w-11 h-6 rounded-full flex items-center transition-all duration-200 px-0.5"
+              style={{
+                background: toggleStates['dark-mode'] ? '#8B5CF6' : (isDark ? '#333' : '#DDD'),
+                justifyContent: toggleStates['dark-mode'] ? 'flex-end' : 'flex-start',
+              }}
+            >
+              <div className="w-5 h-5 rounded-full bg-white" style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.2)' }} />
+            </div>
+          </button>
+
+          {/* Notifications Toggle */}
+          <button
+            onClick={() => handleToggle('notifications-toggle')}
+            className="w-full flex items-center gap-3 px-4 py-3.5"
+            style={{
+              borderTop: `1px solid ${isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.05)'}`,
+            }}
+          >
+            <div
+              className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+              style={{ background: 'rgba(230,0,0,0.1)' }}
+            >
+              <Bell size={18} strokeWidth={1.5} color="#E60000" />
+            </div>
+            <span className="flex-1 text-right text-sm" style={{ color: isDark ? '#DDD' : '#444' }}>
+              الإشعارات
+            </span>
+            <div
+              className="w-11 h-6 rounded-full flex items-center transition-all duration-200 px-0.5"
+              style={{
+                background: toggleStates['notifications-toggle'] ? '#E60000' : (isDark ? '#333' : '#DDD'),
+                justifyContent: toggleStates['notifications-toggle'] ? 'flex-end' : 'flex-start',
+              }}
+            >
+              <div className="w-5 h-5 rounded-full bg-white" style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.2)' }} />
+            </div>
+          </button>
+
+          {/* Last Login */}
+          <div
+            className="flex items-center gap-3 px-4 py-3.5"
+            style={{
+              borderTop: `1px solid ${isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.05)'}`,
+            }}
+          >
+            <div
+              className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+              style={{ background: 'rgba(59,130,246,0.1)' }}
+            >
+              <Clock size={18} strokeWidth={1.5} color="#3B82F6" />
+            </div>
+            <div className="flex-1 text-right">
+              <span className="text-sm block" style={{ color: isDark ? '#DDD' : '#444' }}>آخر تسجيل دخول</span>
+              <span className="text-[10px]" style={{ color: isDark ? '#888' : '#999' }}>{lastLoginTime}</span>
+            </div>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* Referral / Gift Code Sharing Section */}
+      <motion.div
+        initial={{ opacity: 0, y: 15 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.15 }}
+        className="px-4 mt-3"
+      >
+        <div
+          className="rounded-2xl overflow-hidden"
+          style={{
+            background: isDark ? '#1A1A1A' : '#FFFFFF',
+            border: `1px solid ${isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.05)'}`,
+          }}
+        >
+          <div className="p-4">
+            <div className="flex items-center gap-3 mb-3">
+              <div
+                className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+                style={{ background: 'rgba(230,0,0,0.1)' }}
+              >
+                <Gift size={20} strokeWidth={1.5} color="#E60000" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-sm font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>شارك كود هدية</h3>
+                <p className="text-[11px] mt-0.5" style={{ color: isDark ? '#888' : '#999' }}>دع أصدقائك واحصل على مكافأة</p>
+              </div>
+            </div>
+
+            {/* Referral Code Display */}
+            <div
+              className="flex items-center gap-2 p-3 rounded-xl mb-3"
+              style={{ background: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)', border: `1px dashed ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}` }}
+            >
+              <span className="text-[11px]" style={{ color: isDark ? '#888' : '#999' }}>كود الدعوة:</span>
+              <span className="flex-1 text-sm font-mono font-bold text-center" style={{ color: '#E60000' }} dir="ltr">
+                {user?.userId || '------'}
+              </span>
+              <button
+                onClick={() => {
+                  navigator.clipboard?.writeText(user?.userId || '');
+                  setCopiedReferral(true);
+                  setTimeout(() => setCopiedReferral(false), 2000);
+                }}
+                className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 active:scale-95 transition-transform"
+                style={{ background: 'rgba(230,0,0,0.1)' }}
+              >
+                {copiedReferral ? <Check size={14} color="#10B981" /> : <Copy size={14} color="#E60000" />}
+              </button>
+            </div>
+
+            {/* Share Buttons */}
+            <div className="flex gap-2">
+              <button
+                onClick={() => {
+                  const text = `🎁 استخدم كود الدعوة ${user?.userId || ''} في تطبيق الحبيلين اونلاين واحصل على مكافأة!`;
+                  const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
+                  window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
+                }}
+                className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl active:scale-95 transition-transform"
+                style={{ background: 'rgba(37,211,102,0.1)' }}
+              >
+                <Phone size={16} color="#25D366" />
+                <span className="text-xs font-medium" style={{ color: '#25D366' }}>واتساب</span>
+              </button>
+              <button
+                onClick={() => {
+                  const text = `🎁 استخدم كود الدعوة ${user?.userId || ''} في تطبيق الحبيلين اونلاين واحصل على مكافأة!`;
+                  navigator.share?.({ text }).catch(() => {
+                    navigator.clipboard?.writeText(text);
+                  });
+                }}
+                className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl active:scale-95 transition-transform"
+                style={{ background: 'rgba(230,0,0,0.08)' }}
+              >
+                <Share2 size={16} color="#E60000" />
+                <span className="text-xs font-medium" style={{ color: '#E60000' }}>مشاركة</span>
+              </button>
+            </div>
           </div>
         </div>
       </motion.div>
