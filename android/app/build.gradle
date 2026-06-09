@@ -18,10 +18,18 @@ android {
     }
     signingConfigs {
         release {
-            storeFile file('../../south-wallet.keystore')
-            storePassword 'southwallet123'
-            keyAlias 'southwallet'
-            keyPassword 'southwallet123'
+            // Support both CI (via -P properties) and local build (via keystore file)
+            if (project.hasProperty('MYAPP_UPLOAD_STORE_FILE')) {
+                storeFile file(project.MYAPP_UPLOAD_STORE_FILE)
+                storePassword project.MYAPP_UPLOAD_STORE_PASSWORD
+                keyAlias project.MYAPP_UPLOAD_KEY_ALIAS
+                keyPassword project.MYAPP_UPLOAD_KEY_PASSWORD
+            } else {
+                storeFile file('../../south-wallet.keystore')
+                storePassword 'southwallet123'
+                keyAlias 'southwallet'
+                keyPassword 'southwallet123'
+            }
         }
     }
     buildTypes {

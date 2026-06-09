@@ -3,21 +3,12 @@ name: Build South Admin Android
 on:
   push:
     branches: [main]
-    paths:
-      - 'south-admin/**'
   workflow_dispatch:
-
-defaults:
-  run:
-    working-directory: south-admin
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    
-    env:
-      JAVA_HOME: /usr/lib/jvm/java-21-openjdk-amd64
-    
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -39,75 +30,50 @@ jobs:
         uses: android-actions/setup-android@v3
 
       - name: Install Android SDK components
-        run: |
-          sdkmanager --install "platforms;android-36" "build-tools;36.0.0"
+        run: sdkmanager --install "platforms;android-35" "build-tools;35.0.0"
 
       - name: Install dependencies
+        working-directory: south-admin
         run: npm ci
 
       - name: Build Next.js static export
+        working-directory: south-admin
         run: npm run build
 
       - name: Sync Capacitor
+        working-directory: south-admin
         run: npx cap sync android
 
-      - name: Generate debug keystore
+      - name: Decode keystore from secrets
         run: |
-          keytool -genkeypair -v \
-            -keystore android/southwallet.keystore \
-            -alias southwallet \
-            -keyalg RSA \
-            -keysize 2048 \
-            -validity 10000 \
-            -storepass southwallet123 \
-            -keypass southwallet123 \
-            -dname "CN=SouthWallet, OU=Dev, O=Qtbm, L=Aden, ST=Aden, C=YE"
-
-      - name: Build Debug APK
-        working-directory: south-admin/android
-        run: |
-          ./gradlew assembleDebug
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > south-admin/android/app/south-wallet.keystore
 
       - name: Build Release APK
         working-directory: south-admin/android
         run: |
           ./gradlew assembleRelease \
-            -PMYAPP_UPLOAD_STORE_FILE=southwallet.keystore \
-            -PMYAPP_UPLOAD_STORE_PASSWORD=southwallet123 \
-            -PMYAPP_UPLOAD_KEY_PASSWORD=southwallet123 \
-            -PMYAPP_UPLOAD_KEY_ALIAS=southwallet
+            -PMYAPP_UPLOAD_STORE_FILE=south-wallet.keystore \
+            -PMYAPP_UPLOAD_STORE_PASSWORD=${{ secrets.KEYSTORE_PASSWORD }} \
+            -PMYAPP_UPLOAD_KEY_ALIAS=${{ secrets.KEY_ALIAS }} \
+            -PMYAPP_UPLOAD_KEY_PASSWORD=${{ secrets.KEY_PASSWORD }}
 
       - name: Build Release AAB
         working-directory: south-admin/android
         run: |
           ./gradlew bundleRelease \
-            -PMYAPP_UPLOAD_STORE_FILE=southwallet.keystore \
-            -PMYAPP_UPLOAD_STORE_PASSWORD=southwallet123 \
-            -PMYAPP_UPLOAD_KEY_PASSWORD=southwallet123 \
-            -PMYAPP_UPLOAD_KEY_ALIAS=southwallet
-
-      - name: Upload Debug APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: south-admin-debug
-          path: south-admin/android/app/build/outputs/apk/debug/app-debug.apk
+            -PMYAPP_UPLOAD_STORE_FILE=south-wallet.keystore \
+            -PMYAPP_UPLOAD_STORE_PASSWORD=${{ secrets.KEYSTORE_PASSWORD }} \
+            -PMYAPP_UPLOAD_KEY_ALIAS=${{ secrets.KEY_ALIAS }} \
+            -PMYAPP_UPLOAD_KEY_PASSWORD=${{ secrets.KEY_PASSWORD }}
 
       - name: Upload Release APK
         uses: actions/upload-artifact@v4
         with:
-          name: south-admin-release
+          name: south-wallet-admin-apk
           path: south-admin/android/app/build/outputs/apk/release/app-release.apk
 
       - name: Upload Release AAB
         uses: actions/upload-artifact@v4
         with:
-          name: south-admin-aab
+          name: south-wallet-admin-aab
           path: south-admin/android/app/build/outputs/bundle/release/app-release.aab
-
-      - name: Push to download directory
-        if: github.event_name == 'workflow_dispatch'
-        run: |
-          mkdir -p /home/z/my-project/download/
-          cp south-admin/android/app/build/outputs/apk/debug/app-debug.apk /home/z/my-project/download/south-admin-debug.apk || true
-          cp south-admin/android/app/build/outputs/apk/release/app-release.apk /home/z/my-project/download/south-admin-release.apk || true
-          cp south-admin/android/app/build/outputs/bundle/release/app-release.aab /home/z/my-project/download/south-admin-release.aab || true

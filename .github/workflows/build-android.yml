@@ -32,61 +32,46 @@ jobs:
         run: yes | sdkmanager --licenses 2>/dev/null || true
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --legacy-peer-deps
 
       - name: Build Next.js static export
         run: npm run build
         env:
           NODE_OPTIONS: --max-old-space-size=4096
 
-      - name: Install Capacitor CLI
-        run: npm install -g @capacitor/cli
-
       - name: Sync Capacitor
         run: npx cap sync android
 
-      - name: Generate debug keystore for signing
+      - name: Decode keystore from secrets
         run: |
-          keytool -genkeypair \
-            -alias debug \
-            -keyalg RSA \
-            -keysize 2048 \
-            -validity 10000 \
-            -keystore android/app/debug.keystore \
-            -storepass android123 \
-            -keypass android123 \
-            -dname "CN=Debug, OU=Debug, O=FahedNet, L=Aden, ST=Aden, C=YE"
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > android/app/south-wallet.keystore
 
-      - name: Inject signing config into build.gradle
-        run: |
-          cat >> android/app/build.gradle << 'EOF'
-
-          android.signingConfigs.debug {
-              storeFile file('debug.keystore')
-              storePassword 'android123'
-              keyAlias 'debug'
-              keyPassword 'android123'
-          }
-          android.buildTypes.debug.signingConfig android.signingConfigs.debug
-          android.buildTypes.release.signingConfig android.signingConfigs.debug
-          EOF
-
-      - name: Build Debug APK
+      - name: Build Release APK
         working-directory: android
-        run: ./gradlew assembleDebug
+        run: |
+          ./gradlew assembleRelease \
+            -PMYAPP_UPLOAD_STORE_FILE=south-wallet.keystore \
+            -PMYAPP_UPLOAD_STORE_PASSWORD=${{ secrets.KEYSTORE_PASSWORD }} \
+            -PMYAPP_UPLOAD_KEY_ALIAS=${{ secrets.KEY_ALIAS }} \
+            -PMYAPP_UPLOAD_KEY_PASSWORD=${{ secrets.KEY_PASSWORD }}
 
       - name: Build Release AAB
         working-directory: android
-        run: ./gradlew bundleRelease
+        run: |
+          ./gradlew bundleRelease \
+            -PMYAPP_UPLOAD_STORE_FILE=south-wallet.keystore \
+            -PMYAPP_UPLOAD_STORE_PASSWORD=${{ secrets.KEYSTORE_PASSWORD }} \
+            -PMYAPP_UPLOAD_KEY_ALIAS=${{ secrets.KEY_ALIAS }} \
+            -PMYAPP_UPLOAD_KEY_PASSWORD=${{ secrets.KEY_PASSWORD }}
 
-      - name: Upload Debug APK
+      - name: Upload Release APK
         uses: actions/upload-artifact@v4
         with:
-          name: debug-apk
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          name: south-wallet-user-apk
+          path: android/app/build/outputs/apk/release/app-release.apk
 
       - name: Upload Release AAB
         uses: actions/upload-artifact@v4
         with:
-          name: release-aab
+          name: south-wallet-user-aab
           path: android/app/build/outputs/bundle/release/app-release.aab
