@@ -9,6 +9,8 @@ import {
   type MaintenanceMode,
   type ForceUpdate,
   type InvestmentPlan,
+  type ServiceProvider,
+  type ProductPackage,
 } from '@/lib/store';
 
 // ─── Types for settings NOT yet in the Zustand store ───────────────────────
@@ -58,6 +60,8 @@ const PATHS = {
   socialLinks: 'adminSettings/socialLinks',
   banners: 'adminSettings/banners',
   sections: 'ownerSettings/sections',
+  providers: 'providers',
+  packages: 'packages',
 } as const;
 
 // ─── Default values ────────────────────────────────────────────────────────
@@ -227,6 +231,46 @@ export function useAdminSettings() {
       const data = snapshot.val();
       setSections(parseSections(data));
     });
+
+    // 10. Providers (from Firebase)
+    attachListener('providers', PATHS.providers, (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        const list = Object.values(data) as any[];
+        const providers: ServiceProvider[] = list.map(p => ({
+          id: p.id || '',
+          categoryId: p.categoryId || 'telecom',
+          name: p.name || '',
+          color: p.color || '#6C3CE1',
+          icon: p.icon || '',
+          isActive: p.isActive !== false,
+          inputLabel: p.inputLabel || 'رقم الهاتف',
+          inputType: p.inputType || 'text',
+          inputPrefix: p.inputPrefix || '',
+        }));
+        store.setProviders(providers);
+      }
+    });
+
+    // 11. Packages (from Firebase)
+    attachListener('packages', PATHS.packages, (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        const list = Object.values(data) as any[];
+        const packages: ProductPackage[] = list
+          .filter(p => p && p.name && p.providerId)
+          .map(p => ({
+            id: p.id || '',
+            providerId: p.providerId || '',
+            name: p.name || '',
+            price: p.price || 0,
+            currency: p.currency || 'YER',
+            executionType: p.executionType || 'manual',
+            isActive: p.isActive !== false,
+          }));
+        store.setPackages(packages);
+      }
+    });
   }, [attachListener, parseBanners, parseSections]);
 
   // ─── Tear down all listeners ───────────────────────────────────────────
@@ -338,6 +382,46 @@ export function useAdminSettings() {
       get(ref(database, PATHS.sections)).then((snap) => {
         setSections(parseSections(snap.val()));
       }),
+
+      // 10. Providers
+      get(ref(database, PATHS.providers)).then((snap) => {
+        const data = snap.val();
+        if (data) {
+          const list = Object.values(data) as any[];
+          const providers: ServiceProvider[] = list.map(p => ({
+            id: p.id || '',
+            categoryId: p.categoryId || 'telecom',
+            name: p.name || '',
+            color: p.color || '#6C3CE1',
+            icon: p.icon || '',
+            isActive: p.isActive !== false,
+            inputLabel: p.inputLabel || 'رقم الهاتف',
+            inputType: p.inputType || 'text',
+            inputPrefix: p.inputPrefix || '',
+          }));
+          store.setProviders(providers);
+        }
+      }),
+
+      // 11. Packages
+      get(ref(database, PATHS.packages)).then((snap) => {
+        const data = snap.val();
+        if (data) {
+          const list = Object.values(data) as any[];
+          const packages: ProductPackage[] = list
+            .filter(p => p && p.name && p.providerId)
+            .map(p => ({
+              id: p.id || '',
+              providerId: p.providerId || '',
+              name: p.name || '',
+              price: p.price || 0,
+              currency: p.currency || 'YER',
+              executionType: p.executionType || 'manual',
+              isActive: p.isActive !== false,
+            }));
+          store.setPackages(packages);
+        }
+      }),
     ];
 
     await Promise.allSettled(fetchPromises);
@@ -352,6 +436,8 @@ export function useAdminSettings() {
   const forceUpdate = useAppStore((s) => s.forceUpdate);
   const investmentPlans = useAppStore((s) => s.investmentPlans);
   const exchangeRates = useAppStore((s) => s.exchangeRates);
+  const providers = useAppStore((s) => s.providers);
+  const packages = useAppStore((s) => s.packages);
 
   return {
     // Zustand-synced values
@@ -360,6 +446,8 @@ export function useAdminSettings() {
     forceUpdate,
     investmentPlans,
     exchangeRates,
+    providers,
+    packages,
 
     // Local state (not in store yet)
     visibilitySettings,
