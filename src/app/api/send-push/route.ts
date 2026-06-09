@@ -29,6 +29,34 @@ async function getAdminMessaging() {
   }
 }
 
+// Map notification type to Android notification channel
+function getChannelForType(type: string): string {
+  switch (type) {
+    case 'transaction':
+      return 'transfers';
+    case 'security':
+      return 'security';
+    case 'promo':
+      return 'promo';
+    default:
+      return 'general';
+  }
+}
+
+// Map notification type to sound file (in res/raw)
+function getSoundForType(type: string): string {
+  switch (type) {
+    case 'transaction':
+      return 'transfer_sound';
+    case 'security':
+      return 'security_sound';
+    case 'promo':
+      return 'promo_sound';
+    default:
+      return 'notification_sound';
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -49,6 +77,8 @@ export async function POST(request: NextRequest) {
     }
 
     const messaging = await getAdminMessaging();
+    const channelId = getChannelForType(type || 'info');
+    const soundFile = getSoundForType(type || 'info');
 
     // Send multicast message to all tokens
     const message = {
@@ -58,17 +88,31 @@ export async function POST(request: NextRequest) {
       },
       data: {
         type: type || 'info',
+        title: title,
+        body: messageBody,
         ...(data || {}),
-        click_action: 'FLUTTER_NOTIFICATION_CLICK',
+        click_action: data?.url || '/',
       },
       android: {
         priority: 'high' as const,
         notification: {
-          channelId: 'default',
+          channelId: channelId,
           icon: '@drawable/ic_notification',
           color: '#E60000',
-          sound: 'default',
+          sound: soundFile,
           tag: type || 'info',
+          defaultSound: false,
+          defaultVibrateTimings: false,
+          vibrateTimingsMillis: type === 'transaction'
+            ? [0, 100, 50, 100, 50, 100]
+            : type === 'security'
+            ? [0, 200, 100, 200, 100, 200]
+            : [0, 100, 50, 100],
+          visibility: 'private' as const,
+          notificationPriority: 'PRIORITY_HIGH' as const,
+          sticky: false,
+          localOnly: false,
+          ticker: messageBody,
         },
       },
       apns: {
@@ -76,7 +120,27 @@ export async function POST(request: NextRequest) {
           aps: {
             sound: 'default',
             badge: 1,
+            'thread-id': channelId,
           },
+        },
+      },
+      webpush: {
+        notification: {
+          icon: '/icons/icon-192x192.png',
+          badge: '/icons/icon-72x72.png',
+          dir: 'rtl' as const,
+          lang: 'ar',
+          vibrate: type === 'transaction'
+            ? [100, 50, 100, 50, 100]
+            : type === 'security'
+            ? [200, 100, 200, 100, 200]
+            : [100, 50, 100],
+          sound: '/sounds/notification.wav',
+          requireInteraction: type === 'security',
+          tag: `south-${type || 'info'}-${Date.now()}`,
+        },
+        fcm_options: {
+          link: data?.url || '/',
         },
       },
       tokens: tokens.filter(Boolean),

@@ -1,0 +1,186 @@
+providerId,providerName,name,price,currency,executionType,isActive,available,sold,autoDisableAtZero
+"yemen-mobile","يمن موبايل","شحنة 100 ر.ي",100,YER,manual,true,-1,0,false
+"yemen-mobile","يمن موبايل","شحنة 200 ر.ي",200,YER,manual,true,-1,0,false
+"yemen-mobile","يمن موبايل","شحنة 500 ر.ي",500,YER,manual,true,-1,0,false
+"yemen-mobile","يمن موبايل","شحنة 1000 ر.ي",1000,YER,manual,true,-1,0,false
+"yemen-mobile","يمن موبايل","شحنة 2000 ر.ي",2000,YER,manual,true,-1,0,false
+"yemen-mobile","يمن موبايل","شحنة 5000 ر.ي",5000,YER,manual,true,-1,0,false
+"yemen-mobile","يمن موبايل","باقة فورجي 1 جيجا",200,YER,manual,true,-1,0,false
+"yemen-mobile","يمن موبايل","باقة فورجي 4 جيجا",500,YER,manual,true,-1,0,false
+"yemen-mobile","يمن موبايل","باقة فورجي 10 جيجا",1000,YER,manual,true,-1,0,false
+"yemen-mobile","يمن موبايل","باقة فورجي 20 جيجا",2000,YER,manual,true,-1,0,false
+"yemen-mobile","يمن موبايل","باقة فورجي غير محدودة",3000,YER,manual,true,-1,0,false
+"yo","يو","شحنة 100 ر.ي",100,YER,manual,true,-1,0,false
+"yo","يو","شحنة 200 ر.ي",200,YER,manual,true,-1,0,false
+"yo","يو","شحنة 500 ر.ي",500,YER,manual,true,-1,0,false
+"yo","يو","شحنة 1000 ر.ي",1000,YER,manual,true,-1,0,false
+"yo","يو","شحنة 2000 ر.ي",2000,YER,manual,true,-1,0,false
+"yo","يو","باقة إنترنت 2 جيجا",300,YER,manual,true,-1,0,false
+"yo","يو","باقة إنترنت 5 جيجا",600,YER,manual,true,-1,0,false
+"yo","يو","باقة إنترنت 10 جيجا",1100,YER,manual,true,-1,0,false
+"sabafon","سبأفون","شحنة 100 ر.ي",100,YER,manual,true,-1,0,false
+"sabafon","سبأفون","شحنة 200 ر.ي",200,YER,manual,true,-1,0,false
+"sabafon","سبأفون","شحنة 500 ر.ي",500,YER,manual,true,-1,0,false
+"sabafon","سبأفون","شحنة 1000 ر.ي",1000,YER,manual,true,-1,0,false
+"sabafon","سبأفون","باقة إنترنت 3 جيجا",400,YER,manual,true,-1,0,false
+"sabafon","سبأفون","باقة إنترنت 7 جيجا",800,YER,manual,true,-1,0,false
+"sabafon","سبأفون","باقة إنترنت 15 جيجا",1500,YER,manual,true,-1,0,false
+"y","واي","شحنة 100 ر.ي",100,YER,manual,true,-1,0,false
+"y","واي","شحنة 200 ر.ي",200,YER,manual,true,-1,0,false
+"y","واي","شحنة 500 ر.ي",500,YER,manual,true,-1,0,false
+"y","واي","شحنة 1000 ر.ي",1000,YER,manual,true,-1,0,false
+"y","واي","باقة إنترنت 2 جيجا",250,YER,manual,true,-1,0,false
+"y","واي","باقة إنترنت 5 جيجا",550,YER,manual,true,-1,0,false
+"yemen-net","يمن نت","باقة 1 جيجا - يوم",150,YER,manual,true,-1,0,false
+"yemen-net","يمن نت","باقة 5 جيجا - أسبوع",500,YER,manual,true,-1,0,false
+"yemen-net","يمن نت","باقة 10 جيجا - شهر",1000,YER,manual,true,-1,0,false
+"yemen-net","يمن نت","باقة 20 جيجا - شهر",1800,YER,manual,true,-1,0,false
+"yemen-net","يمن نت","باقة غير محدودة - شهر",3500,YER,manual,true,-1,0,false
+"y-net-internet","واي نت","باقة 3 جيجا - أسبوع",400,YER,manual,true,-1,0,false
+"y-net-internet","واي نت","باقة 8 جيجا - شهر",900,YER,manual,true,-1,0,false
+"y-net-internet","واي نت","باقة 15 جيجا - شهر",1500,YER,manual,true,-1,0,false
+"sabafon-internet","سبأفون نت","باقة 3 جيجا - أسبوع",400,YER,manual,true,-1,0,false
+"sabafon-internet","سبأفون نت","باقة 10 جيجا - شهر",1000,YER,manual,true,-1,0,false
+"pubg","ببجي موبايل","60 شدة ببجي",1200,YER,manual,true,-1,0,false
+"pubg","ببجي موبايل","325 شدة ببجي",5500,YER,manual,true,-1,0,false
+"pubg","ببجي موبايل","660 شدة ببجي",10500,YER,manual,true,-1,0,false
+"pubg","ببجي موبايل","1800 شدة ببجي",28000,YER,manual,true,-1,0,false
+"pubg","ببجي موبايل","3850 شدة ببجي",58000,YER,manual,true,-1,0,false
+"pubg","ببجي موبايل","8100 شدة ببجي",120000,YER,manual,true,-1,0,false
+"pubg","ببجي موبايل","عضوية رويال باس شهري",3000,YER,manual,true,-1,0,false
+"pubg","ببجي موبايل","عضوية رويال باس أسبوعي",1000,YER,manual,true,-1,0,false
+"freefire","فري فاير","100 جوهرة فري فاير",800,YER,manual,true,-1,0,false
+"freefire","فري فاير","310 جوهرة فري فاير",2200,YER,manual,true,-1,0,false
+"freefire","فري فاير","520 جوهرة فري فاير",3500,YER,manual,true,-1,0,false
+"freefire","فري فاير","1060 جوهرة فري فاير",6500,YER,manual,true,-1,0,false
+"freefire","فري فاير","2180 جوهرة فري فاير",13000,YER,manual,true,-1,0,false
+"freefire","فري فاير","5600 جوهرة فري فاير",32000,YER,manual,true,-1,0,false
+"freefire","فري فاير","عضوية ماموث أسبوعية",1200,YER,manual,true,-1,0,false
+"freefire","فري فاير","عضوية ماموث شهرية",4000,YER,manual,true,-1,0,false
+"call-of-duty","كال اوف ديوتي","80 CP كود",1500,YER,manual,true,-1,0,false
+"call-of-duty","كال اوف ديوتي","400 CP كود",5500,YER,manual,true,-1,0,false
+"call-of-duty","كال اوف ديوتي","800 CP كود",10500,YER,manual,true,-1,0,false
+"call-of-duty","كال اوف ديوتي","2000 CP كود",25000,YER,manual,true,-1,0,false
+"call-of-duty","كال اوف ديوتي","4000 CP كود",48000,YER,manual,true,-1,0,false
+"call-of-duty","كال اوف ديوتي","بطاقة قتال الموسم",3500,YER,manual,true,-1,0,false
+"fortnite","فورتنايت","1000 V-Bucks",2000,YER,manual,true,-1,0,false
+"fortnite","فورتنايت","2800 V-Bucks",5200,YER,manual,true,-1,0,false
+"fortnite","فورتنايت","5000 V-Bucks",9000,YER,manual,true,-1,0,false
+"fortnite","فورتنايت","13500 V-Bucks",22000,YER,manual,true,-1,0,false
+"fortnite","فورتنايت","بطاقة قتال الموسم",2500,YER,manual,true,-1,0,false
+"valorant","فالورانت","125 VP فالورانت",1800,YER,manual,true,-1,0,false
+"valorant","فالورانت","420 VP فالورانت",5500,YER,manual,true,-1,0,false
+"valorant","فالورانت","700 VP فالورانت",9000,YER,manual,true,-1,0,false
+"valorant","فالورانت","1375 VP فالورانت",17000,YER,manual,true,-1,0,false
+"valorant","فالورانت","2400 VP فالورانت",29000,YER,manual,true,-1,0,false
+"valorant","فالورانت","4000 VP فالورانت",48000,YER,manual,true,-1,0,false
+"apex-legends","ابيكس ليجندز","1000 عملة ابكس",1500,YER,manual,true,-1,0,false
+"apex-legends","ابيكس ليجندز","2150 عملة ابكس",3000,YER,manual,true,-1,0,false
+"apex-legends","ابيكس ليجندز","4350 عملة ابكس",5800,YER,manual,true,-1,0,false
+"apex-legends","ابيكس ليجندز","6700 عملة ابكس",8800,YER,manual,true,-1,0,false
+"clash-royale","كلاش رويال","80 جوهرة",1000,YER,manual,true,-1,0,false
+"clash-royale","كلاش رويال","500 جوهرة",5500,YER,manual,true,-1,0,false
+"clash-royale","كلاش رويال","1200 جوهرة",12000,YER,manual,true,-1,0,false
+"clash-royale","كلاش رويال","2500 جوهرة",23000,YER,manual,true,-1,0,false
+"clash-royale","كلاش رويال","ممر البطولة",3000,YER,manual,true,-1,0,false
+"clash-of-clans","كلاش اوف كلانس","80 جوهرة",1000,YER,manual,true,-1,0,false
+"clash-of-clans","كلاش اوف كلانس","500 جوهرة",5500,YER,manual,true,-1,0,false
+"clash-of-clans","كلاش اوف كلانس","1200 جوهرة",12000,YER,manual,true,-1,0,false
+"clash-of-clans","كلاش اوف كلانس","2500 جوهرة",23000,YER,manual,true,-1,0,false
+"clash-of-clans","كلاش اوف كلانس","ممر الذهب",3000,YER,manual,true,-1,0,false
+"league-legends","ليق اوف ليجندز","650 RIOT نقاط",2000,YER,manual,true,-1,0,false
+"league-legends","ليق اوف ليجندز","1380 RIOT نقاط",4000,YER,manual,true,-1,0,false
+"league-legends","ليق اوف ليجندز","2800 RIOT نقاط",7500,YER,manual,true,-1,0,false
+"league-legends","ليق اوف ليجندز","5000 RIOT نقاط",13000,YER,manual,true,-1,0,false
+"roblox","روبلوكس","400 Robux",900,YER,manual,true,-1,0,false
+"roblox","روبلوكس","800 Robux",1700,YER,manual,true,-1,0,false
+"roblox","روبلوكس","1700 Robux",3500,YER,manual,true,-1,0,false
+"roblox","روبلوكس","4500 Robux",9000,YER,manual,true,-1,0,false
+"roblox","روبلوكس","10000 Robux",19000,YER,manual,true,-1,0,false
+"roblox","روبلوكس","عضوية بريميوم 450",1200,YER,manual,true,-1,0,false
+"minecraft","ماينكرافت","بطاقة ماينكرافت 660 جوهرة",2500,YER,manual,true,-1,0,false
+"minecraft","ماينكرافت","بطاقة ماينكرافت 1720 جوهرة",6000,YER,manual,true,-1,0,false
+"minecraft","ماينكرافت","بطاقة ماينكرافت 3240 جوهرة",11000,YER,manual,true,-1,0,false
+"minecraft","ماينكرافت","رخصة Java Edition",35000,YER,manual,true,-1,0,false
+"genshin-impact","جينشين امباكت","60 جينشين كريستال",1500,YER,manual,true,-1,0,false
+"genshin-impact","جينشين امباكت","330 جينشين كريستال",7500,YER,manual,true,-1,0,false
+"genshin-impact","جينشين امباكت","1090 جينشين كريستال",23000,YER,manual,true,-1,0,false
+"genshin-impact","جينشين امباكت","2240 جينشين كريستال",45000,YER,manual,true,-1,0,false
+"genshin-impact","جينشين امباكت","3880 جينشين كريستال",78000,YER,manual,true,-1,0,false
+"genshin-impact","جينشين امباكت","بطاقة القمر المبارك",4000,YER,manual,true,-1,0,false
+"honkai-star","هنكاي ستار ريل","60 هنكاي كريستال",1500,YER,manual,true,-1,0,false
+"honkai-star","هنكاي ستار ريل","330 هنكاي كريستال",7500,YER,manual,true,-1,0,false
+"honkai-star","هنكاي ستار ريل","1090 هنكاي كريستال",23000,YER,manual,true,-1,0,false
+"honkai-star","هنكاي ستار ريل","2240 هنكاي كريستال",45000,YER,manual,true,-1,0,false
+"honkai-star","هنكاي ستار ريل","تذكرة السفر السري",4000,YER,manual,true,-1,0,false
+"steam","ستيم","بطاقة ستيم 5$",5000,YER,manual,true,-1,0,false
+"steam","ستيم","بطاقة ستيم 10$",10000,YER,manual,true,-1,0,false
+"steam","ستيم","بطاقة ستيم 25$",24000,YER,manual,true,-1,0,false
+"steam","ستيم","بطاقة ستيم 50$",47000,YER,manual,true,-1,0,false
+"steam","ستيم","بطاقة ستيم 100$",92000,YER,manual,true,-1,0,false
+"ea-fc","EA FC 25","500 FC Points",3000,YER,manual,true,-1,0,false
+"ea-fc","EA FC 25","1050 FC Points",6000,YER,manual,true,-1,0,false
+"ea-fc","EA FC 25","2200 FC Points",12000,YER,manual,true,-1,0,false
+"ea-fc","EA FC 25","4600 FC Points",24000,YER,manual,true,-1,0,false
+"ea-fc","EA FC 25","12000 FC Points",58000,YER,manual,true,-1,0,false
+"netflix","نتفلكس","اشتراك نتفلكس شهري - أساسي",3500,YER,manual,true,-1,0,false
+"netflix","نتفلكس","اشتراك نتفلكس شهري - قياسي",6000,YER,manual,true,-1,0,false
+"netflix","نتفلكس","اشتراك نتفلكس شهري - مميز",9000,YER,manual,true,-1,0,false
+"netflix","نتفلكس","اشتراك نتفلكس سنوي - أساسي",38000,YER,manual,true,-1,0,false
+"spotify","سبوتيفاي","اشتراك سبوتيفاي فردي شهر",2500,YER,manual,true,-1,0,false
+"spotify","سبوتيفاي","اشتراك سبوتيفاي عائلي شهر",4000,YER,manual,true,-1,0,false
+"spotify","سبوتيفاي","اشتراك سبوتيفاي سنوي",25000,YER,manual,true,-1,0,false
+"youtube-premium","يوتيوب بريميوم","اشتراك يوتيوب فردي شهر",2000,YER,manual,true,-1,0,false
+"youtube-premium","يوتيوب بريميوم","اشتراك يوتيوب عائلي شهر",3500,YER,manual,true,-1,0,false
+"youtube-premium","يوتيوب بريميوم","اشتراك يوتيوب سنوي",20000,YER,manual,true,-1,0,false
+"google-play","بطاقة جوجل بلاي","بطاقة جوجل بلاي 5$",5000,YER,manual,true,-1,0,false
+"google-play","بطاقة جوجل بلاي","بطاقة جوجل بلاي 10$",10000,YER,manual,true,-1,0,false
+"google-play","بطاقة جوجل بلاي","بطاقة جوجل بلاي 25$",24000,YER,manual,true,-1,0,false
+"google-play","بطاقة جوجل بلاي","بطاقة جوجل بلاي 50$",47000,YER,manual,true,-1,0,false
+"apple-itunes","بطاقة آيتونز","بطاقة آيتونز 5$",5000,YER,manual,true,-1,0,false
+"apple-itunes","بطاقة آيتونز","بطاقة آيتونز 10$",10000,YER,manual,true,-1,0,false
+"apple-itunes","بطاقة آيتونز","بطاقة آيتونز 25$",24000,YER,manual,true,-1,0,false
+"apple-itunes","بطاقة آيتونز","بطاقة آيتونز 50$",47000,YER,manual,true,-1,0,false
+"amazon-gift","بطاقة امازون","بطاقة امازون 10$",10000,YER,manual,true,-1,0,false
+"amazon-gift","بطاقة امازون","بطاقة امازون 25$",24000,YER,manual,true,-1,0,false
+"amazon-gift","بطاقة امازون","بطاقة امازون 50$",47000,YER,manual,true,-1,0,false
+"amazon-gift","بطاقة امازون","بطاقة امازون 100$",92000,YER,manual,true,-1,0,false
+"psn-card","بطاقة بلايستيشن","بطاقة بلايستيشن 10$",10000,YER,manual,true,-1,0,false
+"psn-card","بطاقة بلايستيشن","بطاقة بلايستيشن 25$",24000,YER,manual,true,-1,0,false
+"psn-card","بطاقة بلايستيشن","بطاقة بلايستيشن 50$",47000,YER,manual,true,-1,0,false
+"xbox-card","بطاقة اكسبوكس","بطاقة اكسبوكس 10$",10000,YER,manual,true,-1,0,false
+"xbox-card","بطاقة اكسبوكس","بطاقة اكسبوكس 25$",24000,YER,manual,true,-1,0,false
+"xbox-card","بطاقة اكسبوكس","بطاقة اكسبوكس 50$",47000,YER,manual,true,-1,0,false
+"nintendo-card","بطاقة نينتندو","بطاقة نينتندو 10$",10000,YER,manual,true,-1,0,false
+"nintendo-card","بطاقة نينتندو","بطاقة نينتندو 25$",24000,YER,manual,true,-1,0,false
+"nintendo-card","بطاقة نينتندو","بطاقة نينتندو 50$",47000,YER,manual,true,-1,0,false
+"visa-virtual","بطاقة فيزا افتراضية","بطاقة فيزا 5$",5500,YER,manual,true,-1,0,false
+"visa-virtual","بطاقة فيزا افتراضية","بطاقة فيزا 10$",10500,YER,manual,true,-1,0,false
+"visa-virtual","بطاقة فيزا افتراضية","بطاقة فيزا 25$",25000,YER,manual,true,-1,0,false
+"visa-virtual","بطاقة فيزا افتراضية","بطاقة فيزا 50$",48000,YER,manual,true,-1,0,false
+"mastercard-virtual","بطاقة ماستركارد افتراضية","بطاقة ماستركارد 5$",5500,YER,manual,true,-1,0,false
+"mastercard-virtual","بطاقة ماستركارد افتراضية","بطاقة ماستركارد 10$",10500,YER,manual,true,-1,0,false
+"mastercard-virtual","بطاقة ماستركارد افتراضية","بطاقة ماستركارد 25$",25000,YER,manual,true,-1,0,false
+"mastercard-virtual","بطاقة ماستركارد افتراضية","بطاقة ماستركارد 50$",48000,YER,manual,true,-1,0,false
+"paypal","شحن بايبال","شحن بايبال 5$",5500,YER,manual,true,-1,0,false
+"paypal","شحن بايبال","شحن بايبال 10$",10500,YER,manual,true,-1,0,false
+"paypal","شحن بايبال","شحن بايبال 25$",25000,YER,manual,true,-1,0,false
+"paypal","شحن بايبال","شحن بايبال 50$",48000,YER,manual,true,-1,0,false
+"paypal","شحن بايبال","شحن بايبال 100$",93000,YER,manual,true,-1,0,false
+"elec-sanaa","كهرباء صنعاء","فاتورة كهرباء صنعاء",0,YER,manual,true,-1,0,false
+"elec-aden","كهرباء عدن","فاتورة كهرباء عدن",0,YER,manual,true,-1,0,false
+"water-sanaa","مياه صنعاء","فاتورة مياه صنعاء",0,YER,manual,true,-1,0,false
+"water-aden","مياه عدن","فاتورة مياه عدن",0,YER,manual,true,-1,0,false
+"civil-registry","السجل المدني","خدمة السجل المدني",0,YER,manual,true,-1,0,false
+"passport","جواز السفر","خدمة جواز السفر",0,YER,manual,true,-1,0,false
+"traffic","المرور","خدمة المرور",0,YER,manual,true,-1,0,false
+"municipal","البلدية","خدمة البلدية",0,YER,manual,true,-1,0,false
+"bitcoin","بيتكوين BTC","شراء 0.001 BTC",150000,YER,manual,true,-1,0,false
+"bitcoin","بيتكوين BTC","شراء 0.01 BTC",1500000,YER,manual,true,-1,0,false
+"ethereum","إيثريوم ETH","شراء 0.01 ETH",40000,YER,manual,true,-1,0,false
+"ethereum","إيثريوم ETH","شراء 0.1 ETH",380000,YER,manual,true,-1,0,false
+"usdt","تيثر USDT","شراء 10 USDT",15500,YER,manual,true,-1,0,false
+"usdt","تيثر USDT","شراء 50 USDT",77500,YER,manual,true,-1,0,false
+"bnb","بينانس BNB","شراء 0.1 BNB",4000,YER,manual,true,-1,0,false
+"solana","سولانا SOL","شراء 1 SOL",2000,YER,manual,true,-1,0,false
+"tron","ترون TRX","شراء 100 TRX",1500,YER,manual,true,-1,0,false

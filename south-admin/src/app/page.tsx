@@ -130,6 +130,105 @@ export default function AdminApp() {
     return () => unsub();
   }, [isAuthenticated]);
 
+  // Initialize Capacitor Push Notifications for admin app
+  useEffect(() => {
+    if (!isAuthenticated || !adminUser) return;
+
+    const initPushNotifications = async () => {
+      try {
+        // Check if running in Capacitor native environment
+        const win = window as unknown as { Capacitor?: { isNativePlatform?: () => boolean } };
+        const isNative = win.Capacitor && win.Capacitor.isNativePlatform && win.Capacitor.isNativePlatform();
+
+        if (isNative) {
+          const { PushNotifications } = await import('@capacitor/push-notifications');
+
+          const permResult = await PushNotifications.requestPermissions();
+          if (permResult.receive !== 'granted') {
+            console.warn('Admin push notification permission denied');
+            return;
+          }
+
+          await PushNotifications.register();
+
+          PushNotifications.addListener('registration', async (token) => {
+            console.log('Admin push registration success:', token.value);
+            // Save FCM token to Firebase for admin
+            try {
+              const { ref, set: firebaseSet } = await import('firebase/database');
+              await firebaseSet(ref(database, `users/${adminUser.uid}/fcmToken`), token.value);
+            } catch (e) {
+              console.warn('Failed to save admin FCM token:', e);
+            }
+          });
+
+          PushNotifications.addListener('registrationError', (error) => {
+            console.warn('Admin push registration error:', error);
+          });
+
+          PushNotifications.addListener('pushNotificationReceived', (notification) => {
+            console.log('Admin push notification received:', notification);
+            // Play notification sound
+            try {
+              const audio = new Audio('/sounds/notification.wav');
+              audio.volume = 0.5;
+              audio.play().catch(() => {});
+            } catch {}
+            // Vibrate
+            if (navigator.vibrate) {
+              navigator.vibrate(100);
+            }
+          });
+
+          PushNotifications.addListener('pushNotificationActionPerformed', (action) => {
+            console.log('Admin push notification action:', action);
+          });
+        } else {
+          // Web/PWA Firebase Messaging
+          try {
+            const { getToken, onMessage } = await import('firebase/messaging');
+            const { getMessaging, isSupported } = await import('firebase/messaging');
+
+            const supported = await isSupported();
+            if (!supported) return;
+
+            const { getApp } = await import('firebase/app');
+            const messaging = getMessaging(getApp());
+
+            const permission = await Notification.requestPermission();
+            if (permission === 'granted') {
+              const vapidKey = 'BMqFpzYvhfjzEM3v1Oq-gMfPwFwmI_S04g-QC_Lz1yFEPG4bZxqXbHOyI_NzJqPWKMfCgL_2MnC1r8l0G6eFyLA';
+              const currentToken = await getToken(messaging, { vapidKey });
+
+              if (currentToken) {
+                const { ref, set: firebaseSet } = await import('firebase/database');
+                await firebaseSet(ref(database, `users/${adminUser.uid}/fcmToken`), currentToken);
+                console.log('Admin web FCM token saved');
+              }
+
+              onMessage(messaging, (payload) => {
+                console.log('Admin foreground message:', payload);
+                try {
+                  const audio = new Audio('/sounds/notification.wav');
+                  audio.volume = 0.5;
+                  audio.play().catch(() => {});
+                } catch {}
+                if (navigator.vibrate) navigator.vibrate(100);
+              });
+            }
+          } catch (webError) {
+            console.warn('Admin web Firebase Messaging not available:', webError);
+          }
+        }
+      } catch (error) {
+        console.warn('Admin push notifications init failed (non-fatal):', error);
+      }
+    };
+
+    const timer = setTimeout(initPushNotifications, 3000);
+    return () => clearTimeout(timer);
+  }, [isAuthenticated, adminUser]);
+
   if (initializing) {
     return (
       <div className="min-h-screen flex items-center justify-center admin-gradient">

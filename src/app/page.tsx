@@ -215,7 +215,7 @@ function AppContent() {
     }
   }, [storeTheme, setTheme]);
 
-  // Initialize Capacitor Push Notifications (safe, non-blocking, won't crash)
+  // Initialize Push Notifications (Capacitor native + Web FCM)
   useEffect(() => {
     if (!isAuthenticated) return;
 
@@ -223,64 +223,156 @@ function AppContent() {
       try {
         // Check if running in Capacitor native environment
         const win = window as unknown as { Capacitor?: { isNativePlatform?: () => boolean } };
-        if (!win.Capacitor || !win.Capacitor.isNativePlatform || !win.Capacitor.isNativePlatform()) {
-          return; // Not a native platform, skip
-        }
+        const isNative = win.Capacitor && win.Capacitor.isNativePlatform && win.Capacitor.isNativePlatform();
 
-        const { PushNotifications } = await import('@capacitor/push-notifications');
+        if (isNative) {
+          // ─── Native Android/iOS via Capacitor ───
+          const { PushNotifications } = await import('@capacitor/push-notifications');
 
-        // Request permission
-        const permResult = await PushNotifications.requestPermissions();
-        if (permResult.receive !== 'granted') {
-          return; // Permission denied, that's OK
-        }
+          // Request permission
+          const permResult = await PushNotifications.requestPermissions();
+          if (permResult.receive !== 'granted') {
+            console.warn('Push notification permission denied');
+            return;
+          }
 
-        // Register for push notifications
-        await PushNotifications.register();
+          // Register for push notifications
+          await PushNotifications.register();
 
-        // Listen for registration token
-        PushNotifications.addListener('registration', async (token) => {
-          console.log('Push registration success, token:', token.value);
-          localStorage.setItem('notification-permission', 'granted');
-          // Save FCM token to Firebase
-          try {
-            const { database } = await import('@/lib/firebase');
-            const { ref, set: firebaseSet } = await import('firebase/database');
-            const currentUser = useAppStore.getState().user;
-            if (currentUser?.id) {
-              await firebaseSet(ref(database, `users/${currentUser.id}/fcmToken`), token.value);
+          // Listen for registration token
+          PushNotifications.addListener('registration', async (token) => {
+            console.log('Push registration success, token:', token.value);
+            localStorage.setItem('notification-permission', 'granted');
+            // Save FCM token to Firebase
+            try {
+              const { database } = await import('@/lib/firebase');
+              const { ref, set: firebaseSet } = await import('firebase/database');
+              const currentUser = useAppStore.getState().user;
+              if (currentUser?.id) {
+                await firebaseSet(ref(database, `users/${currentUser.id}/fcmToken`), token.value);
+                console.log('FCM token saved to Firebase for user:', currentUser.id);
+              }
+            } catch (e) {
+              console.warn('Failed to save FCM token:', e);
             }
-          } catch (e) {
-            console.warn('Failed to save FCM token:', e);
+          });
+
+          // Listen for registration errors (don't crash, just log)
+          PushNotifications.addListener('registrationError', (error) => {
+            console.warn('Push registration error (non-fatal):', error);
+          });
+
+          // Listen for push notification received (foreground)
+          PushNotifications.addListener('pushNotificationReceived', (notification) => {
+            console.log('Push notification received:', notification);
+            // Show in-app toast
+            const store = useAppStore.getState();
+            if (notification.title || notification.body) {
+              store.addNotification({
+                id: `push-${Date.now()}`,
+                title: notification.title || 'إشعار جديد',
+                body: notification.body || '',
+                type: 'info',
+                isRead: false,
+                createdAt: new Date().toISOString(),
+              });
+
+              // Play notification sound
+              try {
+                const soundType = notification.data?.type || 'info';
+                const soundMap: Record<string, string> = {
+                  transaction: '/sounds/transfer.wav',
+                  security: '/sounds/security.wav',
+                  promo: '/sounds/promo.wav',
+                  info: '/sounds/notification.wav',
+                };
+                const audio = new Audio(soundMap[soundType] || soundMap.info);
+                audio.volume = 0.5;
+                audio.play().catch(() => {});
+              } catch {}
+
+              // Vibrate
+              if (navigator.vibrate) {
+                navigator.vibrate(100);
+              }
+            }
+          });
+
+          // Listen for push notification action (background/closed app tap)
+          PushNotifications.addListener('pushNotificationActionPerformed', (action) => {
+            console.log('Push notification action:', action);
+          });
+
+        } else {
+          // ─── Web/PWA via Firebase Messaging SDK ───
+          try {
+            const { getMessaging, getToken, onMessage } = await import('firebase/messaging');
+            const { messaging: firebaseMessaging } = await import('@/lib/firebase');
+
+            // Request notification permission
+            const permission = await Notification.requestPermission();
+            if (permission === 'granted') {
+              localStorage.setItem('notification-permission', 'granted');
+
+              // Get FCM token for web
+              const vapidKey = 'BMqFpzYvhfjzEM3v1Oq-gMfPwFwmI_S04g-QC_Lz1yFEPG4bZxqXbHOyI_NzJqPWKMfCgL_2MnC1r8l0G6eFyLA'; // We'll generate this
+              const currentToken = await getToken(firebaseMessaging, {
+                vapidKey: vapidKey,
+              });
+
+              if (currentToken) {
+                console.log('Web FCM token:', currentToken);
+                // Save FCM token to Firebase
+                const currentUser = useAppStore.getState().user;
+                if (currentUser?.id) {
+                  const { database } = await import('@/lib/firebase');
+                  const { ref, set: firebaseSet } = await import('firebase/database');
+                  await firebaseSet(ref(database, `users/${currentUser.id}/fcmToken`), currentToken);
+                  console.log('Web FCM token saved for user:', currentUser.id);
+                }
+              }
+
+              // Listen for foreground messages
+              onMessage(firebaseMessaging, (payload) => {
+                console.log('Foreground message received:', payload);
+                const store = useAppStore.getState();
+
+                // Show in-app notification
+                store.addNotification({
+                  id: `push-${Date.now()}`,
+                  title: payload.notification?.title || payload.data?.title || 'إشعار جديد',
+                  body: payload.notification?.body || payload.data?.body || '',
+                  type: (payload.data?.type as any) || 'info',
+                  isRead: false,
+                  createdAt: new Date().toISOString(),
+                });
+
+                // Play notification sound
+                try {
+                  const soundType = payload.data?.type || 'info';
+                  const soundMap: Record<string, string> = {
+                    transaction: '/sounds/transfer.wav',
+                    security: '/sounds/security.wav',
+                    promo: '/sounds/promo.wav',
+                    info: '/sounds/notification.wav',
+                  };
+                  const audio = new Audio(soundMap[soundType] || soundMap.info);
+                  audio.volume = 0.5;
+                  audio.play().catch(() => {});
+                } catch {}
+
+                // Vibrate
+                if (navigator.vibrate) {
+                  navigator.vibrate(100);
+                }
+              });
+            } else {
+              console.warn('Notification permission denied for web');
+            }
+          } catch (webError) {
+            console.warn('Web Firebase Messaging not available (non-fatal):', webError);
           }
-        });
-
-        // Listen for registration errors (don't crash, just log)
-        PushNotifications.addListener('registrationError', (error) => {
-          console.warn('Push registration error (non-fatal):', error);
-        });
-
-        // Listen for push notification received
-        PushNotifications.addListener('pushNotificationReceived', (notification) => {
-          console.log('Push notification received:', notification);
-          // Show in-app toast
-          const store = useAppStore.getState();
-          if (notification.title || notification.body) {
-            store.addNotification({
-              id: `push-${Date.now()}`,
-              title: notification.title || 'إشعار جديد',
-              body: notification.body || '',
-              type: 'info',
-              isRead: false,
-              createdAt: new Date().toISOString(),
-            });
-          }
-        });
-
-        // Listen for push notification action
-        PushNotifications.addListener('pushNotificationActionPerformed', (action) => {
-          console.log('Push notification action:', action);
-        });
+        }
 
       } catch (error) {
         // If anything fails, just log it and continue - don't crash the app

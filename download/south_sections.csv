@@ -1,0 +1,10 @@
+categoryId,name,iconKey,order,isVisible
+"نققململ","وبنبز","",0,false
+"telecom","الاتصالات","phone",0,true
+"internet","الإنترنت","wifi",1,true
+"entertainment","خدمات ترفيهية","gamepad",2,true
+"cards","بطاقات رقمية","credit-card",3,true
+"electricity","الكهرباء والماء","zap",4,true
+"government","خدمات حكومية","landmark",5,true
+"crypto","الكريبتو","bitcoin",6,true
+"investment","استثمار الكريبتو","trending-up",7,true

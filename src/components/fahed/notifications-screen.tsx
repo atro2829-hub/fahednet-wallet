@@ -66,17 +66,34 @@ export default function NotificationsScreen() {
     localStorage.setItem('notif-vibration', String(newVal));
   };
 
-  // Play notification sound/vibration
-  const playNotificationFeedback = useCallback(() => {
+  // Sound mapping based on notification type
+  const SOUND_MAP: Record<string, string> = {
+    transaction: '/sounds/transfer.wav',
+    security: '/sounds/security.wav',
+    promo: '/sounds/promo.wav',
+    info: '/sounds/notification.wav',
+  };
+
+  const VIBRATION_MAP: Record<string, number[]> = {
+    transaction: [100, 50, 100, 50, 100],
+    security: [200, 100, 200, 100, 200],
+    promo: [50],
+    info: [100, 50, 100],
+  };
+
+  // Play notification sound/vibration with type-specific feedback
+  const playNotificationFeedback = useCallback((type: string = 'info') => {
     if (soundEnabled) {
       try {
-        const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbsGczFjSP0teleUUtXaPp5IORg0cvYJzr8vZkNCCpzPn9+2pHS3O68fn6aEdLc7rx+fpjR0tzuvH5+mNHS3O68fn6Y0dLc7rx+f');
-        audio.volume = 0.3;
+        const soundUrl = SOUND_MAP[type] || SOUND_MAP.info;
+        const audio = new Audio(soundUrl);
+        audio.volume = 0.5;
         audio.play().catch(() => {});
       } catch {}
     }
     if (vibrationEnabled && navigator.vibrate) {
-      navigator.vibrate(100);
+      const pattern = VIBRATION_MAP[type] || VIBRATION_MAP.info;
+      navigator.vibrate(pattern);
     }
   }, [soundEnabled, vibrationEnabled]);
 
@@ -91,9 +108,10 @@ export default function NotificationsScreen() {
           .map(key => data[key])
           .sort((a: { createdAt: string }, b: { createdAt: string }) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
         setNotifications(notifList);
-        // Play feedback for new notifications
+        // Play feedback for new notifications with type-specific sound
         if (notifList.length > notifications.length) {
-          playNotificationFeedback();
+          const latestNotif = notifList[0];
+          playNotificationFeedback(latestNotif?.type || 'info');
         }
       }
     }, (error) => {

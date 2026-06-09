@@ -381,23 +381,64 @@ async function syncPendingTransactions() {
   });
 }
 
-// ─── Push Notification Support ───
+// ─── Sound & Vibration Configuration ───
+const NOTIF_SOUNDS = {
+  transfer: '/sounds/transfer.wav',
+  transaction: '/sounds/transfer.wav',
+  deposit: '/sounds/deposit.wav',
+  withdraw: '/sounds/withdraw.wav',
+  order: '/sounds/order.wav',
+  security: '/sounds/security.wav',
+  promo: '/sounds/promo.wav',
+  success: '/sounds/success.wav',
+  default: '/sounds/notification.wav'
+};
+
+const NOTIF_VIBRATION = {
+  transfer: [100, 50, 100, 50, 100],
+  transaction: [100, 50, 100, 50, 100],
+  deposit: [100, 50, 100],
+  withdraw: [150, 50, 150],
+  order: [100, 50, 100, 50, 100],
+  security: [200, 100, 200, 100, 200],
+  promo: [50],
+  default: [100, 50, 100]
+};
+
+// ─── Push Notification Support (with sounds & vibration) ───
 self.addEventListener('push', (event) => {
   if (!event.data) return;
 
   const data = event.data.json();
   const title = data.title || 'محفظة الجنوب';
+  const type = data.type || 'general';
+
+  // Play notification sound using Audio API
+  try {
+    const soundUrl = NOTIF_SOUNDS[type] || NOTIF_SOUNDS.default;
+    const sound = new Audio(soundUrl);
+    sound.volume = 0.5;
+    sound.play().catch(() => {});
+  } catch (e) {
+    console.warn('[SW] Could not play notification sound:', e);
+  }
+
   const options = {
     body: data.body || '',
     icon: '/icons/icon-192x192.png',
     badge: '/icons/icon-72x72.png',
     dir: 'rtl',
     lang: 'ar',
-    vibrate: [100, 50, 100],
+    vibrate: NOTIF_VIBRATION[type] || NOTIF_VIBRATION.default,
     data: {
       url: data.url || '/',
+      type: type,
     },
-    actions: data.actions || [],
+    actions: data.actions || (type === 'transaction' ? [
+      { action: 'open', title: 'فتح' },
+      { action: 'dismiss', title: 'إغلاق' }
+    ] : []),
+    tag: `south-${type}-${Date.now()}`,
   };
 
   event.waitUntil(self.registration.showNotification(title, options));

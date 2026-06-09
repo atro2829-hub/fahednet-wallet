@@ -1,0 +1,53 @@
+id,categoryId,name,color,icon,inputLabel,inputType,inputPrefix,isActive
+"mq78hiw5j37qy8vti","cards","بطاقة امازون","#FF9900","...","البريد الإلكتروني","text","",true
+"mq78hiw5d4spwzcs6","entertainment","ابيكس ليجندز","#DA292A","...","EA Account","text","",true
+"mq78hiw50ofbaidi7","cards","بطاقة آيتونز","#007AFF","...","البريد الإلكتروني","text","",true
+"mq78hiw5pfo5nxqvf","crypto","بيتكوين BTC","#F7931A","...","محفظة البيتكوين","text","",true
+"mq78hiw55tqj0v52o","crypto","بينانس BNB","#F3BA2F","...","محفظة بينانس","text","",true
+"mq78hiw5m2oejr6dy","entertainment","كال اوف ديوتي","#1a1a1a","...","Player ID","text","",true
+"mq78hiw5vvplen9nf","government","السجل المدني","#6B7280","...","رقم الهوية","text","",true
+"mq78hiw52n9zgem0m","entertainment","كلاش اوف كلانس","#F59E0B","...","Player Tag","text","",true
+"mq78hiw5dil39geno","entertainment","كلاش رويال","#3B82F6","...","Player Tag","text","",true
+"mq78hiw5q5ex23xcj","entertainment","EA FC 25","#22C55E","...","EA Account","text","",true
+"mq78hiw5kgoyb9z9l","electricity","كهرباء عدن","#3B82F6","...","رقم العداد","text","",true
+"mq78hiw50yngku4vj","electricity","كهرباء صنعاء","#F59E0B","...","رقم العداد","text","",true
+"mq78hiw50mtctu00p","crypto","إيثريوم ETH","#627EEA","...","محفظة الإيثريوم","text","",true
+"mq78hiw58ws5g8665","entertainment","فورتنايت","#6D28D9","...","Epic ID","text","",true
+"mq78hiw5yg4m6kc27","entertainment","فري فاير","#EC4899","...","Player ID","text","",true
+"mq78hiw5n7qpq5qri","entertainment","جينشين امباكت","#FFD700","...","UID","text","",true
+"mq78hiw5ncwevtkqt","cards","بطاقة جوجل بلاي","#34A853","...","البريد الإلكتروني","text","",true
+"mq78hiw5se4x4hx1q","entertainment","هنكاي ستار ريل","#7C3AED","...","UID","text","",true
+"mq78hiw5iuphx2m2c","entertainment","ليق اوف ليجندز","#C8AA6E","...","Riot ID","text","",true
+"mq78hiw5eajbdycb3","cards","بطاقة ماستركارد افتراضية","#EB001B","...","البريد الإلكتروني","text","",true
+"mq78hiw5ehgnkofti","entertainment","ماينكرافت","#4ADE80","...","Username","text","",true
+"mq78hiw5txp03324t","government","البلدية","#059669","...","رقم الرخصة","text","",true
+"mq78hiw5gnmgoc2j6","entertainment","نتفلكس","#E50914","...","البريد الإلكتروني","text","",true
+"mq78hiw5fr7vb3c0b","cards","بطاقة نينتندو","#E60012","...","البريد الإلكتروني","text","",true
+"mq78hiw59wawdb1mt","government","جواز السفر","#1E40AF","...","رقم الجواز","text","",true
+"mq78hiw5r1up3fnpm","cards","شحن بايبال","#003087","...","البريد الإلكتروني","text","",true
+"mq78hiw5axjo0p4re","cards","بطاقة بلايستيشن","#00439C","...","البريد الإلكتروني","text","",true
+"mq78hiw5tk2yf3ikc","entertainment","ببجي موبايل","#F59E0B","...","Player ID","text","",true
+"mq78hiw5wohntwejs","entertainment","روبلوكس","#E60000","...","Username","text","",true
+"mq78hiw5paejt02s6","telecom","سبأفون","#2563EB","...","رقم الهاتف","phone","+967",true
+"mq78hiw5e74xm0v4g","internet","سبأفون نت","#2563EB","...","رقم الهاتف","phone","+967",true
+"mq78hiw5a30qqd4y2","crypto","سولانا SOL","#9945FF","...","محفظة سولانا","text","",true
+"mq78hiw5dnr9ncc06","entertainment","سبوتيفاي","#1DB954","...","البريد الإلكتروني","text","",true
+"mq78hiw58ugid0qqt","entertainment","ستيم","#1B2838","...","Steam ID","text","",true
+"mq78hiw5dzipd4swo","government","المرور","#DC2626","...","رقم اللوحة","text","",true
+"mq78hiw5id026tn33","crypto","ترون TRX","#FF0013","...","محفظة ترون","text","",true
+"mq78hiw53az8g1oxf","crypto","تيثر USDT","#26A17B","...","محفظة USDT","text","",true
+"mq78hiw56dvflda7a","investment","USDT يومي","#26A17B","...","مبلغ الاستثمار","text","",true
+"mq78hiw5h91seafmq","investment","USDT شهري","#26A17B","...","مبلغ الاستثمار","text","",true
+"mq78hiw5j4devyq34","investment","USDT ربع سنوي","#26A17B","...","مبلغ الاستثمار","text","",true
+"mq78hiw5n0tpxe075","investment","USDT أسبوعي","#26A17B","...","مبلغ الاستثمار","text","",true
+"mq78hiw5sb3hr8ayb","entertainment","فالورانت","#FF4655","...","Riot ID","text","",true
+"mq78hiw5ag1wa2980","cards","بطاقة فيزا افتراضية","#1A1F71","...","البريد الإلكتروني","text","",true
+"mq78hiw5efa8dll7t","electricity","مياه عدن","#0EA5E9","...","رقم الاشتراك","text","",true
+"mq78hiw5c9ui0dwb0","electricity","مياه صنعاء","#06B6D4","...","رقم الاشتراك","text","",true
+"mq78hiw5sswih50sy","cards","بطاقة اكسبوكس","#107C10","...","البريد الإلكتروني","text","",true
+"mq78hiw5q3idye2pk","telecom","واي","#059669","...","رقم الهاتف","phone","+967",true
+"mq78hiw5oaus3wi05","internet","واي نت","#059669","...","رقم الهاتف","phone","+967",true
+"mq78hiw5pojfu5son","telecom","يمن موبايل","#C41E3A","...","رقم الهاتف","phone","+967",true
+"mq78hiw5mevxrl8ux","internet","يمن نت","#8B5CF6","...","رقم الحساب","text","",true
+"mq78hiw56v0jbzsxe","telecom","يو","#FF6B00","...","رقم الهاتف","phone","+967",true
+"mq78hiw5bpq1aq8yc","entertainment","يوتيوب بريميوم","#FF0000","...","البريد الإلكتروني","text","",true

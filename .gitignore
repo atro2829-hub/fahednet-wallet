@@ -1,104 +1,67 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
 
-# dependencies
-node_modules
-/.pnp
-.pnp.*
-.yarn/*
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/versions
+# Next.js
+.next/
+out/
 
-# testing
-/coverage
+# Production
+build/
+dist/
 
-# next.js
-/.next/
-/out/
-
-# production
-/build
-
-# misc
-.DS_Store
-*.pem
-
-# debug
+# Debug
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-.pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
-.env*
+# Local env files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
 
-# vercel
+# Vercel
 .vercel
 
-
-# typescript
+# TypeScript
 *.tsbuildinfo
 next-env.d.ts
-local-*
-.claude
-.z-ai-config
-*.log
-dev.log
-dev.out.log
-test
-prompt
-
-server.log
-# Skills directory
-/skills/
-
-# Android build artifacts
-android/app/build/
-android/build/
-android/.gradle/
-*.apk
-*.aab
-*.keystore
-*.jks
-
-# Agent context
-/agent-ctx/
-/worklog.md
-/upload/
-/download/
-/db/
-/examples/
-/prisma/
-/bun.lock
-/Caddyfile
-
-# Android SDK and JDK (too large for git)
-.android-sdk/
-.jdks/
-
-# Build outputs
-android/app/build/
-south-admin/android/app/build/
-android/.gradle/
-south-admin/android/.gradle/
-
-# Local config
-android/local.properties
-south-admin/android/local.properties
-
-# Keystores
-*.keystore
-
-# Download and upload dirs
-download/
-upload/
 
 # IDE
 .idea/
 .vscode/
 *.swp
+*.swo
 
-# Dev server
-.zscripts/
-gh
+# OS
+.DS_Store
+Thumbs.db
+
+# Firebase
+upload/
+upload-sa.json
+*-firebase-adminsdk*.json
+google-services.json
+
+# Android
+android/.gradle/
+android/app/build/
+android/build/
+android/local.properties
+*.apk
+*.aab
+*.keystore
+!south-wallet.keystore
+
+# Capacitor
+android/app/src/main/assets/public/
+
+# Prisma
+prisma/*.db
+
+# Misc
+*.log
+coverage/

@@ -2,6 +2,7 @@ import { initializeApp, getApps } from 'firebase/app';
 import { getAuth, initializeAuth, browserLocalPersistence, indexedDBLocalPersistence } from 'firebase/auth';
 import { getDatabase } from 'firebase/database';
 import { getStorage } from 'firebase/storage';
+import { getMessaging, isSupported } from 'firebase/messaging';
 
 const firebaseConfig = {
   apiKey: "AIzaSyBY9UTcryFEoq8VA1zD7OVnku-fjLxw-p4",
@@ -31,7 +32,21 @@ try {
   auth = getAuth(app);
 }
 
-export { auth };
+// Initialize Firebase Cloud Messaging (only supported in browsers)
+let messaging: any = null;
+try {
+  if (typeof window !== 'undefined') {
+    isSupported().then((supported) => {
+      if (supported) {
+        messaging = getMessaging(app);
+      }
+    }).catch(() => {});
+  }
+} catch (error) {
+  console.warn('Firebase Messaging not available:', error);
+}
+
+export { auth, messaging };
 export const database = getDatabase(app);
 export const storage = getStorage(app);
 export default app;
