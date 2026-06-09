@@ -54,7 +54,7 @@ jobs:
       - name: Generate debug keystore
         run: |
           keytool -genkeypair -v \
-            -keystore southwallet.keystore \
+            -keystore android/southwallet.keystore \
             -alias southwallet \
             -keyalg RSA \
             -keysize 2048 \
@@ -72,7 +72,7 @@ jobs:
         working-directory: south-admin/android
         run: |
           ./gradlew assembleRelease \
-            -PMYAPP_UPLOAD_STORE_FILE=../southwallet.keystore \
+            -PMYAPP_UPLOAD_STORE_FILE=southwallet.keystore \
             -PMYAPP_UPLOAD_STORE_PASSWORD=southwallet123 \
             -PMYAPP_UPLOAD_KEY_PASSWORD=southwallet123 \
             -PMYAPP_UPLOAD_KEY_ALIAS=southwallet
@@ -81,7 +81,7 @@ jobs:
         working-directory: south-admin/android
         run: |
           ./gradlew bundleRelease \
-            -PMYAPP_UPLOAD_STORE_FILE=../southwallet.keystore \
+            -PMYAPP_UPLOAD_STORE_FILE=southwallet.keystore \
             -PMYAPP_UPLOAD_STORE_PASSWORD=southwallet123 \
             -PMYAPP_UPLOAD_KEY_PASSWORD=southwallet123 \
             -PMYAPP_UPLOAD_KEY_ALIAS=southwallet
