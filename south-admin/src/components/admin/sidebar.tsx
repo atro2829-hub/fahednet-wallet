@@ -30,6 +30,10 @@ import {
   Moon,
   Sun,
   ShieldCheck,
+  Percent,
+  TrendingUp,
+  Send,
+  Palette,
 } from 'lucide-react';
 import { signOut } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
@@ -53,7 +57,10 @@ const navItems: NavItem[] = [
   { id: 'kyc', label: 'التحقق من الهوية', icon: Shield, roles: ['admin', 'owner'] },
   { id: 'providers', label: 'المزودون والباقات', icon: Server, roles: ['admin', 'owner'] },
   { id: 'exchange-rates', label: 'أسعار الصرف', icon: DollarSign, roles: ['admin', 'owner'] },
+  { id: 'commissions', label: 'ضبط العمولات', icon: Percent, roles: ['admin', 'owner'] },
+  { id: 'investments', label: 'إدارة الاستثمار', icon: TrendingUp, roles: ['admin', 'owner'] },
   { id: 'gift-codes', label: 'أكواد الهدايا', icon: Gift, roles: ['admin', 'owner'] },
+  { id: 'user-gift-codes', label: 'قسائم الهدايا بين المستخدمين', icon: Gift, roles: ['admin', 'owner'] },
   { id: 'promo-codes', label: 'أكواد الخصم', icon: Tag, roles: ['admin', 'owner'] },
   { id: 'banners', label: 'البانرات الإعلانية', icon: Image, roles: ['admin', 'owner'] },
   { id: 'banks', label: 'الحسابات البنكية', icon: Building2, roles: ['admin', 'owner'] },
@@ -61,8 +68,10 @@ const navItems: NavItem[] = [
   { id: 'social-links', label: 'روابط التواصل', icon: Link2, roles: ['admin', 'owner'] },
   { id: 'legal-content', label: 'المحتوى القانوني', icon: FileText, roles: ['admin', 'owner'] },
   { id: 'notifications', label: 'الإشعارات', icon: Bell, roles: ['admin', 'owner'] },
+  { id: 'push-notifications', label: 'إرسال إشعارات', icon: Send, roles: ['admin', 'owner'] },
   { id: 'settings', label: 'الإعدادات', icon: Settings, roles: ['admin', 'owner'] },
   // Owner-only items
+  { id: 'card-colors', label: 'ألوان البطائق', icon: Palette, roles: ['owner'] },
   { id: 'sections', label: 'إدارة الأقسام', icon: Layers, roles: ['owner'] },
   { id: 'visibility', label: 'إعدادات الظهور', icon: Eye, roles: ['owner'] },
   { id: 'api-settings', label: 'إعدادات API', icon: Code, roles: ['owner'] },

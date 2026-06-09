@@ -9,7 +9,7 @@ import {
 } from 'lucide-react';
 import { useAppStore, type PromoCode, type GiftCode } from '@/lib/store';
 import { currencySymbols, currencyNames, currencyBadgeColors, timeAgo } from '@/lib/utils';
-import { ref, onValue } from 'firebase/database';
+import { ref, onValue, get, update } from 'firebase/database';
 import { database } from '@/lib/firebase';
 
 export default function PromoScreen() {
@@ -93,12 +93,75 @@ export default function PromoScreen() {
     setIsRedeeming(true);
     setGiftResult(null);
     try {
+      // First try user gift codes
+      const userGiftCodesRef = ref(database, 'userGiftCodes');
+      const userCodesSnapshot = await get(userGiftCodesRef);
+      
+      if (userCodesSnapshot.exists()) {
+        const data = userCodesSnapshot.val();
+        const matchedCode = Object.keys(data).find(key => 
+          data[key].code?.toUpperCase() === giftCodeInput.trim().toUpperCase() && data[key].status === 'active'
+        );
+        
+        if (matchedCode) {
+          const codeData = data[matchedCode];
+          
+          // Check if user is trying to redeem their own code
+          if (codeData.creatorUid === user?.id) {
+            setGiftResult({ success: false, message: 'لا يمكنك استرداد قسيمة أنشأتها بنفسك' });
+            setIsRedeeming(false);
+            return;
+          }
+          
+          // Redeem the user gift code
+          const updates: Record<string, unknown> = {};
+          updates[`userGiftCodes/${matchedCode}/status`] = 'redeemed';
+          updates[`userGiftCodes/${matchedCode}/redeemedBy`] = user?.id;
+          updates[`userGiftCodes/${matchedCode}/redeemedAt`] = new Date().toISOString();
+          
+          // Add balance to user
+          const balanceField = codeData.currency === 'YER' ? 'balanceYER' : codeData.currency === 'SAR' ? 'balanceSAR' : 'balanceUSD';
+          const currentBalance = (user?.[balanceField] as number) || 0;
+          updates[`users/${user?.id}/${balanceField}`] = currentBalance + codeData.amount;
+          
+          // Add transaction
+          const txId = `tx-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
+          updates[`transactions/${txId}`] = {
+            id: txId,
+            fromUserId: codeData.creatorUid,
+            toUserId: user?.id,
+            amount: codeData.amount,
+            currency: codeData.currency,
+            type: 'deposit',
+            status: 'completed',
+            description: `استرداد قسيمة هدية من ${codeData.creatorName}`,
+            createdAt: new Date().toISOString(),
+          };
+          
+          await update(ref(database), updates);
+          
+          setGiftResult({ 
+            success: true, 
+            message: `تم استرداد قسيمة الهدية بنجاح! تم إضافة ${codeData.amount} ${currencySymbols[codeData.currency]} إلى رصيدك`,
+            amount: codeData.amount,
+            currency: codeData.currency
+          });
+          setGiftHistory(prev => [{ code: giftCodeInput.trim().toUpperCase(), amount: codeData.amount, currency: codeData.currency, date: new Date().toISOString() }, ...prev]);
+          setGiftCodeInput('');
+          setIsRedeeming(false);
+          return;
+        }
+      }
+      
+      // Fall back to admin gift codes
       const result = await redeemGiftCode(giftCodeInput.trim());
       setGiftResult(result);
       if (result.success) {
         setGiftHistory(prev => [{ code: giftCodeInput.trim().toUpperCase(), amount: result.amount || 0, currency: result.currency || 'YER', date: new Date().toISOString() }, ...prev]);
         setGiftCodeInput('');
       }
+    } catch (error) {
+      setGiftResult({ success: false, message: 'حدث خطأ، يرجى المحاولة لاحقاً' });
     } finally {
       setIsRedeeming(false);
     }

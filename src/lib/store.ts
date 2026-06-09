@@ -171,6 +171,40 @@ export interface SavingsGoal {
   createdAt: string;
 }
 
+export interface Investment {
+  id: string;
+  planId: string;
+  planName: string;
+  amount: number;
+  currency: 'YER' | 'SAR' | 'USD';
+  profitRate: number;
+  expectedProfit: number;
+  startDate: string;
+  endDate: string;
+  status: 'active' | 'completed' | 'cancelled';
+  completedAt?: string;
+}
+
+export interface UserGiftCode {
+  id: string;
+  code: string;
+  creatorUid: string;
+  creatorName: string;
+  amount: number;
+  currency: 'YER' | 'SAR' | 'USD';
+  message: string;
+  status: 'active' | 'redeemed' | 'cancelled';
+  createdAt: string;
+  redeemedBy?: string;
+  redeemedAt?: string;
+}
+
+export interface CardColor {
+  YER: { primary: string; gradient: string };
+  SAR: { primary: string; gradient: string };
+  USD: { primary: string; gradient: string };
+}
+
 interface AppState {
   // Auth
   user: User | null;
@@ -299,6 +333,22 @@ interface AppState {
   savingsGoals: SavingsGoal[];
   addSavingsGoal: (goal: SavingsGoal) => void;
   updateSavingsGoal: (id: string, updates: Partial<SavingsGoal>) => void;
+
+  // Investments
+  investments: Investment[];
+  setInvestments: (investments: Investment[]) => void;
+  addInvestment: (investment: Investment) => void;
+  updateInvestment: (id: string, updates: Partial<Investment>) => void;
+
+  // User gift codes
+  userGiftCodes: UserGiftCode[];
+  setUserGiftCodes: (codes: UserGiftCode[]) => void;
+  addUserGiftCode: (code: UserGiftCode) => void;
+  updateUserGiftCode: (id: string, updates: Partial<UserGiftCode>) => void;
+
+  // Card colors
+  cardColors: CardColor;
+  setCardColors: (colors: CardColor) => void;
 }
 
 // Default service categories
@@ -975,6 +1025,34 @@ export const useAppStore = create<AppState>()(
           g.id === id ? { ...g, ...updates } : g
         )
       })),
+
+      // Investments
+      investments: [],
+      setInvestments: (investments) => set({ investments }),
+      addInvestment: (investment) => set((state) => ({ investments: [investment, ...state.investments] })),
+      updateInvestment: (id, updates) => set((state) => ({
+        investments: state.investments.map(inv =>
+          inv.id === id ? { ...inv, ...updates } : inv
+        )
+      })),
+
+      // User gift codes
+      userGiftCodes: [],
+      setUserGiftCodes: (userGiftCodes) => set({ userGiftCodes }),
+      addUserGiftCode: (code) => set((state) => ({ userGiftCodes: [code, ...state.userGiftCodes] })),
+      updateUserGiftCode: (id, updates) => set((state) => ({
+        userGiftCodes: state.userGiftCodes.map(c =>
+          c.id === id ? { ...c, ...updates } : c
+        )
+      })),
+
+      // Card colors
+      cardColors: {
+        YER: { primary: '#E60000', gradient: '#8B0000' },
+        SAR: { primary: '#059669', gradient: '#1B7A2B' },
+        USD: { primary: '#2563EB', gradient: '#0D47A1' },
+      },
+      setCardColors: (cardColors) => set({ cardColors }),
     }),
     {
       name: 'fahed-net-store',

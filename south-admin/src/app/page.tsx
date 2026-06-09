@@ -29,6 +29,11 @@ import NotificationsPanel from '@/components/admin/notifications-panel';
 import SettingsPanel from '@/components/admin/settings-panel';
 import ActivityLogPanel from '@/components/admin/activity-log-panel';
 import BackupPanel from '@/components/admin/backup-panel';
+import CommissionsPanel from '@/components/admin/commissions-panel';
+import InvestmentsPanel from '@/components/admin/investments-panel';
+import UserGiftCodesPanel from '@/components/admin/user-gift-codes-panel';
+import PushNotificationsPanel from '@/components/admin/push-notifications-panel';
+import CardColorsPanel from '@/components/admin/card-colors-panel';
 import { Menu, ShieldCheck } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -55,6 +60,11 @@ const panelMap: Record<string, React.ComponentType> = {
   settings: SettingsPanel,
   'activity-log': ActivityLogPanel,
   backup: BackupPanel,
+  commissions: CommissionsPanel,
+  investments: InvestmentsPanel,
+  'user-gift-codes': UserGiftCodesPanel,
+  'push-notifications': PushNotificationsPanel,
+  'card-colors': CardColorsPanel,
 };
 
 export default function AdminApp() {

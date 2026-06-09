@@ -19,7 +19,7 @@ import {
   LogOut,
   Eye,
   EyeOff,
-  Fingerprint,
+  TrendingUp,
   Bell,
   FileText,
   Lock,
@@ -73,6 +73,8 @@ const accountSections: Section[] = [
     items: [
       { id: 'profile', label: 'الحساب الشخصي', icon: Heart, color: '#E60000', screen: 'edit-profile' },
       { id: 'my-data', label: 'بياناتي', icon: User, color: '#2563EB', screen: 'kyc' },
+      { id: 'gift-vouchers', label: 'قسائم الهدية', icon: Gift, color: '#10B981', screen: 'gift-vouchers' },
+      { id: 'my-investments', label: 'استثماراتي', icon: TrendingUp, color: '#8B5CF6', screen: 'investment' },
     ],
   },
   {
@@ -83,8 +85,6 @@ const accountSections: Section[] = [
     items: [
       { id: 'auto-login', label: 'تسجيل الدخول تلقائياً', icon: Shield, color: '#10B981', toggle: true },
       { id: 'change-password', label: 'تغيير كلمة المرور', icon: Lock, color: '#E60000' },
-      { id: 'fingerprint', label: 'استخدام بصمة الأصبع', icon: Fingerprint, color: '#E60000', toggle: true },
-      { id: 'face-id', label: 'استخدام بصمة الوجه', icon: Eye, color: '#E60000', toggle: true },
       { id: 'notifications-settings', label: 'الإشعارات والتنبيهات', icon: Bell, color: '#2563EB', screen: 'notifications' },
     ],
   },
@@ -117,7 +117,6 @@ export default function AccountScreen() {
   const [expandedSections, setExpandedSections] = useState<string[]>(['account', 'privacy']);
   const [toggleStates, setToggleStates] = useState<Record<string, boolean>>({
     'auto-login': true,
-    'fingerprint': true,
     'face-id': false,
     'dark-mode': isDark,
     'notifications-toggle': true,

@@ -12,7 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { Plus, Trash2, Edit, Building2 } from 'lucide-react';
+import { Plus, Trash2, Edit, Building2, Upload } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export default function BanksPanel() {
@@ -26,6 +26,7 @@ export default function BanksPanel() {
   const [accountNumber, setAccountNumber] = useState('');
   const [color, setColor] = useState('#6C3CE1');
   const [isActive, setIsActive] = useState(true);
+  const [iconBase64, setIconBase64] = useState('');
 
   useEffect(() => {
     const ref_ = ref(database, 'adminSettings/banks');
@@ -38,10 +39,18 @@ export default function BanksPanel() {
     return () => unsub();
   }, []);
 
+  const handleIconUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => setIconBase64(reader.result as string);
+    reader.readAsDataURL(file);
+  };
+
   const handleSave = async () => {
     if (!bankName) return;
     try {
-      const data = { name: bankName, accountHolder, accountNumber, color, isActive };
+      const data = { name: bankName, accountHolder, accountNumber, color, isActive, icon: iconBase64 };
       if (editing) {
         await update(ref(database, `adminSettings/banks/${editing.id}`), data);
         showToast('تم تحديث الحساب', 'success');
@@ -50,7 +59,7 @@ export default function BanksPanel() {
         showToast('تم إضافة الحساب', 'success');
       }
       setDialog(false);
-      setBankName(''); setAccountHolder(''); setAccountNumber(''); setColor('#6C3CE1'); setIsActive(true); setEditing(null);
+      setBankName(''); setAccountHolder(''); setAccountNumber(''); setColor('#6C3CE1'); setIsActive(true); setIconBase64(''); setEditing(null);
     } catch (e) { showToast('حدث خطأ', 'error'); }
   };
 
@@ -65,7 +74,7 @@ export default function BanksPanel() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div><h1 className="text-2xl font-bold">الحسابات البنكية</h1><p className="text-muted-foreground text-sm mt-1">{formatNumber(banks.length)} حساب</p></div>
-        <Button onClick={() => { setEditing(null); setBankName(''); setAccountHolder(''); setAccountNumber(''); setColor('#6C3CE1'); setIsActive(true); setDialog(true); }} size="sm"><Plus className="w-4 h-4 ml-1" /> حساب جديد</Button>
+        <Button onClick={() => { setEditing(null); setBankName(''); setAccountHolder(''); setAccountNumber(''); setColor('#6C3CE1'); setIsActive(true); setIconBase64(''); setDialog(true); }} size="sm"><Plus className="w-4 h-4 ml-1" /> حساب جديد</Button>
       </div>
 
       <div className="space-y-3">
@@ -75,9 +84,13 @@ export default function BanksPanel() {
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: (b.color || '#6C3CE1') + '20' }}>
-                      <Building2 className="w-5 h-5" style={{ color: b.color || '#6C3CE1' }} />
-                    </div>
+                    {b.icon ? (
+                      <img src={b.icon} alt={b.name} className="w-10 h-10 rounded-lg object-cover" />
+                    ) : (
+                      <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: (b.color || '#6C3CE1') + '20' }}>
+                        <Building2 className="w-5 h-5" style={{ color: b.color || '#6C3CE1' }} />
+                      </div>
+                    )}
                     <div>
                       <p className="font-medium text-sm">{b.name}</p>
                       <p className="text-xs text-muted-foreground">{b.accountHolder} - {b.accountNumber}</p>
@@ -85,7 +98,11 @@ export default function BanksPanel() {
                   </div>
                   <div className="flex items-center gap-2">
                     <Badge className={b.isActive ? 'bg-green-500/20 text-green-600 dark:text-green-400' : 'bg-red-500/20 text-red-600 dark:text-red-400'}>{b.isActive ? 'نشط' : 'معطل'}</Badge>
-                    <Button variant="ghost" size="sm" onClick={() => { setEditing(b); setBankName(b.name || ''); setAccountHolder(b.accountHolder || ''); setAccountNumber(b.accountNumber || ''); setColor(b.color || '#6C3CE1'); setIsActive(b.isActive !== false); setDialog(true); }}><Edit className="w-4 h-4" /></Button>
+                    <Button variant="ghost" size="sm" onClick={() => {
+                      setEditing(b); setBankName(b.name || ''); setAccountHolder(b.accountHolder || '');
+                      setAccountNumber(b.accountNumber || ''); setColor(b.color || '#6C3CE1');
+                      setIsActive(b.isActive !== false); setIconBase64(b.icon || ''); setDialog(true);
+                    }}><Edit className="w-4 h-4" /></Button>
                     <Button variant="ghost" size="sm" onClick={() => handleDelete(b.id)}><Trash2 className="w-4 h-4 text-red-500" /></Button>
                   </div>
                 </div>
@@ -103,6 +120,21 @@ export default function BanksPanel() {
             <div><Label>اسم البنك</Label><Input value={bankName} onChange={(e) => setBankName(e.target.value)} /></div>
             <div><Label>اسم صاحب الحساب</Label><Input value={accountHolder} onChange={(e) => setAccountHolder(e.target.value)} /></div>
             <div><Label>رقم الحساب</Label><Input value={accountNumber} onChange={(e) => setAccountNumber(e.target.value)} dir="ltr" /></div>
+            <div>
+              <Label>أيقونة البنك</Label>
+              <div className="flex items-center gap-3 mt-1">
+                <input type="file" accept="image/*" onChange={handleIconUpload} className="flex-1 text-sm" />
+                {iconBase64 && (
+                  <div className="relative">
+                    <img src={iconBase64} alt="icon preview" className="w-12 h-12 rounded-lg object-cover border" />
+                    <button
+                      onClick={() => setIconBase64('')}
+                      className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white rounded-full flex items-center justify-center text-xs"
+                    >x</button>
+                  </div>
+                )}
+              </div>
+            </div>
             <div><Label>اللون</Label><Input type="color" value={color} onChange={(e) => setColor(e.target.value)} /></div>
             <div className="flex items-center gap-2"><Switch checked={isActive} onCheckedChange={setIsActive} /><Label>نشط</Label></div>
           </div>

@@ -72,8 +72,6 @@ const settingsSections: SettingsSection[] = [
     items: [
       { id: 'auto-login', label: 'تسجيل الدخول تلقائياً', icon: Shield, color: '#10B981', toggle: true },
       { id: 'change-password', label: 'تغيير كلمة المرور', icon: Lock, color: '#E60000' },
-      { id: 'fingerprint', label: 'استخدام بصمة الأصبع لتسجيل الدخول', icon: Fingerprint, color: '#E60000', toggle: true },
-      { id: 'face-id', label: 'استخدام بصمة الوجه لتسجيل الدخول', icon: Eye, color: '#E60000', toggle: true },
       { id: 'notif-alerts', label: 'الإشعارات والتنبيهات', icon: Bell, color: '#2563EB', screen: 'notifications' },
     ],
   },
@@ -351,7 +349,6 @@ export default function SettingsScreen() {
   const [expandedSections, setExpandedSections] = useState<string[]>(['account-settings', 'privacy-security']);
   const [toggleStates, setToggleStates] = useState<Record<string, boolean>>({
     'auto-login': true,
-    'fingerprint': true,
     'face-id': false,
   });
 

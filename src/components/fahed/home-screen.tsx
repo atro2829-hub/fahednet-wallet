@@ -68,6 +68,7 @@ interface Banner {
   imageUrl: string;
   isActive: boolean;
   order: number;
+  url?: string;
   link?: string;
 }
 
@@ -506,7 +507,9 @@ export default function HomeScreen() {
   };
 
   const handleBannerClick = (banner: Banner) => {
-    if (banner.link) {
+    if (banner.url) {
+      window.open(banner.url, '_blank', 'noopener,noreferrer');
+    } else if (banner.link) {
       window.open(banner.link, '_blank', 'noopener,noreferrer');
     }
   };

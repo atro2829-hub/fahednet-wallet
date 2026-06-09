@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useTheme } from 'next-themes';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Mail, Lock, User, Eye, EyeOff, ArrowLeft, ShieldCheck, Phone, Heart, CreditCard, X, KeyRound } from 'lucide-react';
+import { Mail, Lock, User, Eye, EyeOff, ArrowLeft, ShieldCheck, Phone, Heart, CreditCard, X, KeyRound, Fingerprint, CheckCircle2, FileText, Shield } from 'lucide-react';
 import { useAppStore } from '@/lib/store';
 import { auth, database } from '@/lib/firebase';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
@@ -11,7 +11,7 @@ import { ref, get, update } from 'firebase/database';
 import { generateUserId } from '@/lib/utils';
 import { LOGO_BASE64 } from '@/lib/logo';
 
-type AuthStep = 'login' | 'register-step1' | 'register-step2' | 'password-recovery';
+type AuthStep = 'login' | 'register-step1' | 'register-step2' | 'register-step3' | 'password-recovery';
 
 // Yemen flag indicator
 function YemenFlagIndicator() {
@@ -20,6 +20,50 @@ function YemenFlagIndicator() {
       <div className="flex-1 bg-red-600" />
       <div className="flex-1 bg-white" />
       <div className="flex-1 bg-black" />
+    </div>
+  );
+}
+
+// Step indicator component
+function StepIndicator({ currentStep }: { currentStep: number }) {
+  const steps = [
+    { num: 1, label: 'الشخصية' },
+    { num: 2, label: 'الحساب' },
+    { num: 3, label: 'الهاتف' },
+  ];
+
+  return (
+    <div className="flex items-center justify-center gap-0 my-4">
+      {steps.map((step, index) => (
+        <div key={step.num} className="flex items-center">
+          <div className="flex flex-col items-center">
+            <motion.div
+              initial={{ scale: 0.8 }}
+              animate={{
+                scale: currentStep >= step.num ? 1 : 0.8,
+                backgroundColor: currentStep >= step.num ? '#E60000' : 'transparent',
+                borderColor: currentStep >= step.num ? '#E60000' : '#CCC',
+              }}
+              className="w-8 h-8 rounded-full flex items-center justify-center border-2 transition-all"
+              style={{ borderColor: currentStep >= step.num ? '#E60000' : '#CCC' }}
+            >
+              {currentStep > step.num ? (
+                <CheckCircle2 size={16} color="#FFF" />
+              ) : (
+                <span className="text-xs font-bold" style={{ color: currentStep >= step.num ? '#FFF' : '#999' }}>
+                  {step.num}
+                </span>
+              )}
+            </motion.div>
+            <span className="text-[9px] mt-1 font-medium" style={{ color: currentStep >= step.num ? '#E60000' : '#999' }}>
+              {step.label}
+            </span>
+          </div>
+          {index < steps.length - 1 && (
+            <div className="w-10 h-0.5 mx-1 mt-[-12px]" style={{ background: currentStep > step.num ? '#E60000' : '#DDD' }} />
+          )}
+        </div>
+      ))}
     </div>
   );
 }
@@ -40,16 +84,22 @@ export default function AuthScreen() {
   const [loginPassword, setLoginPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
-  // Register fields - four name fields
+  // Register fields - Step 1: Personal info
   const [regFirstName, setRegFirstName] = useState('');
   const [regSecondName, setRegSecondName] = useState('');
   const [regThirdName, setRegThirdName] = useState('');
   const [regFamilyName, setRegFamilyName] = useState('');
   const [regNationalId, setRegNationalId] = useState('');
+
+  // Register fields - Step 2: Account info
   const [regEmail, setRegEmail] = useState('');
   const [regPassword, setRegPassword] = useState('');
   const [regPasswordConfirm, setRegPasswordConfirm] = useState('');
+
+  // Register fields - Step 3: Phone
   const [regPhone, setRegPhone] = useState('');
+  const [agreeTerms, setAgreeTerms] = useState(false);
+  const [agreePrivacy, setAgreePrivacy] = useState(false);
 
   // Password recovery fields
   const [recoveryNationalId, setRecoveryNationalId] = useState('');
@@ -84,7 +134,6 @@ export default function AuthScreen() {
       const snapshot = await get(userRef);
       if (snapshot.exists()) {
         const userData = snapshot.val();
-        // Determine effective role: owner > admin > user
         const isAdminEmail = loginEmail.toLowerCase().includes('admin');
         let effectiveRole: 'user' | 'admin' | 'owner' = userData.role || 'user';
         if (effectiveRole === 'owner') {
@@ -111,7 +160,7 @@ export default function AuthScreen() {
       } else {
         const newUserId = generateUserId();
         const isAdminEmail = loginEmail.toLowerCase().includes('admin');
-        const newUserData = { email: loginEmail, phone: '', name: '', firstName: '', secondName: '', thirdName: '', familyName: '', nationalId: '', avatar: '', role: isAdminEmail ? 'admin' as const : 'user' as const, userId: newUserId, kycStatus: 'pending', isBlocked: false, balanceYER: 0, balanceSAR: 0, balanceUSD: 0, cardType: '', cardNumber: '', cardIssuedAt: '', governorate: '', theme: 'light' as const };
+        const newUserData = { email: loginEmail, phone: '', name: '', firstName: '', secondName: '', thirdName: '', familyName: '', nationalId: '', avatar: '', role: isAdminEmail ? 'admin' as const : 'user' as const, userId: newUserId, kycStatus: 'pending' as const, isBlocked: false, balanceYER: 0, balanceSAR: 0, balanceUSD: 0, cardType: '', cardNumber: '', cardIssuedAt: '', governorate: '', theme: 'light' as const };
         await update(ref(database), {
           [`users/${uid}`]: newUserData,
           [`userIds/${newUserId}`]: uid,
@@ -131,6 +180,19 @@ export default function AuthScreen() {
       setError('يرجى إدخال الاسم الأول واسم العائلة على الأقل');
       return;
     }
+    if (!regNationalId.trim()) {
+      setError('يرجى إدخال رقم البطاقة الشخصية');
+      return;
+    }
+    if (regNationalId && (regNationalId.length < 6 || regNationalId.length > 20 || !/^\d+$/.test(regNationalId))) {
+      setError('رقم البطاقة الشخصية يجب أن يكون أرقاماً فقط بين 6 إلى 20 رقم');
+      return;
+    }
+    setError('');
+    setStep('register-step2');
+  };
+
+  const handleRegisterStep2 = () => {
     if (!regEmail) {
       setError('يرجى إدخال البريد الإلكتروني');
       return;
@@ -147,15 +209,15 @@ export default function AuthScreen() {
       setError('كلمة المرور غير متطابقة');
       return;
     }
-    if (regNationalId && (regNationalId.length < 6 || regNationalId.length > 20 || !/^\d+$/.test(regNationalId))) {
-      setError('رقم البطاقة الشخصية يجب أن يكون أرقاماً فقط بين 6 إلى 20 رقم');
-      return;
-    }
     setError('');
-    setStep('register-step2');
+    setStep('register-step3');
   };
 
-  const handleRegisterStep2 = async () => {
+  const handleRegisterStep3 = async () => {
+    if (!agreeTerms || !agreePrivacy) {
+      setError('يرجى الموافقة على الشروط والأحكام وسياسة الخصوصية');
+      return;
+    }
     setIsLoading(true);
     setError('');
     try {
@@ -176,7 +238,7 @@ export default function AuthScreen() {
         avatar: '',
         role: isAdminEmail ? 'admin' as const : 'user' as const,
         userId: newUserId,
-        kycStatus: 'pending',
+        kycStatus: 'pending' as const,
         isBlocked: false,
         balanceYER: 0,
         balanceSAR: 0,
@@ -217,7 +279,6 @@ export default function AuthScreen() {
     } finally { setIsLoading(false); }
   };
 
-
   const handlePhoneChange = (value: string) => {
     const cleaned = value.replace(/\D/g, '').slice(0, 9);
     setRegPhone(cleaned);
@@ -237,36 +298,27 @@ export default function AuthScreen() {
     setIsLoading(true);
     setError('');
     try {
-      // Look up user by nationalId
       const nationalIdRef = ref(database, `nationalIds/${recoveryNationalId.trim()}`);
       const nidSnapshot = await get(nationalIdRef);
-
       if (!nidSnapshot.exists()) {
         setError('لا يوجد حساب مرتبط بهذا رقم البطاقة الشخصية');
         setIsLoading(false);
         return;
       }
-
       const uid = nidSnapshot.val();
       const userRef = ref(database, `users/${uid}`);
       const userSnapshot = await get(userRef);
-
       if (!userSnapshot.exists()) {
         setError('لم يتم العثور على الحساب');
         setIsLoading(false);
         return;
       }
-
       const userData = userSnapshot.val();
-
-      // Verify email matches
       if (userData.email?.toLowerCase() !== recoveryEmail.trim().toLowerCase()) {
         setError('البريد الإلكتروني لا يتطابق مع رقم البطاقة الشخصية');
         setIsLoading(false);
         return;
       }
-
-      // Match found - proceed to reset
       setRecoveryUid(uid);
       setRecoveryStep('reset');
       setError('');
@@ -290,7 +342,6 @@ export default function AuthScreen() {
     setIsLoading(true);
     setError('');
     try {
-      // Use Firebase sendPasswordResetEmail
       await sendPasswordResetEmail(auth, recoveryEmail.trim());
       setSuccess('تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني');
       setRecoveryStep('input');
@@ -315,15 +366,24 @@ export default function AuthScreen() {
     }
   };
 
+  // Skeleton loading component
+  const SkeletonPulse = () => (
+    <div className="space-y-4 animate-pulse">
+      <div className="h-12 rounded-2xl" style={{ background: isDark ? '#222' : '#EEE' }} />
+      <div className="h-12 rounded-2xl" style={{ background: isDark ? '#222' : '#EEE' }} />
+      <div className="h-12 rounded-2xl w-3/4" style={{ background: isDark ? '#222' : '#EEE' }} />
+    </div>
+  );
+
+  const btnPrimary = {
+    background: 'linear-gradient(135deg, #E60000 0%, #B30000 100%)',
+    boxShadow: '0 4px 16px rgba(230,0,0,0.3)',
+  };
+
   return (
     <div className="min-h-screen flex flex-col" style={{ background: isDark ? '#0F0F0F' : '#F5F5F5' }}>
       {/* Logo Area */}
-      <div className="flex flex-col items-center pt-10 pb-6">
-        <div className="absolute top-4 left-4 opacity-5">
-          <div className="w-8 h-8 rounded bg-current" style={{ color: '#E60000' }} />
-          <div className="w-8 h-8 rounded bg-current mt-1 ml-4" style={{ color: '#E60000' }} />
-        </div>
-
+      <div className="flex flex-col items-center pt-10 pb-4">
         <motion.div
           initial={{ scale: 0.5, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
@@ -358,7 +418,7 @@ export default function AuthScreen() {
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.3 }}
-            className="flex items-center gap-3 mt-6"
+            className="flex items-center gap-3 mt-5"
           >
             <button
               onClick={() => { setLoginMode('register'); setStep('register-step1'); setError(''); setSuccess(''); }}
@@ -399,27 +459,54 @@ export default function AuthScreen() {
               transition={{ type: 'spring', stiffness: 200, damping: 25 }}
               className="space-y-4"
             >
-              {/* Email */}
-              <div className="flex items-center gap-2 px-4 py-3.5 rounded-2xl" style={inputStyle}>
-                <Mail size={18} strokeWidth={1.5} color="#E60000" />
-                <input type="email" placeholder="البريد الإلكتروني" value={loginEmail} onChange={(e) => setLoginEmail(e.target.value)} className="flex-1 bg-transparent outline-none text-sm" style={{ color: isDark ? '#FFF' : '#1a1a1a' }} dir="ltr" autoComplete="email" />
-              </div>
+              {/* Login Card */}
+              <div className="rounded-2xl p-5" style={{ background: isDark ? '#1A1A1A' : '#FFFFFF', border: `1px solid ${isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.05)'}` }}>
+                <h2 className="text-lg font-bold mb-4 text-center" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>
+                  تسجيل الدخول
+                </h2>
 
-              {/* Password */}
-              <div className="flex items-center gap-2 px-4 py-3.5 rounded-2xl" style={inputStyle}>
-                <Lock size={18} strokeWidth={1.5} color="#E60000" />
-                <input type={showPassword ? 'text' : 'password'} placeholder="كلمة المرور" value={loginPassword} onChange={(e) => setLoginPassword(e.target.value)} className="flex-1 bg-transparent outline-none text-sm" style={{ color: isDark ? '#FFF' : '#1a1a1a' }} dir="ltr" autoComplete="current-password" />
-                <button onClick={() => setShowPassword(!showPassword)}>
-                  {showPassword ? <EyeOff size={18} strokeWidth={1.5} color={isDark ? '#888' : '#AAA'} /> : <Eye size={18} strokeWidth={1.5} color="#E60000" />}
+                {/* Email */}
+                <div className="flex items-center gap-2 px-4 py-3.5 rounded-2xl mb-3" style={inputStyle}>
+                  <Mail size={18} strokeWidth={1.5} color="#E60000" />
+                  <input type="email" placeholder="البريد الإلكتروني" value={loginEmail} onChange={(e) => setLoginEmail(e.target.value)} className="flex-1 bg-transparent outline-none text-sm" style={{ color: isDark ? '#FFF' : '#1a1a1a' }} dir="ltr" autoComplete="email" />
+                </div>
+
+                {/* Password */}
+                <div className="flex items-center gap-2 px-4 py-3.5 rounded-2xl mb-3" style={inputStyle}>
+                  <Lock size={18} strokeWidth={1.5} color="#E60000" />
+                  <input type={showPassword ? 'text' : 'password'} placeholder="كلمة المرور" value={loginPassword} onChange={(e) => setLoginPassword(e.target.value)} className="flex-1 bg-transparent outline-none text-sm" style={{ color: isDark ? '#FFF' : '#1a1a1a' }} dir="ltr" autoComplete="current-password" />
+                  <button onClick={() => setShowPassword(!showPassword)}>
+                    {showPassword ? <EyeOff size={18} strokeWidth={1.5} color={isDark ? '#888' : '#AAA'} /> : <Eye size={18} strokeWidth={1.5} color="#E60000" />}
+                  </button>
+                </div>
+
+                {error && <motion.p initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} className="text-xs text-center" style={{ color: '#E60000' }}>{error}</motion.p>}
+                {success && <motion.p initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} className="text-xs text-center" style={{ color: '#10B981' }}>{success}</motion.p>}
+
+                <button onClick={handleLogin} disabled={isLoading} className="w-full py-4 rounded-2xl flex items-center justify-center gap-2 font-bold text-white transition-all active:scale-[0.98] disabled:opacity-50 mt-2" style={btnPrimary}>
+                  {isLoading ? <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: 'linear' }} className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full" /> : <span>تسجيل الدخول</span>}
+                </button>
+
+                {/* Biometric button (visual only) */}
+                <button
+                  onClick={() => {
+                    const { useAppStore } = require('@/lib/store');
+                    useAppStore.getState().addNotification({
+                      id: `biometric-${Date.now()}`,
+                      title: 'قريباً',
+                      body: 'ميزة البصمة ستتوفر قريباً',
+                      type: 'info',
+                      isRead: false,
+                      createdAt: new Date().toISOString(),
+                    });
+                  }}
+                  className="w-full py-3 rounded-2xl flex items-center justify-center gap-2 text-sm mt-3"
+                  style={{ background: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)', color: isDark ? '#AAA' : '#888', border: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)'}` }}
+                >
+                  <Fingerprint size={18} strokeWidth={1.5} color={isDark ? '#AAA' : '#888'} />
+                  <span>الدخول بالبصمة</span>
                 </button>
               </div>
-
-              {error && <motion.p initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} className="text-xs text-center" style={{ color: '#E60000' }}>{error}</motion.p>}
-              {success && <motion.p initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} className="text-xs text-center" style={{ color: '#10B981' }}>{success}</motion.p>}
-
-              <button onClick={handleLogin} disabled={isLoading} className="w-full py-4 rounded-2xl flex items-center justify-center gap-2 font-bold text-white transition-all active:scale-[0.98] disabled:opacity-50" style={{ background: 'linear-gradient(135deg, #E60000 0%, #B30000 100%)', boxShadow: '0 4px 16px rgba(230,0,0,0.3)' }}>
-                {isLoading ? <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: 'linear' }} className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full" /> : <span>تسجيل الدخول</span>}
-              </button>
 
               <button
                 onClick={() => { setStep('password-recovery'); setError(''); setSuccess(''); setRecoveryStep('input'); }}
@@ -460,59 +547,34 @@ export default function AuthScreen() {
 
               {recoveryStep === 'input' ? (
                 <>
-                  {/* National ID */}
                   <div className="flex items-center gap-2 px-4 py-3.5 rounded-2xl" style={inputStyle}>
                     <CreditCard size={18} strokeWidth={1.5} color="#E60000" />
-                    <input
-                      type="tel"
-                      placeholder="رقم البطاقة الشخصية"
-                      value={recoveryNationalId}
-                      onChange={(e) => setRecoveryNationalId(e.target.value.replace(/\D/g, '').slice(0, 20))}
-                      className="flex-1 bg-transparent outline-none text-sm"
-                      style={{ color: isDark ? '#FFF' : '#1a1a1a' }}
-                      dir="ltr"
-                    />
+                    <input type="tel" placeholder="رقم البطاقة الشخصية" value={recoveryNationalId} onChange={(e) => setRecoveryNationalId(e.target.value.replace(/\D/g, '').slice(0, 20))} className="flex-1 bg-transparent outline-none text-sm" style={{ color: isDark ? '#FFF' : '#1a1a1a' }} dir="ltr" />
                   </div>
-
-                  {/* Email */}
                   <div className="flex items-center gap-2 px-4 py-3.5 rounded-2xl" style={inputStyle}>
                     <Mail size={18} strokeWidth={1.5} color="#E60000" />
-                    <input
-                      type="email"
-                      placeholder="البريد الإلكتروني"
-                      value={recoveryEmail}
-                      onChange={(e) => setRecoveryEmail(e.target.value)}
-                      className="flex-1 bg-transparent outline-none text-sm"
-                      style={{ color: isDark ? '#FFF' : '#1a1a1a' }}
-                      dir="ltr"
-                      autoComplete="email"
-                    />
+                    <input type="email" placeholder="البريد الإلكتروني" value={recoveryEmail} onChange={(e) => setRecoveryEmail(e.target.value)} className="flex-1 bg-transparent outline-none text-sm" style={{ color: isDark ? '#FFF' : '#1a1a1a' }} dir="ltr" autoComplete="email" />
                   </div>
 
                   {error && <motion.p initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} className="text-xs text-center" style={{ color: '#E60000' }}>{error}</motion.p>}
 
-                  <button onClick={handleRecoverySearch} disabled={isLoading} className="w-full py-4 rounded-2xl flex items-center justify-center gap-2 font-bold text-white transition-all active:scale-[0.98] disabled:opacity-50" style={{ background: 'linear-gradient(135deg, #E60000 0%, #B30000 100%)', boxShadow: '0 4px 16px rgba(230,0,0,0.3)' }}>
+                  <button onClick={handleRecoverySearch} disabled={isLoading} className="w-full py-4 rounded-2xl flex items-center justify-center gap-2 font-bold text-white transition-all active:scale-[0.98] disabled:opacity-50" style={btnPrimary}>
                     {isLoading ? <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: 'linear' }} className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full" /> : <span>بحث عن الحساب</span>}
                   </button>
                 </>
               ) : (
                 <>
-                  {/* Found user - show reset form */}
                   <div className="p-4 rounded-2xl" style={{ background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.2)' }}>
                     <p className="text-xs text-center" style={{ color: '#10B981' }}>تم العثور على حسابك. سيتم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني.</p>
                   </div>
 
                   {error && <motion.p initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} className="text-xs text-center" style={{ color: '#E60000' }}>{error}</motion.p>}
 
-                  <button onClick={handlePasswordReset} disabled={isLoading} className="w-full py-4 rounded-2xl flex items-center justify-center gap-2 font-bold text-white transition-all active:scale-[0.98] disabled:opacity-50" style={{ background: 'linear-gradient(135deg, #E60000 0%, #B30000 100%)', boxShadow: '0 4px 16px rgba(230,0,0,0.3)' }}>
+                  <button onClick={handlePasswordReset} disabled={isLoading} className="w-full py-4 rounded-2xl flex items-center justify-center gap-2 font-bold text-white transition-all active:scale-[0.98] disabled:opacity-50" style={btnPrimary}>
                     {isLoading ? <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: 'linear' }} className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full" /> : <span>إرسال رابط إعادة التعيين</span>}
                   </button>
 
-                  <button
-                    onClick={() => { setRecoveryStep('input'); setError(''); }}
-                    className="w-full py-3 rounded-2xl flex items-center justify-center text-sm"
-                    style={{ background: isDark ? '#1A1A1A' : '#F0F0F0', color: isDark ? '#AAA' : '#888', border: `1px solid ${isDark ? '#333' : '#EEE'}` }}
-                  >
+                  <button onClick={() => { setRecoveryStep('input'); setError(''); }} className="w-full py-3 rounded-2xl flex items-center justify-center text-sm" style={{ background: isDark ? '#1A1A1A' : '#F0F0F0', color: isDark ? '#AAA' : '#888', border: `1px solid ${isDark ? '#333' : '#EEE'}` }}>
                     رجوع
                   </button>
                 </>
@@ -520,7 +582,7 @@ export default function AuthScreen() {
             </motion.div>
           )}
 
-          {/* REGISTER STEP 1 - Name fields, National ID, Email, Password */}
+          {/* REGISTER STEP 1 - Personal Info */}
           {step === 'register-step1' && (
             <motion.div key="register-step1" initial={{ x: 300, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: -300, opacity: 0 }} transition={{ type: 'spring', stiffness: 200, damping: 25 }} className="space-y-3">
               <div className="flex items-center gap-2 mb-2">
@@ -530,10 +592,7 @@ export default function AuthScreen() {
                 <h2 className="text-lg font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>إنشاء حسابك الجديد</h2>
               </div>
 
-              <div className="flex gap-2 mb-2">
-                <div className="flex-1 h-1 rounded-full" style={{ background: '#E60000' }} />
-                <div className="flex-1 h-1 rounded-full" style={{ background: isDark ? '#333' : '#EEE' }} />
-              </div>
+              <StepIndicator currentStep={1} />
 
               {/* First Name */}
               <div className="flex items-center gap-2 px-4 py-3.5 rounded-2xl" style={inputStyle}>
@@ -562,16 +621,29 @@ export default function AuthScreen() {
               {/* National ID */}
               <div className="flex items-center gap-2 px-4 py-3.5 rounded-2xl" style={inputStyle}>
                 <CreditCard size={18} strokeWidth={1.5} color="#E60000" />
-                <input
-                  type="tel"
-                  placeholder="رقم البطاقة الشخصية"
-                  value={regNationalId}
-                  onChange={(e) => handleNationalIdChange(e.target.value)}
-                  className="flex-1 bg-transparent outline-none text-sm"
-                  style={{ color: isDark ? '#FFF' : '#1a1a1a' }}
-                  dir="ltr"
-                />
+                <input type="tel" placeholder="رقم البطاقة الشخصية *" value={regNationalId} onChange={(e) => handleNationalIdChange(e.target.value)} className="flex-1 bg-transparent outline-none text-sm" style={{ color: isDark ? '#FFF' : '#1a1a1a' }} dir="ltr" />
               </div>
+
+              {error && <motion.p initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} className="text-xs text-center" style={{ color: '#E60000' }}>{error}</motion.p>}
+
+              <button onClick={handleRegisterStep1} className="w-full py-4 rounded-2xl flex items-center justify-center gap-2 font-bold text-white transition-all active:scale-[0.98]" style={btnPrimary}>
+                <span>التالي</span>
+                <ArrowLeft size={16} strokeWidth={1.5} />
+              </button>
+            </motion.div>
+          )}
+
+          {/* REGISTER STEP 2 - Account Info */}
+          {step === 'register-step2' && (
+            <motion.div key="register-step2" initial={{ x: 300, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: -300, opacity: 0 }} transition={{ type: 'spring', stiffness: 200, damping: 25 }} className="space-y-3">
+              <div className="flex items-center gap-2 mb-2">
+                <button onClick={() => { setStep('register-step1'); setError(''); }} className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: isDark ? '#1A1A1A' : '#F0F0F0' }}>
+                  <ArrowLeft size={16} strokeWidth={1.5} color={isDark ? '#FFF' : '#666'} />
+                </button>
+                <h2 className="text-lg font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>معلومات الحساب</h2>
+              </div>
+
+              <StepIndicator currentStep={2} />
 
               {/* Email */}
               <div className="flex items-center gap-2 px-4 py-3.5 rounded-2xl" style={inputStyle}>
@@ -593,26 +665,30 @@ export default function AuthScreen() {
 
               {error && <motion.p initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} className="text-xs text-center" style={{ color: '#E60000' }}>{error}</motion.p>}
 
-              <button onClick={handleRegisterStep1} className="w-full py-4 rounded-2xl flex items-center justify-center gap-2 font-bold text-white transition-all active:scale-[0.98]" style={{ background: 'linear-gradient(135deg, #E60000 0%, #B30000 100%)', boxShadow: '0 4px 16px rgba(230,0,0,0.3)' }}>
-                <span>التالي</span>
-                <ArrowLeft size={16} strokeWidth={1.5} />
-              </button>
+              <div className="flex gap-3">
+                <button onClick={() => { setStep('register-step1'); setError(''); }} className="flex-1 py-4 rounded-2xl flex items-center justify-center gap-2 font-bold transition-all active:scale-[0.98]" style={{ background: isDark ? '#1A1A1A' : '#F0F0F0', color: isDark ? '#FFF' : '#1a1a1a', border: `1px solid ${isDark ? '#333' : '#EEE'}` }}>
+                  السابق
+                </button>
+                <button onClick={handleRegisterStep2} className="flex-1 py-4 rounded-2xl flex items-center justify-center gap-2 font-bold text-white transition-all active:scale-[0.98]" style={btnPrimary}>
+                  <span>التالي</span>
+                  <ArrowLeft size={16} strokeWidth={1.5} />
+                </button>
+              </div>
             </motion.div>
           )}
 
-          {/* REGISTER STEP 2 - Phone */}
-          {step === 'register-step2' && (
-            <motion.div key="register-step2" initial={{ x: 300, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: -300, opacity: 0 }} transition={{ type: 'spring', stiffness: 200, damping: 25 }} className="space-y-3">
+          {/* REGISTER STEP 3 - Phone & Terms */}
+          {step === 'register-step3' && (
+            <motion.div key="register-step3" initial={{ x: 300, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: -300, opacity: 0 }} transition={{ type: 'spring', stiffness: 200, damping: 25 }} className="space-y-3">
               <div className="flex items-center gap-2 mb-2">
-                <button onClick={() => { setStep('register-step1'); setError(''); }} className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: isDark ? '#1A1A1A' : '#F0F0F0' }}>
+                <button onClick={() => { setStep('register-step2'); setError(''); }} className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: isDark ? '#1A1A1A' : '#F0F0F0' }}>
                   <ArrowLeft size={16} strokeWidth={1.5} color={isDark ? '#FFF' : '#666'} />
                 </button>
                 <h2 className="text-lg font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>رقم الهاتف</h2>
               </div>
-              <div className="flex gap-2 mb-2">
-                <div className="flex-1 h-1 rounded-full" style={{ background: '#E60000' }} />
-                <div className="flex-1 h-1 rounded-full" style={{ background: '#E60000' }} />
-              </div>
+
+              <StepIndicator currentStep={3} />
+
               <div className="flex flex-col items-center mb-4">
                 <div className="w-14 h-14 rounded-full flex items-center justify-center mb-3" style={{ background: 'rgba(230,0,0,0.1)' }}>
                   <Phone size={28} strokeWidth={1.5} color="#E60000" />
@@ -621,6 +697,7 @@ export default function AuthScreen() {
                   يمكنك إضافة رقم هاتفك لاستقبال التحويلات عبر الهاتف
                 </p>
               </div>
+
               <div className="flex items-center gap-2 px-4 py-3.5 rounded-2xl" style={inputStyle}>
                 <YemenFlagIndicator />
                 <span className="text-sm font-medium shrink-0" style={{ color: isDark ? '#AAA' : '#888' }} dir="ltr">+967</span>
@@ -628,18 +705,58 @@ export default function AuthScreen() {
                 <input type="tel" placeholder="7XX XXX XXX" value={regPhone} onChange={(e) => handlePhoneChange(e.target.value)} className="flex-1 bg-transparent outline-none text-sm" style={{ color: isDark ? '#FFF' : '#1a1a1a' }} dir="ltr" />
               </div>
 
+              {/* Terms & Conditions Checkbox */}
+              <button
+                onClick={() => setAgreeTerms(!agreeTerms)}
+                className="w-full flex items-start gap-3 p-3 rounded-2xl text-right"
+                style={{ background: agreeTerms ? 'rgba(230,0,0,0.06)' : isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)', border: agreeTerms ? '1px solid rgba(230,0,0,0.2)' : `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}` }}
+              >
+                <div className="w-5 h-5 rounded-md flex items-center justify-center shrink-0 mt-0.5" style={{ background: agreeTerms ? '#E60000' : 'transparent', border: agreeTerms ? 'none' : `1px solid ${isDark ? '#555' : '#CCC'}` }}>
+                  {agreeTerms && <CheckCircle2 size={12} color="#FFF" />}
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center gap-1.5">
+                    <FileText size={14} color="#E60000" />
+                    <span className="text-xs font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>أوافق على الشروط والأحكام</span>
+                  </div>
+                  <p className="text-[10px] mt-0.5" style={{ color: isDark ? '#888' : '#AAA' }}>الموافقة على شروط استخدام محفظة الجنوب</p>
+                </div>
+              </button>
+
+              {/* Privacy Policy Checkbox */}
+              <button
+                onClick={() => setAgreePrivacy(!agreePrivacy)}
+                className="w-full flex items-start gap-3 p-3 rounded-2xl text-right"
+                style={{ background: agreePrivacy ? 'rgba(230,0,0,0.06)' : isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)', border: agreePrivacy ? '1px solid rgba(230,0,0,0.2)' : `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}` }}
+              >
+                <div className="w-5 h-5 rounded-md flex items-center justify-center shrink-0 mt-0.5" style={{ background: agreePrivacy ? '#E60000' : 'transparent', border: agreePrivacy ? 'none' : `1px solid ${isDark ? '#555' : '#CCC'}` }}>
+                  {agreePrivacy && <CheckCircle2 size={12} color="#FFF" />}
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center gap-1.5">
+                    <Shield size={14} color="#E60000" />
+                    <span className="text-xs font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>أوافق على سياسة الخصوصية</span>
+                  </div>
+                  <p className="text-[10px] mt-0.5" style={{ color: isDark ? '#888' : '#AAA' }}>الموافقة على سياسة حماية البيانات الشخصية</p>
+                </div>
+              </button>
+
               {error && <motion.p initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} className="text-xs text-center" style={{ color: '#E60000' }}>{error}</motion.p>}
 
-              <button onClick={handleRegisterStep2} disabled={isLoading} className="w-full py-4 rounded-2xl flex items-center justify-center gap-2 font-bold text-white transition-all active:scale-[0.98] disabled:opacity-50" style={{ background: 'linear-gradient(135deg, #E60000 0%, #B30000 100%)', boxShadow: '0 4px 16px rgba(230,0,0,0.3)' }}>
-                {isLoading ? <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: 'linear' }} className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full" /> : <span>إنشاء الحساب</span>}
-              </button>
-              <button onClick={() => { setRegPhone(''); handleRegisterStep2(); }} disabled={isLoading} className="w-full py-3 rounded-2xl flex items-center justify-center text-sm font-medium disabled:opacity-50" style={{ background: isDark ? '#1A1A1A' : '#F0F0F0', color: isDark ? '#AAA' : '#888', border: `1px solid ${isDark ? '#333' : '#EEE'}` }}>
+              <div className="flex gap-3">
+                <button onClick={() => { setStep('register-step2'); setError(''); }} className="flex-1 py-4 rounded-2xl flex items-center justify-center gap-2 font-bold transition-all active:scale-[0.98]" style={{ background: isDark ? '#1A1A1A' : '#F0F0F0', color: isDark ? '#FFF' : '#1a1a1a', border: `1px solid ${isDark ? '#333' : '#EEE'}` }}>
+                  السابق
+                </button>
+                <button onClick={handleRegisterStep3} disabled={isLoading} className="flex-1 py-4 rounded-2xl flex items-center justify-center gap-2 font-bold text-white transition-all active:scale-[0.98] disabled:opacity-50" style={btnPrimary}>
+                  {isLoading ? <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: 'linear' }} className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full" /> : <span>إنشاء الحساب</span>}
+                </button>
+              </div>
+
+              <button onClick={() => { setRegPhone(''); handleRegisterStep3(); }} disabled={isLoading} className="w-full py-3 rounded-2xl flex items-center justify-center text-sm font-medium disabled:opacity-50" style={{ background: isDark ? '#1A1A1A' : '#F0F0F0', color: isDark ? '#AAA' : '#888', border: `1px solid ${isDark ? '#333' : '#EEE'}` }}>
                 تخطي - بدون رقم هاتف
               </button>
             </motion.div>
           )}
-
-
         </AnimatePresence>
       </div>
     </div>

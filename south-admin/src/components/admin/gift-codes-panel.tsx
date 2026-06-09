@@ -13,11 +13,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { Search, Plus, Trash2, Gift, Copy } from 'lucide-react';
+import { Search, Plus, Trash2, Gift, Copy, Eye, EyeOff } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export default function GiftCodesPanel() {
-  const { showToast } = useAdminStore();
+  const { adminUser, showToast } = useAdminStore();
   const [codes, setCodes] = useState<any[]>([]);
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
@@ -30,6 +30,7 @@ export default function GiftCodesPanel() {
   const [maxUses, setMaxUses] = useState('1');
   const [expiresAt, setExpiresAt] = useState('');
   const [isActive, setIsActive] = useState(true);
+  const [visibleToUsers, setVisibleToUsers] = useState(false);
 
   useEffect(() => {
     const ref_ = ref(database, 'giftCodes');
@@ -56,6 +57,8 @@ export default function GiftCodesPanel() {
             usedCount: 0,
             expiresAt: expiresAt || '',
             isActive,
+            visibleToUsers,
+            createdBy: 'admin',
             createdAt: new Date().toISOString(),
           });
         }
@@ -69,12 +72,14 @@ export default function GiftCodesPanel() {
           usedCount: 0,
           expiresAt: expiresAt || '',
           isActive,
+          visibleToUsers,
+          createdBy: 'admin',
           createdAt: new Date().toISOString(),
         });
         showToast('تم إنشاء كود الهدية', 'success');
       }
       setDialog(false);
-      setCode(''); setAmount(''); setMaxUses('1'); setExpiresAt(''); setIsActive(true);
+      setCode(''); setAmount(''); setMaxUses('1'); setExpiresAt(''); setIsActive(true); setVisibleToUsers(false);
     } catch (e) { showToast('حدث خطأ', 'error'); }
   };
 
@@ -82,6 +87,13 @@ export default function GiftCodesPanel() {
     try {
       await update(ref(database, `giftCodes/${c.id}`), { isActive: !c.isActive });
       showToast(c.isActive ? 'تم تعطيل الكود' : 'تم تفعيل الكود', 'success');
+    } catch (e) { showToast('حدث خطأ', 'error'); }
+  };
+
+  const handleToggleVisibility = async (c: any) => {
+    try {
+      await update(ref(database, `giftCodes/${c.id}`), { visibleToUsers: !c.visibleToUsers });
+      showToast(c.visibleToUsers ? 'تم إخفاء الكود من المستخدمين' : 'تم إظهار الكود للمستخدمين', 'success');
     } catch (e) { showToast('حدث خطأ', 'error'); }
   };
 
@@ -103,7 +115,7 @@ export default function GiftCodesPanel() {
           <h1 className="text-2xl font-bold">أكواد الهدايا المالية</h1>
           <p className="text-muted-foreground text-sm mt-1">{formatNumber(codes.length)} كود</p>
         </div>
-        <Button onClick={() => { setCode(generateGiftCode()); setDialog(true); }} size="sm">
+        <Button onClick={() => { setCode(generateGiftCode()); setVisibleToUsers(false); setDialog(true); }} size="sm">
           <Plus className="w-4 h-4 ml-1" /> كود جديد
         </Button>
       </div>
@@ -124,12 +136,23 @@ export default function GiftCodesPanel() {
                     <div>
                       <p className="font-mono text-sm font-bold" dir="ltr">{c.code}</p>
                       <p className="text-xs text-muted-foreground">{formatNumber(c.amount)} {currencySymbols[c.currency || 'YER']} - {c.usedCount || 0}/{c.maxUses || 1} استخدام</p>
+                      <div className="flex items-center gap-2 mt-1">
+                        {c.createdBy === 'admin' && (
+                          <Badge className="bg-purple-500/20 text-purple-600 text-xs h-4">إدارة</Badge>
+                        )}
+                        <Badge className={c.visibleToUsers ? 'bg-green-500/20 text-green-600 text-xs h-4' : 'bg-gray-500/20 text-gray-500 text-xs h-4'}>
+                          {c.visibleToUsers ? 'ظاهر للمستخدمين' : 'مخفي'}
+                        </Badge>
+                      </div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1">
                     <Badge className={c.isActive ? 'bg-green-500/20 text-green-600 dark:text-green-400' : 'bg-red-500/20 text-red-600 dark:text-red-400'}>
                       {c.isActive ? 'نشط' : 'معطل'}
                     </Badge>
+                    <Button variant="ghost" size="sm" onClick={() => handleToggleVisibility(c)} title={c.visibleToUsers ? 'إخفاء من المستخدمين' : 'إظهار للمستخدمين'}>
+                      {c.visibleToUsers ? <Eye className="w-4 h-4 text-green-500" /> : <EyeOff className="w-4 h-4 text-gray-400" />}
+                    </Button>
                     <Button variant="ghost" size="sm" onClick={() => handleToggle(c)}><Switch checked={c.isActive} /></Button>
                     <Button variant="ghost" size="sm" onClick={() => handleDelete(c.id)}><Trash2 className="w-4 h-4 text-red-500" /></Button>
                   </div>
@@ -162,6 +185,12 @@ export default function GiftCodesPanel() {
             <div><Label>الحد الأقصى للاستخدام</Label><Input type="number" value={maxUses} onChange={(e) => setMaxUses(e.target.value)} dir="ltr" /></div>
             <div><Label>تاريخ الانتهاء</Label><Input type="date" value={expiresAt} onChange={(e) => setExpiresAt(e.target.value)} /></div>
             <div className="flex items-center gap-2"><Switch checked={isActive} onCheckedChange={setIsActive} /><Label>نشط</Label></div>
+            <div className="flex items-center gap-2"><Switch checked={visibleToUsers} onCheckedChange={setVisibleToUsers} /><Label>ظاهر للمستخدمين</Label></div>
+            <p className="text-xs text-muted-foreground">
+              {visibleToUsers
+                ? 'هذا الكود سيكون مرئيا للمستخدمين في قسم استبدال الأكواد'
+                : 'هذا الكود سيكون مخفيا من المستخدمين ولا يمكن استبداله إلا عبر الإدارة'}
+            </p>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDialog(false)}>إلغاء</Button>

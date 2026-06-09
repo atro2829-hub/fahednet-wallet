@@ -12,7 +12,8 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { Plus, Trash2, Edit, Image } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Plus, Trash2, Edit, Image, ExternalLink, CheckCircle, AlertCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export default function BannersPanel() {
@@ -23,9 +24,11 @@ export default function BannersPanel() {
   const [editing, setEditing] = useState<any>(null);
   const [title, setTitle] = useState('');
   const [imageBase64, setImageBase64] = useState('');
-  const [link, setLink] = useState('');
+  const [url, setUrl] = useState('');
+  const [urlType, setUrlType] = useState<'whatsapp' | 'facebook' | 'website' | 'deeplink' | 'none'>('none');
   const [order, setOrder] = useState('0');
   const [isActive, setIsActive] = useState(true);
+  const [urlTestResult, setUrlTestResult] = useState<'none' | 'valid' | 'invalid'>('none');
 
   useEffect(() => {
     const ref_ = ref(database, 'adminSettings/banners');
@@ -47,9 +50,34 @@ export default function BannersPanel() {
     reader.readAsDataURL(file);
   };
 
+  const testUrl = () => {
+    if (!url) {
+      setUrlTestResult('invalid');
+      return;
+    }
+    try {
+      new URL(url);
+      setUrlTestResult('valid');
+    } catch {
+      if (url.startsWith('/') || url.startsWith('southwallet://')) {
+        setUrlTestResult('valid');
+      } else {
+        setUrlTestResult('invalid');
+      }
+    }
+  };
+
   const handleSave = async () => {
     try {
-      const data = { title, image: imageBase64, link, order: parseInt(order) || 0, isActive };
+      const data = {
+        title,
+        image: imageBase64,
+        url: urlType !== 'none' ? url : '',
+        urlType: urlType !== 'none' ? urlType : '',
+        link: urlType !== 'none' ? url : '',
+        order: parseInt(order) || 0,
+        isActive,
+      };
       if (editing) {
         await update(ref(database, `adminSettings/banners/${editing.id}`), data);
         showToast('تم تحديث البانر', 'success');
@@ -58,7 +86,7 @@ export default function BannersPanel() {
         showToast('تم إضافة البانر', 'success');
       }
       setDialog(false);
-      setTitle(''); setImageBase64(''); setLink(''); setOrder('0'); setIsActive(true); setEditing(null);
+      setTitle(''); setImageBase64(''); setUrl(''); setUrlType('none'); setOrder('0'); setIsActive(true); setEditing(null); setUrlTestResult('none');
     } catch (e) { showToast('حدث خطأ', 'error'); }
   };
 
@@ -67,13 +95,23 @@ export default function BannersPanel() {
     catch (e) { showToast('حدث خطأ', 'error'); }
   };
 
+  const getUrlTypeLabel = (type: string) => {
+    switch (type) {
+      case 'whatsapp': return 'واتساب';
+      case 'facebook': return 'فيسبوك';
+      case 'website': return 'موقع ويب';
+      case 'deeplink': return 'رابط داخلي';
+      default: return '';
+    }
+  };
+
   if (loading) return <div className="flex items-center justify-center min-h-[400px]"><div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" /></div>;
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div><h1 className="text-2xl font-bold">البانرات الإعلانية</h1><p className="text-muted-foreground text-sm mt-1">{formatNumber(banners.length)} بانر</p></div>
-        <Button onClick={() => { setEditing(null); setTitle(''); setImageBase64(''); setLink(''); setOrder('0'); setIsActive(true); setDialog(true); }} size="sm"><Plus className="w-4 h-4 ml-1" /> بانر جديد</Button>
+        <Button onClick={() => { setEditing(null); setTitle(''); setImageBase64(''); setUrl(''); setUrlType('none'); setOrder('0'); setIsActive(true); setUrlTestResult('none'); setDialog(true); }} size="sm"><Plus className="w-4 h-4 ml-1" /> بانر جديد</Button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -86,10 +124,21 @@ export default function BannersPanel() {
                   <div>
                     <p className="font-medium text-sm">{b.title || 'بدون عنوان'}</p>
                     <p className="text-xs text-muted-foreground">ترتيب: {b.order || 0}</p>
+                    {b.url && (
+                      <div className="flex items-center gap-1 mt-1">
+                        <ExternalLink className="w-3 h-3 text-purple-500" />
+                        <span className="text-xs text-purple-500 truncate max-w-[150px]" dir="ltr">{b.url}</span>
+                        {b.urlType && <Badge className="bg-purple-500/20 text-purple-600 text-xs h-4">{getUrlTypeLabel(b.urlType)}</Badge>}
+                      </div>
+                    )}
                   </div>
                   <div className="flex items-center gap-2">
                     <Badge className={b.isActive ? 'bg-green-500/20 text-green-600 dark:text-green-400' : 'bg-red-500/20 text-red-600 dark:text-red-400'}>{b.isActive ? 'نشط' : 'معطل'}</Badge>
-                    <Button variant="ghost" size="sm" onClick={() => { setEditing(b); setTitle(b.title || ''); setImageBase64(b.image || ''); setLink(b.link || ''); setOrder(String(b.order || 0)); setIsActive(b.isActive !== false); setDialog(true); }}><Edit className="w-4 h-4" /></Button>
+                    <Button variant="ghost" size="sm" onClick={() => {
+                      setEditing(b); setTitle(b.title || ''); setImageBase64(b.image || '');
+                      setUrl(b.url || b.link || ''); setUrlType(b.urlType || (b.url || b.link ? 'website' : 'none'));
+                      setOrder(String(b.order || 0)); setIsActive(b.isActive !== false); setUrlTestResult('none'); setDialog(true);
+                    }}><Edit className="w-4 h-4" /></Button>
                     <Button variant="ghost" size="sm" onClick={() => handleDelete(b.id)}><Trash2 className="w-4 h-4 text-red-500" /></Button>
                   </div>
                 </div>
@@ -101,7 +150,7 @@ export default function BannersPanel() {
       </div>
 
       <Dialog open={dialog} onOpenChange={setDialog}>
-        <DialogContent>
+        <DialogContent className="max-w-lg">
           <DialogHeader><DialogTitle>{editing ? 'تعديل بانر' : 'إضافة بانر'}</DialogTitle></DialogHeader>
           <div className="space-y-4">
             <div><Label>العنوان</Label><Input value={title} onChange={(e) => setTitle(e.target.value)} /></div>
@@ -109,7 +158,37 @@ export default function BannersPanel() {
               <input type="file" accept="image/*" onChange={handleImageUpload} className="w-full text-sm" />
               {imageBase64 && <img src={imageBase64} alt="preview" className="mt-2 w-full h-24 object-cover rounded-lg" />}
             </div>
-            <div><Label>الرابط</Label><Input value={link} onChange={(e) => setLink(e.target.value)} dir="ltr" /></div>
+            <div>
+              <Label>نوع الرابط</Label>
+              <Select value={urlType} onValueChange={(v: any) => { setUrlType(v); setUrlTestResult('none'); }}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">بدون رابط</SelectItem>
+                  <SelectItem value="whatsapp">واتساب</SelectItem>
+                  <SelectItem value="facebook">فيسبوك</SelectItem>
+                  <SelectItem value="website">موقع ويب</SelectItem>
+                  <SelectItem value="deeplink">رابط داخلي (Deep Link)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            {urlType !== 'none' && (
+              <div>
+                <Label>الرابط</Label>
+                <div className="flex gap-2">
+                  <Input
+                    value={url}
+                    onChange={(e) => { setUrl(e.target.value); setUrlTestResult('none'); }}
+                    dir="ltr"
+                    placeholder={urlType === 'whatsapp' ? 'https://wa.me/967...' : urlType === 'facebook' ? 'https://facebook.com/...' : urlType === 'deeplink' ? 'southwallet://...' : 'https://...'}
+                  />
+                  <Button variant="outline" size="sm" onClick={testUrl}>
+                    {urlTestResult === 'valid' ? <CheckCircle className="w-4 h-4 text-green-500" /> : urlTestResult === 'invalid' ? <AlertCircle className="w-4 h-4 text-red-500" /> : <ExternalLink className="w-4 h-4" />}
+                  </Button>
+                </div>
+                {urlTestResult === 'valid' && <p className="text-xs text-green-500 mt-1">الرابط صالح</p>}
+                {urlTestResult === 'invalid' && <p className="text-xs text-red-500 mt-1">الرابط غير صالح</p>}
+              </div>
+            )}
             <div><Label>الترتيب</Label><Input type="number" value={order} onChange={(e) => setOrder(e.target.value)} dir="ltr" /></div>
             <div className="flex items-center gap-2"><Switch checked={isActive} onCheckedChange={setIsActive} /><Label>نشط</Label></div>
           </div>

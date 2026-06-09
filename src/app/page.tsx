@@ -35,6 +35,7 @@ import SettingsScreen from '@/components/fahed/settings-screen';
 import CategoryDetailScreen from '@/components/fahed/category-detail-screen';
 import LegalScreen from '@/components/fahed/legal-screen';
 import InvestmentScreen from '@/components/fahed/investment-screen';
+import GiftVoucherScreen from '@/components/fahed/gift-voucher-screen';
 import BottomNav from '@/components/fahed/bottom-nav';
 import QuickActionDrawer from '@/components/fahed/quick-action-drawer';
 import TransferModal from '@/components/fahed/transfer-modal';
@@ -166,9 +167,9 @@ function AppContent() {
             const isAdminEmail = email.toLowerCase().includes('admin');
             const newUserData = {
               email, phone: '', name: '', firstName: '', secondName: '', thirdName: '', familyName: '',
-              nationalId: '', avatar: '', role: isAdminEmail ? 'admin' : 'user', userId: newUserId,
-              kycStatus: 'pending', isBlocked: false, balanceYER: 0, balanceSAR: 0, balanceUSD: 0,
-              cardType: '', cardNumber: '', cardIssuedAt: '', governorate: '', theme: 'light',
+              nationalId: '', avatar: '', role: isAdminEmail ? 'admin' as const : 'user' as const, userId: newUserId,
+              kycStatus: 'pending' as const, isBlocked: false, balanceYER: 0, balanceSAR: 0, balanceUSD: 0,
+              cardType: '', cardNumber: '', cardIssuedAt: '', governorate: '', theme: 'light' as const,
             };
             await update(ref(database), {
               [`users/${firebaseUser.uid}`]: newUserData,
@@ -236,9 +237,20 @@ function AppContent() {
         await PushNotifications.register();
 
         // Listen for registration token
-        PushNotifications.addListener('registration', (token) => {
+        PushNotifications.addListener('registration', async (token) => {
           console.log('Push registration success, token:', token.value);
           localStorage.setItem('notification-permission', 'granted');
+          // Save FCM token to Firebase
+          try {
+            const { database } = await import('@/lib/firebase');
+            const { ref, set: firebaseSet } = await import('firebase/database');
+            const currentUser = useAppStore.getState().user;
+            if (currentUser?.id) {
+              await firebaseSet(ref(database, `users/${currentUser.id}/fcmToken`), token.value);
+            }
+          } catch (e) {
+            console.warn('Failed to save FCM token:', e);
+          }
         });
 
         // Listen for registration errors (don't crash, just log)
@@ -249,6 +261,18 @@ function AppContent() {
         // Listen for push notification received
         PushNotifications.addListener('pushNotificationReceived', (notification) => {
           console.log('Push notification received:', notification);
+          // Show in-app toast
+          const store = useAppStore.getState();
+          if (notification.title || notification.body) {
+            store.addNotification({
+              id: `push-${Date.now()}`,
+              title: notification.title || 'إشعار جديد',
+              body: notification.body || '',
+              type: 'info',
+              isRead: false,
+              createdAt: new Date().toISOString(),
+            });
+          }
         });
 
         // Listen for push notification action
@@ -368,6 +392,7 @@ function AppContent() {
     'category-detail': CategoryDetailScreen,
     legal: LegalScreen,
     investment: InvestmentScreen,
+    'gift-vouchers': GiftVoucherScreen,
   };
 
   if (activeScreen in overlayScreens) {

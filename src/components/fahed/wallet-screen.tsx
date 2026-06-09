@@ -26,6 +26,7 @@ import {
   Upload,
 } from 'lucide-react';
 import { useAppStore } from '@/lib/store';
+import type { CardColor } from '@/lib/store';
 import { formatBalance, formatNumber, currencySymbols, currencyNames, currencyBadgeColors, timeAgo, transactionTypeLabels, transactionTypeColors } from '@/lib/utils';
 import { LOGO_BASE64, RED_LOGO_FILTER } from '@/lib/logo';
 import { database } from '@/lib/firebase';
@@ -46,10 +47,10 @@ function hexToRgb(hex: string): string {
   return result ? `${parseInt(result[1], 16)},${parseInt(result[2], 16)},${parseInt(result[3], 16)}` : '255,255,255';
 }
 
-const balanceCards: BalanceCard[] = [
+const defaultBalanceCards: BalanceCard[] = [
   { currency: 'YER', accentColor: '#E60000', accentColorEnd: '#8B0000', glowColor: 'rgba(230,0,0,0.35)', patternColor: 'rgba(255,255,255,0.06)' },
-  { currency: 'SAR', accentColor: '#0D5A1F', accentColorEnd: '#1B7A2B', glowColor: 'rgba(13,90,31,0.35)', patternColor: 'rgba(255,255,255,0.06)' },
-  { currency: 'USD', accentColor: '#0D47A1', accentColorEnd: '#1565C0', glowColor: 'rgba(13,71,161,0.35)', patternColor: 'rgba(255,255,255,0.06)' },
+  { currency: 'SAR', accentColor: '#059669', accentColorEnd: '#1B7A2B', glowColor: 'rgba(5,150,105,0.35)', patternColor: 'rgba(255,255,255,0.06)' },
+  { currency: 'USD', accentColor: '#2563EB', accentColorEnd: '#0D47A1', glowColor: 'rgba(37,99,235,0.35)', patternColor: 'rgba(255,255,255,0.06)' },
 ];
 
 const filterTabs: { id: FilterTab; label: string }[] = [
@@ -136,8 +137,41 @@ function getTransactionIcon(type: string, isIncoming: boolean) {
 export default function WalletScreen() {
   const { theme } = useTheme();
   const isDark = theme === 'dark';
-  const { user, setUser, balanceVisible, toggleBalance, transactions, setTransactions, orders, setOrders, setActiveScreen } = useAppStore();
+  const { user, setUser, balanceVisible, toggleBalance, transactions, setTransactions, orders, setOrders, setActiveScreen, cardColors, setCardColors } = useAppStore();
   const [activeCardIndex, setActiveCardIndex] = useState(0);
+
+  // Build balanceCards from Firebase cardColors or defaults
+  const balanceCards: BalanceCard[] = defaultBalanceCards.map(card => {
+    const customColor = cardColors[card.currency];
+    if (customColor) {
+      const r = parseInt(customColor.primary.slice(1, 3), 16);
+      const g = parseInt(customColor.primary.slice(3, 5), 16);
+      const b = parseInt(customColor.primary.slice(5, 7), 16);
+      return {
+        ...card,
+        accentColor: customColor.primary,
+        accentColorEnd: customColor.gradient,
+        glowColor: `rgba(${r},${g},${b},0.35)`,
+      };
+    }
+    return card;
+  });
+
+  // Listen for card color changes from Firebase
+  useEffect(() => {
+    const colorsRef = ref(database, 'adminSettings/cardColors');
+    const unsubscribe = onValue(colorsRef, (snapshot) => {
+      if (snapshot.exists()) {
+        const data = snapshot.val();
+        setCardColors({
+          YER: data.YER || { primary: '#E60000', gradient: '#8B0000' },
+          SAR: data.SAR || { primary: '#059669', gradient: '#1B7A2B' },
+          USD: data.USD || { primary: '#2563EB', gradient: '#0D47A1' },
+        });
+      }
+    });
+    return () => unsubscribe();
+  }, [setCardColors]);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState<FilterTab>('all');
   const [isRefreshing, setIsRefreshing] = useState(false);

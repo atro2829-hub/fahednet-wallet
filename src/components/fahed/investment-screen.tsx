@@ -1,16 +1,17 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useTheme } from 'next-themes';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ArrowLeft, TrendingUp, Clock, CheckCircle2, AlertCircle,
-  Coins, BarChart3, History, Wallet, ArrowRightLeft, Info, ChevronDown, ChevronUp
+  Coins, BarChart3, History, Wallet, Info, ChevronDown, ChevronUp,
+  Timer, X, Share2
 } from 'lucide-react';
 import { useAppStore } from '@/lib/store';
 import { currencySymbols, formatNumber, formatBalance } from '@/lib/utils';
 import { LOGO_BASE64 } from '@/lib/logo';
-import { ref, get, update } from 'firebase/database';
+import { ref, get, update, set as firebaseSet, onValue, off } from 'firebase/database';
 import { database } from '@/lib/firebase';
 
 interface InvestmentPlan {
@@ -30,11 +31,14 @@ interface ActiveInvestment {
   planId: string;
   planName: string;
   amount: number;
-  dailyRate: number;
+  currency: 'YER' | 'SAR' | 'USD';
+  profitRate: number;
+  expectedProfit: number;
   startDate: string;
   endDate: string;
-  earnedSoFar: number;
-  status: 'active' | 'completed' | 'withdrawn';
+  status: 'active' | 'completed' | 'cancelled';
+  completedAt?: string;
+  earnedSoFar?: number;
 }
 
 const investmentPlans: InvestmentPlan[] = [
@@ -89,10 +93,63 @@ function formatUsdtAmount(amount: number): string {
   return amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
+// Countdown timer component
+function CountdownTimer({ endDate, onComplete }: { endDate: string; onComplete: () => void }) {
+  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+
+  useEffect(() => {
+    const calculateTimeLeft = () => {
+      const now = new Date().getTime();
+      const end = new Date(endDate).getTime();
+      const diff = end - now;
+
+      if (diff <= 0) {
+        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+        onComplete();
+        return;
+      }
+
+      setTimeLeft({
+        days: Math.floor(diff / (1000 * 60 * 60 * 24)),
+        hours: Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
+        minutes: Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)),
+        seconds: Math.floor((diff % (1000 * 60)) / 1000),
+      });
+    };
+
+    calculateTimeLeft();
+    const interval = setInterval(calculateTimeLeft, 1000);
+    return () => clearInterval(interval);
+  }, [endDate, onComplete]);
+
+  const isExpired = timeLeft.days === 0 && timeLeft.hours === 0 && timeLeft.minutes === 0 && timeLeft.seconds === 0;
+
+  return (
+    <div className="flex items-center gap-1.5" dir="ltr">
+      {[
+        { value: timeLeft.days, label: 'ي' },
+        { value: timeLeft.hours, label: 'س' },
+        { value: timeLeft.minutes, label: 'د' },
+        { value: timeLeft.seconds, label: 'ث' },
+      ].map((item, i) => (
+        <div key={i} className="flex items-center gap-1">
+          <div className="flex flex-col items-center px-1.5 py-1 rounded-lg" style={{ background: isExpired ? 'rgba(16,185,129,0.15)' : 'rgba(255,255,255,0.06)' }}>
+            <span className="text-xs font-bold font-mono" style={{ color: isExpired ? '#10B981' : '#FFF' }}>
+              {String(item.value).padStart(2, '0')}
+            </span>
+            <span className="text-[7px]" style={{ color: 'rgba(255,255,255,0.4)' }}>{item.label}</span>
+          </div>
+          {i < 3 && <span className="text-white/30 text-xs">:</span>}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function InvestmentScreen() {
   const { theme } = useTheme();
   const isDark = theme === 'dark';
-  const { user, setActiveScreen, providers, setSelectedProvider, setOrderOpen } = useAppStore();
+  const { user, setUser, setActiveScreen, addNotification, addInvestment, updateInvestment } = useAppStore();
 
   const [activeInvestments, setActiveInvestments] = useState<ActiveInvestment[]>([]);
   const [investmentHistory, setInvestmentHistory] = useState<ActiveInvestment[]>([]);
@@ -102,30 +159,90 @@ export default function InvestmentScreen() {
   const [showInvestModal, setShowInvestModal] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
-  const [expandedPlan, setExpandedPlan] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [completedIds, setCompletedIds] = useState<Set<string>>(new Set());
 
   const usdtBalance = user?.balanceUSD || 0;
 
   // Fetch investments from Firebase
   useEffect(() => {
     if (!user?.id) return;
-    const fetchInvestments = async () => {
-      try {
-        const snapshot = await get(ref(database, `investments/${user.id}`));
-        if (snapshot.exists()) {
-          const data = snapshot.val();
-          const allInvestments = Object.values(data) as ActiveInvestment[];
-          const active = allInvestments.filter(inv => inv.status === 'active');
-          const history = allInvestments.filter(inv => inv.status !== 'active');
-          setActiveInvestments(active);
-          setInvestmentHistory(history);
-        }
-      } catch {
-        // No investments yet
+    const investRef = ref(database, `investments/${user.id}`);
+    const listener = onValue(investRef, (snapshot) => {
+      setIsLoading(false);
+      if (snapshot.exists()) {
+        const data = snapshot.val();
+        const allInvestments = Object.values(data) as ActiveInvestment[];
+        const active = allInvestments.filter(inv => inv.status === 'active');
+        const history = allInvestments.filter(inv => inv.status !== 'active');
+        setActiveInvestments(active);
+        setInvestmentHistory(history);
+      } else {
+        setActiveInvestments([]);
+        setInvestmentHistory([]);
+        setIsLoading(false);
       }
-    };
-    fetchInvestments();
+    });
+    return () => off(investRef);
   }, [user?.id]);
+
+  // Check for completed investments
+  const handleInvestmentComplete = useCallback(async (investmentId: string) => {
+    if (completedIds.has(investmentId) || !user) return;
+    setCompletedIds(prev => new Set(prev).add(investmentId));
+
+    const investment = activeInvestments.find(inv => inv.id === investmentId);
+    if (!investment || investment.status !== 'active') return;
+
+    const totalReturn = investment.amount + investment.expectedProfit;
+    const updates: Record<string, unknown> = {};
+
+    // Mark investment as completed
+    updates[`investments/${user.id}/${investmentId}/status`] = 'completed';
+    updates[`investments/${user.id}/${investmentId}/completedAt`] = new Date().toISOString();
+
+    // Add profit + principal to user balance
+    const balanceField = investment.currency === 'YER' ? 'balanceYER' : investment.currency === 'SAR' ? 'balanceSAR' : 'balanceUSD';
+    const currentBalance = (user[balanceField] as number) || 0;
+    updates[`users/${user.id}/${balanceField}`] = currentBalance + totalReturn;
+
+    // Add transaction
+    const txId = `tx-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
+    updates[`transactions/${txId}`] = {
+      id: txId,
+      fromUserId: 'INVESTMENT',
+      toUserId: user.id,
+      amount: totalReturn,
+      currency: investment.currency,
+      type: 'deposit',
+      status: 'completed',
+      description: `استرداد استثمار ${investment.planName} - ربح ${formatUsdtAmount(investment.expectedProfit)} ${currencySymbols[investment.currency]}`,
+      createdAt: new Date().toISOString(),
+    };
+
+    try {
+      await update(ref(database), updates);
+
+      // Update local state
+      updateInvestment(investmentId, { status: 'completed', completedAt: new Date().toISOString() });
+      setUser({
+        ...user,
+        [balanceField]: currentBalance + totalReturn,
+      });
+
+      // Show notification
+      addNotification({
+        id: `inv-complete-${Date.now()}`,
+        title: 'اكتمل الاستثمار!',
+        body: `تم استرداد ${formatUsdtAmount(totalReturn)} ${currencySymbols[investment.currency]} من خطة ${investment.planName}`,
+        type: 'transaction',
+        isRead: false,
+        createdAt: new Date().toISOString(),
+      });
+    } catch (error) {
+      console.error('Error completing investment:', error);
+    }
+  }, [user, activeInvestments, completedIds, updateInvestment, setUser, addNotification]);
 
   const handleInvestClick = (plan: InvestmentPlan) => {
     setSelectedPlan(plan);
@@ -144,25 +261,25 @@ export default function InvestmentScreen() {
       const investId = `inv-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
       const startDate = new Date();
       const endDate = new Date(startDate.getTime() + selectedPlan.durationDays * 24 * 60 * 60 * 1000);
+      const expectedProfit = amount * (selectedPlan.dailyRate / 100) * selectedPlan.durationDays;
 
       const newInvestment: ActiveInvestment = {
         id: investId,
         planId: selectedPlan.id,
         planName: selectedPlan.name,
         amount,
-        dailyRate: selectedPlan.dailyRate,
+        currency: 'USD',
+        profitRate: selectedPlan.dailyRate,
+        expectedProfit,
         startDate: startDate.toISOString(),
         endDate: endDate.toISOString(),
-        earnedSoFar: 0,
         status: 'active',
       };
 
-      // Update Firebase
       const updates: Record<string, unknown> = {};
       updates[`investments/${user.id}/${investId}`] = newInvestment;
       updates[`users/${user.id}/balanceUSD`] = (user.balanceUSD || 0) - amount;
 
-      // Add transaction
       const txId = `tx-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
       updates[`transactions/${txId}`] = {
         id: txId,
@@ -176,7 +293,6 @@ export default function InvestmentScreen() {
         createdAt: new Date().toISOString(),
       };
 
-      // Add notification
       const notifId = `notif-${Date.now()}`;
       updates[`notifications/${user.id}/${notifId}`] = {
         title: 'تم الاستثمار بنجاح',
@@ -188,7 +304,8 @@ export default function InvestmentScreen() {
 
       await update(ref(database), updates);
 
-      setActiveInvestments(prev => [newInvestment, ...prev]);
+      addInvestment(newInvestment);
+      setUser({ ...user, balanceUSD: (user.balanceUSD || 0) - amount });
       setShowInvestModal(false);
       setShowSuccess(true);
       setTimeout(() => setShowSuccess(false), 3000);
@@ -206,12 +323,22 @@ export default function InvestmentScreen() {
 
   const totalEarnings = activeInvestments.reduce((sum, inv) => {
     const daysElapsed = Math.floor((Date.now() - new Date(inv.startDate).getTime()) / (1000 * 60 * 60 * 24));
-    return sum + (inv.amount * (inv.dailyRate / 100) * Math.min(daysElapsed, 30));
+    return sum + (inv.amount * (inv.profitRate / 100) * Math.min(daysElapsed, 30));
   }, 0);
 
   const cardBg = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.85)';
   const borderColor = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)';
   const innerBg = isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)';
+
+  // Progress calculation for active investment
+  const getProgress = (inv: ActiveInvestment) => {
+    const start = new Date(inv.startDate).getTime();
+    const end = new Date(inv.endDate).getTime();
+    const now = Date.now();
+    const total = end - start;
+    const elapsed = now - start;
+    return Math.min(Math.max((elapsed / total) * 100, 0), 100);
+  };
 
   return (
     <div className="min-h-screen" style={{ background: isDark ? '#0F0F0F' : '#F5F5F5' }}>
@@ -333,14 +460,13 @@ export default function InvestmentScreen() {
                 </motion.div>
               ))}
 
-              {/* Info box */}
               <div className="rounded-2xl p-4" style={{ background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.15)' }}>
                 <div className="flex items-start gap-2">
                   <AlertCircle size={16} color="#10B981" className="mt-0.5 shrink-0" />
                   <div>
                     <p className="text-xs font-bold mb-1" style={{ color: '#10B981' }}>ملاحظة مهمة</p>
                     <p className="text-[10px] leading-relaxed" style={{ color: isDark ? '#AAA' : '#666' }}>
-                      الاستثمار في العملات الرقمية ينطوي على مخاطر. العوائد المذكورة تقديرية وليست مضمونة. يرجى الاستثمار بما يتوافق مع قدرتك المالية. يجب توثيق حسابك للاستثمار.
+                      الاستثمار في العملات الرقمية ينطوي على مخاطر. العوائد المذكورة تقديرية وليست مضمونة. يرجى الاستثمار بما يتوافق مع قدرتك المالية.
                     </p>
                   </div>
                 </div>
@@ -350,44 +476,95 @@ export default function InvestmentScreen() {
 
           {activeTab === 'active' && (
             <motion.div key="active" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
-              {activeInvestments.length > 0 ? (
+              {isLoading ? (
+                <div className="space-y-3">
+                  {[1, 2, 3].map(i => (
+                    <div key={i} className="rounded-2xl p-4 animate-pulse" style={{ background: cardBg, border: `1px solid ${borderColor}` }}>
+                      <div className="h-4 rounded w-1/2 mb-3" style={{ background: isDark ? '#222' : '#EEE' }} />
+                      <div className="h-3 rounded w-3/4 mb-2" style={{ background: isDark ? '#222' : '#EEE' }} />
+                      <div className="h-8 rounded w-full" style={{ background: isDark ? '#222' : '#EEE' }} />
+                    </div>
+                  ))}
+                </div>
+              ) : activeInvestments.length > 0 ? (
                 <div className="space-y-3">
                   {activeInvestments.map((inv) => {
-                    const daysElapsed = Math.floor((Date.now() - new Date(inv.startDate).getTime()) / (1000 * 60 * 60 * 24));
-                    const dailyEarning = inv.amount * (inv.dailyRate / 100);
-                    const totalEarning = dailyEarning * daysElapsed;
                     const plan = investmentPlans.find(p => p.id === inv.planId);
+                    const progress = getProgress(inv);
+                    const daysElapsed = Math.floor((Date.now() - new Date(inv.startDate).getTime()) / (1000 * 60 * 60 * 24));
+                    const dailyEarning = inv.amount * (inv.profitRate / 100);
+                    const totalEarning = dailyEarning * daysElapsed;
+                    const color = plan?.color || '#10B981';
+
                     return (
-                      <div key={inv.id} className="rounded-2xl p-4" style={{ background: cardBg, border: `1px solid ${borderColor}` }}>
-                        <div className="flex items-center justify-between mb-3">
-                          <div className="flex items-center gap-2">
-                            <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: `${plan?.color || '#10B981'}15` }}>
-                              <TrendingUp size={14} color={plan?.color || '#10B981'} />
+                      <motion.div key={inv.id}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="rounded-2xl overflow-hidden"
+                        style={{ background: `linear-gradient(145deg, ${color}15, ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.85)'})`, border: `1px solid ${color}30` }}>
+                        <div className="p-4">
+                          {/* Header with countdown */}
+                          <div className="flex items-center justify-between mb-3">
+                            <div className="flex items-center gap-2">
+                              <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: `${color}20` }}>
+                                <TrendingUp size={14} color={color} />
+                              </div>
+                              <div>
+                                <p className="text-xs font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>{inv.planName}</p>
+                                <div className="flex items-center gap-1.5">
+                                  <span className="text-[9px]" style={{ color: isDark ? '#666' : '#AAA' }}>منذ {daysElapsed} يوم</span>
+                                  <span className="w-1 h-1 rounded-full" style={{ background: color }} />
+                                  <span className="text-[9px] font-bold" style={{ color }}>{progress.toFixed(0)}%</span>
+                                </div>
+                              </div>
                             </div>
-                            <div>
-                              <p className="text-xs font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>{inv.planName}</p>
-                              <p className="text-[9px]" style={{ color: isDark ? '#666' : '#AAA' }}>منذ {daysElapsed} يوم</p>
+                            <div className="px-2 py-1 rounded-md" style={{ background: `${color}15` }}>
+                              <span className="text-[9px] font-bold" style={{ color }}>نشط</span>
                             </div>
                           </div>
-                          <div className="px-2 py-1 rounded-md" style={{ background: 'rgba(16,185,129,0.1)' }}>
-                            <span className="text-[9px] font-bold" style={{ color: '#10B981' }}>نشط</span>
+
+                          {/* Progress Bar */}
+                          <div className="w-full h-2 rounded-full overflow-hidden mb-3" style={{ background: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)' }}>
+                            <motion.div
+                              initial={{ width: 0 }}
+                              animate={{ width: `${progress}%` }}
+                              transition={{ duration: 1, ease: 'easeOut' }}
+                              className="h-full rounded-full"
+                              style={{ background: `linear-gradient(90deg, ${color}, ${color}CC)` }}
+                            />
+                          </div>
+
+                          {/* Stats Grid */}
+                          <div className="grid grid-cols-3 gap-2 mb-3">
+                            <div className="p-2 rounded-lg text-center" style={{ background: innerBg }}>
+                              <p className="text-[9px]" style={{ color: isDark ? '#666' : '#AAA' }}>المبلغ</p>
+                              <p className="text-[11px] font-bold" style={{ color: isDark ? '#CCC' : '#444' }}>${formatUsdtAmount(inv.amount)}</p>
+                            </div>
+                            <div className="p-2 rounded-lg text-center" style={{ background: innerBg }}>
+                              <p className="text-[9px]" style={{ color: isDark ? '#666' : '#AAA' }}>عائد يومي</p>
+                              <p className="text-[11px] font-bold" style={{ color }}>${formatUsdtAmount(dailyEarning)}</p>
+                            </div>
+                            <div className="p-2 rounded-lg text-center" style={{ background: innerBg }}>
+                              <p className="text-[9px]" style={{ color: isDark ? '#666' : '#AAA' }}>مكتسب</p>
+                              <p className="text-[11px] font-bold" style={{ color }}>${formatUsdtAmount(totalEarning)}</p>
+                            </div>
+                          </div>
+
+                          {/* Countdown Timer */}
+                          <div className="p-2 rounded-lg" style={{ background: `${color}10` }}>
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-1.5">
+                                <Timer size={12} color={color} />
+                                <span className="text-[9px] font-medium" style={{ color }}>الوقت المتبقي</span>
+                              </div>
+                              <CountdownTimer
+                                endDate={inv.endDate}
+                                onComplete={() => handleInvestmentComplete(inv.id)}
+                              />
+                            </div>
                           </div>
                         </div>
-                        <div className="grid grid-cols-3 gap-2">
-                          <div className="p-2 rounded-lg text-center" style={{ background: innerBg }}>
-                            <p className="text-[9px]" style={{ color: isDark ? '#666' : '#AAA' }}>المبلغ</p>
-                            <p className="text-[11px] font-bold" style={{ color: isDark ? '#CCC' : '#444' }}>${formatUsdtAmount(inv.amount)}</p>
-                          </div>
-                          <div className="p-2 rounded-lg text-center" style={{ background: innerBg }}>
-                            <p className="text-[9px]" style={{ color: isDark ? '#666' : '#AAA' }}>عائد يومي</p>
-                            <p className="text-[11px] font-bold" style={{ color: '#10B981' }}>${formatUsdtAmount(dailyEarning)}</p>
-                          </div>
-                          <div className="p-2 rounded-lg text-center" style={{ background: innerBg }}>
-                            <p className="text-[9px]" style={{ color: isDark ? '#666' : '#AAA' }}>مكتسب</p>
-                            <p className="text-[11px] font-bold" style={{ color: '#10B981' }}>${formatUsdtAmount(totalEarning)}</p>
-                          </div>
-                        </div>
-                      </div>
+                      </motion.div>
                     );
                   })}
                 </div>
@@ -425,7 +602,7 @@ export default function InvestmentScreen() {
                       <div className="text-left">
                         <span className="text-[9px] font-bold px-2 py-0.5 rounded-md"
                           style={{ background: inv.status === 'completed' ? 'rgba(16,185,129,0.1)' : 'rgba(245,158,11,0.1)', color: inv.status === 'completed' ? '#10B981' : '#F59E0B' }}>
-                          {inv.status === 'completed' ? 'مكتمل' : inv.status === 'withdrawn' ? 'مسحوب' : 'منتهي'}
+                          {inv.status === 'completed' ? 'مكتمل' : inv.status === 'cancelled' ? 'ملغي' : 'منتهي'}
                         </span>
                       </div>
                     </div>
@@ -445,7 +622,7 @@ export default function InvestmentScreen() {
         </AnimatePresence>
       </div>
 
-      {/* ═══ Investment Modal ═══ */}
+      {/* Investment Modal */}
       <AnimatePresence>
         {showInvestModal && selectedPlan && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
@@ -480,7 +657,6 @@ export default function InvestmentScreen() {
                       className="flex-1 bg-transparent outline-none text-xl font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }} />
                     <span className="text-sm font-bold" style={{ color: '#10B981' }}>USDT</span>
                   </div>
-                  {/* Quick amount buttons */}
                   <div className="flex gap-2 mt-2">
                     {[selectedPlan.minAmount, selectedPlan.minAmount * 5, selectedPlan.minAmount * 10, selectedPlan.maxAmount].map((amt, i) => (
                       <button key={i} onClick={() => setInvestAmount(amt.toString())}
@@ -492,7 +668,6 @@ export default function InvestmentScreen() {
                   </div>
                 </div>
 
-                {/* Estimated returns */}
                 <div className="p-3 rounded-xl space-y-2" style={{ background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.15)' }}>
                   <div className="flex items-center justify-between">
                     <span className="text-[11px]" style={{ color: isDark ? '#888' : '#999' }}>عائد يومي</span>
@@ -513,7 +688,6 @@ export default function InvestmentScreen() {
                   </div>
                 </div>
 
-                {/* Insufficient balance */}
                 {(parseFloat(investAmount) || 0) > usdtBalance && (
                   <div className="flex items-center gap-2 p-2.5 rounded-xl" style={{ background: 'rgba(230,0,0,0.1)', border: '1px solid rgba(230,0,0,0.2)' }}>
                     <Wallet size={14} color="#E60000" />
