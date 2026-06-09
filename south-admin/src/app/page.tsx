@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { onAuthStateChanged } from 'firebase/auth';
-import { ref, get } from 'firebase/database';
+import { ref, get, onValue } from 'firebase/database';
 import { auth, database } from '@/lib/firebase';
 import { useAdminStore } from '@/lib/store';
 import LoginScreen from '@/components/admin/login-screen';
@@ -14,6 +14,8 @@ import DepositPanel from '@/components/admin/deposit-panel';
 import WithdrawPanel from '@/components/admin/withdraw-panel';
 import KYCPanel from '@/components/admin/kyc-panel';
 import ProvidersPanel from '@/components/admin/providers-panel';
+import InstantRechargePanel from '@/components/admin/instant-recharge-panel';
+import PackagesPanel from '@/components/admin/packages-panel';
 import ExchangeRatesPanel from '@/components/admin/exchange-rates-panel';
 import GiftCodesPanel from '@/components/admin/gift-codes-panel';
 import PromoCodesPanel from '@/components/admin/promo-codes-panel';
@@ -36,6 +38,7 @@ import PushNotificationsPanel from '@/components/admin/push-notifications-panel'
 import CardColorsPanel from '@/components/admin/card-colors-panel';
 import { Menu, ShieldCheck } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { APP_ICON_BASE64 } from '@/lib/app-icon';
 
 const panelMap: Record<string, React.ComponentType> = {
   dashboard: Dashboard,
@@ -45,6 +48,8 @@ const panelMap: Record<string, React.ComponentType> = {
   withdraw: WithdrawPanel,
   kyc: KYCPanel,
   providers: ProvidersPanel,
+  'instant-recharge': InstantRechargePanel,
+  packages: PackagesPanel,
   'exchange-rates': ExchangeRatesPanel,
   'gift-codes': GiftCodesPanel,
   'promo-codes': PromoCodesPanel,
@@ -68,8 +73,9 @@ const panelMap: Record<string, React.ComponentType> = {
 };
 
 export default function AdminApp() {
-  const { isAuthenticated, adminUser, activePanel, setAdminUser, logout, setSidebarOpen, sidebarOpen } = useAdminStore();
+  const { isAuthenticated, adminUser, activePanel, setAdminUser, logout, setSidebarOpen } = useAdminStore();
   const [initializing, setInitializing] = useState(true);
+  const [newNotifications, setNewNotifications] = useState(0);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -107,17 +113,29 @@ export default function AdminApp() {
     return () => unsubscribe();
   }, []);
 
-  // Show loading while checking auth state
+  // Listen for admin notifications (order/deposit/withdraw)
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    const notifRef = ref(database, 'adminNotifications');
+    const unsub = onValue(notifRef, (snapshot) => {
+      const data = snapshot.val() || {};
+      const now = new Date();
+      const fiveMinAgo = new Date(now.getTime() - 5 * 60 * 1000);
+      let count = 0;
+      Object.values(data).forEach((n: any) => {
+        if (n.sentAt && new Date(n.sentAt) > fiveMinAgo) count++;
+      });
+      setNewNotifications(count);
+    });
+    return () => unsub();
+  }, [isAuthenticated]);
+
   if (initializing) {
     return (
       <div className="min-h-screen flex items-center justify-center admin-gradient">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="text-center"
-        >
-          <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-purple-600/20 border border-purple-500/30 flex items-center justify-center">
-            <ShieldCheck className="w-8 h-8 text-purple-400 animate-pulse" />
+        <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} className="text-center">
+          <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-purple-600/20 border border-purple-500/30 flex items-center justify-center overflow-hidden">
+            <img src={APP_ICON_BASE64} alt="" className="w-10 h-10 object-contain" />
           </div>
           <p className="text-purple-300/70 text-sm">جاري التحقق...</p>
         </motion.div>
@@ -125,21 +143,20 @@ export default function AdminApp() {
     );
   }
 
-  // Show login screen if not authenticated
   if (!isAuthenticated || !adminUser) {
     return <LoginScreen />;
   }
 
-  // Render the active panel
-  const ActivePanelComponent = panelMap[activePanel] || Dashboard;
+  // If admin tries to access owner-only panel, redirect to dashboard
+  const ownerOnlyPanels = ['card-colors', 'sections', 'visibility', 'api-settings', 'activity-log', 'backup'];
+  const effectivePanel = (adminUser.role !== 'owner' && ownerOnlyPanels.includes(activePanel)) ? 'dashboard' : activePanel;
+  const ActivePanelComponent = panelMap[effectivePanel] || Dashboard;
 
   return (
     <div className="min-h-screen bg-[#F5F5F5] dark:bg-[#0F0F0F]">
       <Sidebar />
 
-      {/* Main Content */}
       <div className="lg:mr-72 min-h-screen">
-        {/* Top Header Bar */}
         <header className="sticky top-0 z-30 bg-background/80 backdrop-blur-xl border-b border-border">
           <div className="flex items-center justify-between px-4 h-14">
             <div className="flex items-center gap-3">
@@ -156,17 +173,19 @@ export default function AdminApp() {
               </div>
             </div>
             <div className="flex items-center gap-2">
+              {newNotifications > 0 && (
+                <span className="text-xs bg-red-500 text-white px-2 py-0.5 rounded-full">{newNotifications} جديد</span>
+              )}
               <div className="w-2 h-2 rounded-full bg-green-500 pulse-dot" />
               <span className="text-xs text-muted-foreground">متصل</span>
             </div>
           </div>
         </header>
 
-        {/* Panel Content */}
         <main className="p-4 lg:p-6">
           <AnimatePresence mode="wait">
             <motion.div
-              key={activePanel}
+              key={effectivePanel}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}

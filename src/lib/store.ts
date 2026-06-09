@@ -200,9 +200,54 @@ export interface UserGiftCode {
 }
 
 export interface CardColor {
-  YER: { primary: string; gradient: string };
-  SAR: { primary: string; gradient: string };
-  USD: { primary: string; gradient: string };
+  YER: { primary: string; gradient: string; gradientStart?: string; gradientEnd?: string };
+  SAR: { primary: string; gradient: string; gradientStart?: string; gradientEnd?: string };
+  USD: { primary: string; gradient: string; gradientStart?: string; gradientEnd?: string };
+}
+
+export interface MaintenanceMode {
+  active: boolean;
+  message: string;
+  estimatedTime: string;
+}
+
+export interface ForceUpdate {
+  active: boolean;
+  minVersion: string;
+  updateUrl: string;
+  message: string;
+}
+
+export interface MoneyRequest {
+  id: string;
+  fromUid: string;
+  fromName: string;
+  toUid: string;
+  toName: string;
+  amount: number;
+  currency: 'YER' | 'SAR' | 'USD';
+  status: 'pending' | 'accepted' | 'rejected' | 'partial';
+  partialAmount?: number;
+  createdAt: string;
+}
+
+export interface InvestmentPlan {
+  id: string;
+  name: string;
+  type: string;
+  durationDays: number;
+  minAmount: number;
+  maxAmount: number;
+  currency: 'YER' | 'SAR' | 'USD';
+  profitRate: number;
+  isActive: boolean;
+}
+
+export interface SupportChatMessage {
+  sender: 'user' | 'admin';
+  text: string;
+  time: string;
+  senderName?: string;
 }
 
 interface AppState {
@@ -349,6 +394,32 @@ interface AppState {
   // Card colors
   cardColors: CardColor;
   setCardColors: (colors: CardColor) => void;
+
+  // Maintenance mode
+  maintenance: MaintenanceMode | null;
+  setMaintenance: (data: MaintenanceMode | null) => void;
+
+  // Force update
+  forceUpdate: ForceUpdate | null;
+  setForceUpdate: (data: ForceUpdate | null) => void;
+
+  // Money requests
+  moneyRequests: MoneyRequest[];
+  setMoneyRequests: (requests: MoneyRequest[]) => void;
+  addMoneyRequest: (request: MoneyRequest) => void;
+  updateMoneyRequest: (id: string, updates: Partial<MoneyRequest>) => void;
+
+  // Investment plans (from admin)
+  investmentPlans: InvestmentPlan[];
+  setInvestmentPlans: (plans: InvestmentPlan[]) => void;
+
+  // Biometric enabled
+  biometricEnabled: boolean;
+  setBiometricEnabled: (enabled: boolean) => void;
+
+  // Exchange rate API URL
+  exchangeRateApiUrl: string;
+  setExchangeRateApiUrl: (url: string) => void;
 }
 
 // Default service categories

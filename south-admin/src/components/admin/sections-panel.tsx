@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { ref, onValue, push, update, remove } from 'firebase/database';
+import { ref, onValue, push, update, remove, set } from 'firebase/database';
 import { database } from '@/lib/firebase';
 import { useAdminStore } from '@/lib/store';
 import { formatNumber, generateId } from '@/lib/utils';
@@ -12,13 +12,23 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { Plus, Trash2, Edit, Layers, ArrowUp, ArrowDown } from 'lucide-react';
+import { Plus, Trash2, Edit, Layers, ArrowUp, ArrowDown, RotateCcw, Save } from 'lucide-react';
 import { motion } from 'framer-motion';
+
+const defaultSections = [
+  { name: 'الاتصالات', iconKey: 'phone', order: 0, isVisible: true, categoryId: 'telecom' },
+  { name: 'الإنترنت', iconKey: 'wifi', order: 1, isVisible: true, categoryId: 'internet' },
+  { name: 'خدمات ترفيهية', iconKey: 'gamepad', order: 2, isVisible: true, categoryId: 'entertainment' },
+  { name: 'بطاقات رقمية', iconKey: 'credit-card', order: 3, isVisible: true, categoryId: 'cards' },
+  { name: 'الكهرباء والماء', iconKey: 'zap', order: 4, isVisible: true, categoryId: 'electricity' },
+  { name: 'خدمات حكومية', iconKey: 'landmark', order: 5, isVisible: true, categoryId: 'government' },
+  { name: 'الكريبتو', iconKey: 'bitcoin', order: 6, isVisible: true, categoryId: 'crypto' },
+  { name: 'استثمار الكريبتو', iconKey: 'trending-up', order: 7, isVisible: true, categoryId: 'investment' },
+];
 
 export default function SectionsPanel() {
   const { showToast } = useAdminStore();
   const [sections, setSections] = useState<any[]>([]);
-  const [subsections, setSubsections] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialog, setDialog] = useState(false);
   const [editing, setEditing] = useState<any>(null);
@@ -26,28 +36,40 @@ export default function SectionsPanel() {
   const [secIcon, setSecIcon] = useState('');
   const [secOrder, setSecOrder] = useState('0');
   const [secVisible, setSecVisible] = useState(true);
+  const [secCategoryId, setSecCategoryId] = useState('');
+  const [initialized, setInitialized] = useState(false);
 
   useEffect(() => {
     const secRef = ref(database, 'ownerSettings/sections');
-    const unsub1 = onValue(secRef, (snapshot) => {
+    const unsub = onValue(secRef, (snapshot) => {
       const data = snapshot.val() || {};
       const list = Object.entries(data).map(([id, val]: [string, any]) => ({ id, ...val }));
       list.sort((a, b) => (a.order || 0) - (b.order || 0));
       setSections(list);
-    });
-    const subRef = ref(database, 'ownerSettings/subsections');
-    const unsub2 = onValue(subRef, (snapshot) => {
-      const data = snapshot.val() || {};
-      setSubsections(Object.entries(data).map(([id, val]: [string, any]) => ({ id, ...val })));
+      if (Object.keys(data).length === 0 && !initialized) {
+        setInitialized(true);
+      }
       setLoading(false);
     });
-    return () => { unsub1(); unsub2(); };
-  }, []);
+    return () => unsub();
+  }, [initialized]);
+
+  const handleInitializeDefaults = async () => {
+    try {
+      const updates: Record<string, any> = {};
+      defaultSections.forEach((sec, i) => {
+        const key = `section_${i}`;
+        updates[key] = { ...sec, order: i };
+      });
+      await set(ref(database, 'ownerSettings/sections'), updates);
+      showToast('تم إنشاء الأقسام الافتراضية', 'success');
+    } catch (e) { showToast('حدث خطأ', 'error'); }
+  };
 
   const handleSave = async () => {
     if (!secName) return;
     try {
-      const data = { name: secName, icon: secIcon, order: parseInt(secOrder) || 0, isVisible: secVisible };
+      const data = { name: secName, icon: secIcon, order: parseInt(secOrder) || 0, isVisible: secVisible, categoryId: secCategoryId };
       if (editing) {
         await update(ref(database, `ownerSettings/sections/${editing.id}`), data);
         showToast('تم التحديث', 'success');
@@ -56,7 +78,7 @@ export default function SectionsPanel() {
         showToast('تم الإضافة', 'success');
       }
       setDialog(false);
-      setSecName(''); setSecIcon(''); setSecOrder('0'); setSecVisible(true); setEditing(null);
+      setSecName(''); setSecIcon(''); setSecOrder('0'); setSecVisible(true); setSecCategoryId(''); setEditing(null);
     } catch (e) { showToast('حدث خطأ', 'error'); }
   };
 
@@ -87,9 +109,33 @@ export default function SectionsPanel() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <div><h1 className="text-2xl font-bold">إدارة الأقسام</h1><p className="text-muted-foreground text-sm mt-1">{formatNumber(sections.length)} قسم</p></div>
-        <Button onClick={() => { setEditing(null); setSecName(''); setSecIcon(''); setSecOrder('0'); setSecVisible(true); setDialog(true); }} size="sm"><Plus className="w-4 h-4 ml-1" /> قسم جديد</Button>
+        <div>
+          <h1 className="text-2xl font-bold">إدارة الأقسام</h1>
+          <p className="text-muted-foreground text-sm mt-1">{formatNumber(sections.length)} قسم</p>
+        </div>
+        <div className="flex gap-2">
+          {sections.length === 0 && (
+            <Button variant="outline" size="sm" onClick={handleInitializeDefaults}>
+              <RotateCcw className="w-4 h-4 ml-1" /> إنشاء الأقسام الافتراضية
+            </Button>
+          )}
+          <Button size="sm" onClick={() => { setEditing(null); setSecName(''); setSecIcon(''); setSecOrder('0'); setSecVisible(true); setSecCategoryId(''); setDialog(true); }}>
+            <Plus className="w-4 h-4 ml-1" /> قسم جديد
+          </Button>
+        </div>
       </div>
+
+      {/* Default sections reference */}
+      <Card className="admin-card border-0 shadow-none">
+        <CardContent className="p-4">
+          <p className="text-sm font-medium mb-2">الأقسام الافتراضية للتطبيق:</p>
+          <div className="flex flex-wrap gap-2">
+            {defaultSections.map((sec, i) => (
+              <Badge key={i} variant="outline" className="text-xs">{sec.name}</Badge>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
 
       <div className="space-y-2">
         {sections.map((s, i) => (
@@ -104,19 +150,29 @@ export default function SectionsPanel() {
                   <div className="p-2 rounded-lg bg-purple-500/10"><Layers className="w-4 h-4 text-purple-500" /></div>
                   <div>
                     <p className="font-medium text-sm">{s.name}</p>
-                    <p className="text-xs text-muted-foreground">ترتيب: {s.order || 0}</p>
+                    <p className="text-xs text-muted-foreground">ترتيب: {s.order || i} {s.categoryId ? `- ${s.categoryId}` : ''}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
                   <Switch checked={s.isVisible !== false} onCheckedChange={() => handleToggle(s)} />
                   <Badge className={s.isVisible !== false ? 'bg-green-500/20 text-green-600' : 'bg-red-500/20 text-red-600'}>{s.isVisible !== false ? 'ظاهر' : 'مخفي'}</Badge>
-                  <Button variant="ghost" size="sm" onClick={() => { setEditing(s); setSecName(s.name); setSecIcon(s.icon || ''); setSecOrder(String(s.order || 0)); setSecVisible(s.isVisible !== false); setDialog(true); }}><Edit className="w-4 h-4" /></Button>
+                  <Button variant="ghost" size="sm" onClick={() => {
+                    setEditing(s); setSecName(s.name); setSecIcon(s.icon || '');
+                    setSecOrder(String(s.order || i)); setSecVisible(s.isVisible !== false);
+                    setSecCategoryId(s.categoryId || '');
+                    setDialog(true);
+                  }}><Edit className="w-4 h-4" /></Button>
                   <Button variant="ghost" size="sm" onClick={() => handleDelete(s.id)}><Trash2 className="w-4 h-4 text-red-500" /></Button>
                 </div>
               </CardContent>
             </Card>
           </motion.div>
         ))}
+        {sections.length === 0 && (
+          <div className="text-center py-8">
+            <p className="text-muted-foreground mb-4">لا توجد أقسام. اضغط على &quot;إنشاء الأقسام الافتراضية&quot; للبدء</p>
+          </div>
+        )}
       </div>
 
       <Dialog open={dialog} onOpenChange={setDialog}>
@@ -124,7 +180,8 @@ export default function SectionsPanel() {
           <DialogHeader><DialogTitle>{editing ? 'تعديل قسم' : 'إضافة قسم'}</DialogTitle></DialogHeader>
           <div className="space-y-4">
             <div><Label>الاسم</Label><Input value={secName} onChange={(e) => setSecName(e.target.value)} /></div>
-            <div><Label>الأيقونة (Base64 أو مفتاح)</Label><Input value={secIcon} onChange={(e) => setSecIcon(e.target.value)} /></div>
+            <div><Label>معرف التصنيف</Label><Input value={secCategoryId} onChange={(e) => setSecCategoryId(e.target.value)} placeholder="مثال: telecom" dir="ltr" /></div>
+            <div><Label>الأيقونة (مفتاح أو Base64)</Label><Input value={secIcon} onChange={(e) => setSecIcon(e.target.value)} /></div>
             <div><Label>الترتيب</Label><Input type="number" value={secOrder} onChange={(e) => setSecOrder(e.target.value)} dir="ltr" /></div>
             <div className="flex items-center gap-2"><Switch checked={secVisible} onCheckedChange={setSecVisible} /><Label>ظاهر</Label></div>
           </div>

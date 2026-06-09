@@ -1,3 +1,11 @@
+// Firebase Configuration for South Admin App
+// IMPORTANT: This admin app uses a DIFFERENT appId than the user app.
+// The admin app has its own Firebase App ID so it can be sold/distributed separately.
+// Both apps share the SAME Firebase Realtime Database for data, but authentication
+// is tracked separately via different appIds.
+// Admin appId: "1:501045825605:android:161bf71e15799e25d3932c"
+// User appId: (different - check user app config)
+
 import { initializeApp, getApps } from 'firebase/app';
 import { getAuth, initializeAuth, browserLocalPersistence, indexedDBLocalPersistence } from 'firebase/auth';
 import { getDatabase } from 'firebase/database';
@@ -10,6 +18,7 @@ const firebaseConfig = {
   projectId: "southern-portfolio",
   storageBucket: "southern-portfolio.firebasestorage.app",
   messagingSenderId: "501045825605",
+  // Admin-specific appId - different from user app so they are separate Firebase apps
   appId: "1:501045825605:android:161bf71e15799e25d3932c"
 };
 

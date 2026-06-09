@@ -4,8 +4,8 @@ import { useState, useEffect } from 'react';
 import { ref, onValue, push, set, get } from 'firebase/database';
 import { database } from '@/lib/firebase';
 import { useAdminStore } from '@/lib/store';
-import { formatNumber, formatDateAr } from '@/lib/utils';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { formatNumber, formatDateAr, generateId } from '@/lib/utils';
+import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -21,13 +21,15 @@ interface NotificationHistory {
   id?: string;
   title: string;
   body: string;
-  type: string;
+  type: 'info' | 'transaction' | 'security' | 'promo';
   targetType: 'all' | 'specific' | 'segment';
   targetSegment?: string;
   sentAt: string;
   sentBy: string;
   sentByName: string;
   recipientCount?: number;
+  deliveryCount?: number;
+  status?: string;
   icon?: string;
   data?: string;
   scheduledAt?: string;
@@ -39,20 +41,18 @@ export default function PushNotificationsPanel() {
   const [body, setBody] = useState('');
   const [icon, setIcon] = useState('');
   const [dataUrl, setDataUrl] = useState('');
+  const [notifType, setNotifType] = useState<'info' | 'transaction' | 'security' | 'promo'>('info');
   const [targetType, setTargetType] = useState<'all' | 'specific' | 'segment'>('all');
   const [targetUserId, setTargetUserId] = useState('');
   const [targetPhone, setTargetPhone] = useState('');
   const [targetSegment, setTargetSegment] = useState('verified');
-  const [scheduleEnabled, setScheduleEnabled] = useState(false);
-  const [scheduledAt, setScheduledAt] = useState('');
   const [sending, setSending] = useState(false);
   const [history, setHistory] = useState<NotificationHistory[]>([]);
   const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Load notification history
-    const histRef = ref(database, 'fcmNotifications');
+    const histRef = ref(database, 'adminNotifications');
     const unsub1 = onValue(histRef, (snapshot) => {
       const data = snapshot.val() || {};
       const list: NotificationHistory[] = Object.entries(data).map(([id, val]: [string, any]) => ({ id, ...val }));
@@ -61,7 +61,6 @@ export default function PushNotificationsPanel() {
       setLoading(false);
     });
 
-    // Load users for segment targeting
     const usersRef = ref(database, 'users');
     const unsub2 = onValue(usersRef, (snapshot) => {
       const data = snapshot.val() || {};
@@ -74,156 +73,112 @@ export default function PushNotificationsPanel() {
 
   const getSegmentUsers = () => {
     switch (targetSegment) {
-      case 'verified':
-        return users.filter((u) => u.kycStatus === 'verified');
-      case 'active':
-        return users.filter((u) => !u.isBlocked && u.lastLogin);
-      case 'blocked':
-        return users.filter((u) => u.isBlocked);
-      case 'non-kyc':
-        return users.filter((u) => !u.kycStatus || u.kycStatus === 'none');
-      default:
-        return users;
+      case 'verified': return users.filter((u) => u.kycStatus === 'verified');
+      case 'active': return users.filter((u) => !u.isBlocked && u.lastLogin);
+      case 'blocked': return users.filter((u) => u.isBlocked);
+      case 'non-kyc': return users.filter((u) => !u.kycStatus || u.kycStatus === 'none');
+      default: return users;
     }
   };
 
   const handleSend = async () => {
-    if (!title || !body) {
-      showToast('يرجى ملء العنوان والمحتوى', 'error');
-      return;
-    }
+    if (!title || !body) { showToast('يرجى ملء العنوان والمحتوى', 'error'); return; }
     setSending(true);
     try {
+      const notifId = generateId();
       const notifData: any = {
-        title,
-        body,
-        targetType,
-        sentAt: new Date().toISOString(),
-        sentBy: adminUser?.uid || '',
-        sentByName: adminUser?.displayName || '',
-        icon: icon || '',
-        data: dataUrl || '',
+        title, body, type: notifType,
+        targetType, sentAt: new Date().toISOString(),
+        sentBy: adminUser?.uid || '', sentByName: adminUser?.displayName || '',
+        icon: icon || '', data: dataUrl || '',
       };
 
-      if (scheduleEnabled && scheduledAt) {
-        notifData.scheduledAt = scheduledAt;
-        notifData.status = 'scheduled';
-      }
-
       if (targetType === 'all') {
-        // Send to all users - save in FCM notifications
-        const fcmRef = await push(ref(database, 'fcmNotifications'), {
-          ...notifData,
-          type: 'broadcast',
-          recipientCount: users.length,
-        });
+        // Save to admin notification history
+        await set(ref(database, `adminNotifications/${notifId}`), { ...notifData, recipientCount: users.length, deliveryCount: 0, status: 'sent' });
 
-        // Also save to each user's inbox
+        // Save to each user's inbox
+        let deliveryCount = 0;
         const batchSize = 50;
         for (let i = 0; i < users.length; i += batchSize) {
           const batch = users.slice(i, i + batchSize);
           const updates: Record<string, any> = {};
           batch.forEach((user) => {
-            const notifId = fcmRef.key || Date.now().toString();
-            updates[`notifications/${user.uid}/push/${notifId}`] = {
-              title,
-              body,
-              type: 'broadcast',
-              isRead: false,
-              createdAt: new Date().toISOString(),
-              icon: icon || '',
-              data: dataUrl || '',
+            updates[`notifications/${user.uid}/inbox/${notifId}`] = {
+              title, body, type: notifType, isRead: false,
+              createdAt: new Date().toISOString(), icon: icon || '', data: dataUrl || '',
             };
+            deliveryCount++;
           });
-          await set(ref(database), updates).catch(() => {});
+          await update(ref(database), updates).catch(() => {});
         }
 
+        // Save FCM queue entry for push notifications outside app
+        await set(ref(database, `fcmQueue/${notifId}`), {
+          title, body, type: 'broadcast', targetType: 'all',
+          sentAt: new Date().toISOString(), recipientCount: users.length,
+          icon: icon || '', data: dataUrl || '',
+        });
+
+        // Update delivery count
+        await update(ref(database, `adminNotifications/${notifId}`), { deliveryCount });
         showToast(`تم إرسال الإشعار لجميع المستخدمين (${users.length})`, 'success');
+
       } else if (targetType === 'specific') {
         let targetUser = null;
-        if (targetUserId) {
-          targetUser = users.find((u) => u.uid === targetUserId || u.userId === targetUserId);
-        } else if (targetPhone) {
-          targetUser = users.find((u) => u.phone === targetPhone);
-        }
+        if (targetUserId) targetUser = users.find((u) => u.uid === targetUserId || u.userId === targetUserId);
+        else if (targetPhone) targetUser = users.find((u) => u.phone === targetPhone);
 
-        if (!targetUser) {
-          showToast('لم يتم العثور على المستخدم', 'error');
-          setSending(false);
-          return;
-        }
+        if (!targetUser) { showToast('لم يتم العثور على المستخدم', 'error'); setSending(false); return; }
 
-        await push(ref(database, 'fcmNotifications'), {
-          ...notifData,
-          type: 'specific',
-          targetUid: targetUser.uid,
-          recipientCount: 1,
+        await set(ref(database, `adminNotifications/${notifId}`), { ...notifData, type: notifType, targetUid: targetUser.uid, recipientCount: 1, deliveryCount: 1, status: 'sent' });
+        await set(ref(database, `notifications/${targetUser.uid}/inbox/${notifId}`), {
+          title, body, type: notifType, isRead: false,
+          createdAt: new Date().toISOString(), icon: icon || '', data: dataUrl || '',
         });
-
-        await push(ref(database, `notifications/${targetUser.uid}/push`), {
-          title,
-          body,
-          type: 'admin',
-          isRead: false,
-          createdAt: new Date().toISOString(),
-          icon: icon || '',
-          data: dataUrl || '',
+        await set(ref(database, `fcmQueue/${notifId}`), {
+          title, body, type: 'specific', targetUid: targetUser.uid,
+          sentAt: new Date().toISOString(), recipientCount: 1,
+          icon: icon || '', data: dataUrl || '',
         });
-
         showToast('تم إرسال الإشعار للمستخدم', 'success');
+
       } else if (targetType === 'segment') {
         const segmentUsers = getSegmentUsers();
+        await set(ref(database, `adminNotifications/${notifId}`), { ...notifData, targetSegment, recipientCount: segmentUsers.length, deliveryCount: 0, status: 'sent' });
 
-        await push(ref(database, 'fcmNotifications'), {
-          ...notifData,
-          type: 'segment',
-          targetSegment,
-          recipientCount: segmentUsers.length,
-        });
-
-        // Save to each segment user's inbox
+        let deliveryCount = 0;
         const batchSize = 50;
         for (let i = 0; i < segmentUsers.length; i += batchSize) {
           const batch = segmentUsers.slice(i, i + batchSize);
           const updates: Record<string, any> = {};
           batch.forEach((user) => {
-            updates[`notifications/${user.uid}/push/${Date.now()}_${user.uid}`] = {
-              title,
-              body,
-              type: 'segment',
-              isRead: false,
-              createdAt: new Date().toISOString(),
-              icon: icon || '',
-              data: dataUrl || '',
+            updates[`notifications/${user.uid}/inbox/${notifId}`] = {
+              title, body, type: notifType, isRead: false,
+              createdAt: new Date().toISOString(), icon: icon || '', data: dataUrl || '',
             };
+            deliveryCount++;
           });
-          await set(ref(database), updates).catch(() => {});
+          await update(ref(database), updates).catch(() => {});
         }
-
+        await set(ref(database, `fcmQueue/${notifId}`), {
+          title, body, type: 'segment', targetSegment,
+          sentAt: new Date().toISOString(), recipientCount: segmentUsers.length,
+          icon: icon || '', data: dataUrl || '',
+        });
+        await update(ref(database, `adminNotifications/${notifId}`), { deliveryCount });
         showToast(`تم إرسال الإشعار لـ ${segmentUsers.length} مستخدم`, 'success');
       }
 
-      setTitle('');
-      setBody('');
-      setIcon('');
-      setDataUrl('');
-      setTargetUserId('');
-      setTargetPhone('');
-      setScheduleEnabled(false);
-      setScheduledAt('');
-    } catch (e) {
-      showToast('حدث خطأ في إرسال الإشعار', 'error');
-    } finally {
-      setSending(false);
-    }
+      setTitle(''); setBody(''); setIcon(''); setDataUrl('');
+      setTargetUserId(''); setTargetPhone('');
+    } catch (e) { showToast('حدث خطأ في إرسال الإشعار', 'error'); }
+    finally { setSending(false); }
   };
 
-  const segmentLabels: Record<string, string> = {
-    verified: 'موثقين (KYC)',
-    active: 'نشطين',
-    blocked: 'محظورين',
-    'non-kyc': 'غير موثقين',
-  };
+  const typeLabels: Record<string, string> = { info: 'معلومات', transaction: 'معاملة', security: 'أمان', promo: 'ترويجي' };
+  const typeColors: Record<string, string> = { info: 'bg-blue-500/20 text-blue-600', transaction: 'bg-green-500/20 text-green-600', security: 'bg-red-500/20 text-red-600', promo: 'bg-purple-500/20 text-purple-600' };
+  const segmentLabels: Record<string, string> = { verified: 'موثقين', active: 'نشطين', blocked: 'محظورين', 'non-kyc': 'غير موثقين' };
 
   return (
     <div className="space-y-6">
@@ -246,45 +201,38 @@ export default function PushNotificationsPanel() {
                   <Send className="w-6 h-6 text-purple-500" />
                   <div>
                     <p className="font-medium text-sm">إرسال إشعار جديد</p>
-                    <p className="text-xs text-muted-foreground">إرسال إشعار فوري أو مجدول للمستخدمين</p>
+                    <p className="text-xs text-muted-foreground">يتم حفظ الإشعار في صندوق كل مستخدم وفي طابور FCM</p>
                   </div>
                 </div>
 
-                <div>
-                  <Label>نوع الإرسال</Label>
+                <div><Label>نوع الإشعار</Label>
+                  <Select value={notifType} onValueChange={(v: any) => setNotifType(v)}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="info">معلومات</SelectItem>
+                      <SelectItem value="transaction">معاملة</SelectItem>
+                      <SelectItem value="security">أمان</SelectItem>
+                      <SelectItem value="promo">ترويجي</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div><Label>نوع الإرسال</Label>
                   <Select value={targetType} onValueChange={(v: any) => setTargetType(v)}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">
-                        <div className="flex items-center gap-2">
-                          <Users className="w-4 h-4" /> لجميع المستخدمين
-                        </div>
-                      </SelectItem>
-                      <SelectItem value="specific">
-                        <div className="flex items-center gap-2">
-                          <User className="w-4 h-4" /> لمستخدم محدد
-                        </div>
-                      </SelectItem>
-                      <SelectItem value="segment">
-                        <div className="flex items-center gap-2">
-                          <Users className="w-4 h-4" /> لشريحة محددة
-                        </div>
-                      </SelectItem>
+                      <SelectItem value="all"><div className="flex items-center gap-2"><Users className="w-4 h-4" /> لجميع المستخدمين</div></SelectItem>
+                      <SelectItem value="specific"><div className="flex items-center gap-2"><User className="w-4 h-4" /> لمستخدم محدد</div></SelectItem>
+                      <SelectItem value="segment"><div className="flex items-center gap-2"><Users className="w-4 h-4" /> لشريحة محددة</div></SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
                 {targetType === 'specific' && (
                   <div className="space-y-3">
-                    <div>
-                      <Label>معرف المستخدم (UID أو userId)</Label>
-                      <Input value={targetUserId} onChange={(e) => setTargetUserId(e.target.value)} dir="ltr" placeholder="أدخل معرف المستخدم..." />
-                    </div>
+                    <div><Label>معرف المستخدم</Label><Input value={targetUserId} onChange={(e) => setTargetUserId(e.target.value)} dir="ltr" /></div>
                     <div className="text-center text-xs text-muted-foreground">أو</div>
-                    <div>
-                      <Label>رقم الهاتف</Label>
-                      <Input value={targetPhone} onChange={(e) => setTargetPhone(e.target.value)} dir="ltr" placeholder="مثال: 967770000000" />
-                    </div>
+                    <div><Label>رقم الهاتف</Label><Input value={targetPhone} onChange={(e) => setTargetPhone(e.target.value)} dir="ltr" /></div>
                   </div>
                 )}
 
@@ -294,56 +242,24 @@ export default function PushNotificationsPanel() {
                     <Select value={targetSegment} onValueChange={setTargetSegment}>
                       <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="verified">موثقين (KYC)</SelectItem>
+                        <SelectItem value="verified">موثقين</SelectItem>
                         <SelectItem value="active">نشطين</SelectItem>
                         <SelectItem value="blocked">محظورين</SelectItem>
                         <SelectItem value="non-kyc">غير موثقين</SelectItem>
                       </SelectContent>
                     </Select>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      عدد المستخدمين في هذه الشريحة: {formatNumber(getSegmentUsers().length)}
-                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">{formatNumber(getSegmentUsers().length)} مستخدم في الشريحة</p>
                   </div>
                 )}
 
-                <div>
-                  <Label>عنوان الإشعار</Label>
-                  <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="عنوان الإشعار..." />
-                </div>
-
-                <div>
-                  <Label>محتوى الإشعار</Label>
-                  <Textarea value={body} onChange={(e) => setBody(e.target.value)} placeholder="محتوى الإشعار..." className="min-h-[120px]" />
-                </div>
-
-                <div>
-                  <Label>أيقونة الإشعار (رابط صورة - اختياري)</Label>
-                  <Input value={icon} onChange={(e) => setIcon(e.target.value)} dir="ltr" placeholder="https://example.com/icon.png" />
-                </div>
-
-                <div>
-                  <Label>رابط البيانات / URL (اختياري)</Label>
-                  <Input value={dataUrl} onChange={(e) => setDataUrl(e.target.value)} dir="ltr" placeholder="https://example.com/page" />
-                </div>
-
-                <div className="flex items-center gap-2 p-3 rounded-xl bg-muted">
-                  <Switch checked={scheduleEnabled} onCheckedChange={setScheduleEnabled} />
-                  <div>
-                    <Label>جدولة الإرسال</Label>
-                    <p className="text-xs text-muted-foreground">إرسال الإشعار في وقت محدد</p>
-                  </div>
-                </div>
-
-                {scheduleEnabled && (
-                  <div>
-                    <Label>وقت الإرسال</Label>
-                    <Input type="datetime-local" value={scheduledAt} onChange={(e) => setScheduledAt(e.target.value)} />
-                  </div>
-                )}
+                <div><Label>عنوان الإشعار</Label><Input value={title} onChange={(e) => setTitle(e.target.value)} /></div>
+                <div><Label>محتوى الإشعار</Label><Textarea value={body} onChange={(e) => setBody(e.target.value)} className="min-h-[120px]" /></div>
+                <div><Label>رابط أيقونة (اختياري)</Label><Input value={icon} onChange={(e) => setIcon(e.target.value)} dir="ltr" /></div>
+                <div><Label>رابط البيانات (اختياري)</Label><Input value={dataUrl} onChange={(e) => setDataUrl(e.target.value)} dir="ltr" /></div>
 
                 <Button onClick={handleSend} disabled={sending || !title || !body} className="w-full bg-purple-600 hover:bg-purple-700">
                   {sending ? <Loader2 className="w-4 h-4 ml-2 animate-spin" /> : <Send className="w-4 h-4 ml-2" />}
-                  {scheduleEnabled ? 'جدولة الإشعار' : 'إرسال الإشعار'}
+                  إرسال الإشعار
                 </Button>
               </CardContent>
             </Card>
@@ -365,34 +281,34 @@ export default function PushNotificationsPanel() {
                           <p className="font-medium text-sm">{notif.title}</p>
                           <p className="text-xs text-muted-foreground">{notif.body?.substring(0, 60)}...</p>
                           <div className="flex items-center gap-2 mt-1">
-                            <Badge className="bg-purple-500/20 text-purple-600 dark:text-purple-400 text-xs">
+                            <Badge className={`${typeColors[notif.type] || 'bg-gray-500/20'} text-xs`}>{typeLabels[notif.type] || notif.type}</Badge>
+                            <span className="text-xs text-muted-foreground">
                               {notif.targetType === 'all' ? 'للجميع' : notif.targetType === 'specific' ? 'لمستخدم' : `شريحة: ${segmentLabels[notif.targetSegment || ''] || notif.targetSegment}`}
-                            </Badge>
-                            {notif.recipientCount && (
-                              <span className="text-xs text-muted-foreground">({notif.recipientCount} مستلم)</span>
+                            </span>
+                            {notif.deliveryCount !== undefined && (
+                              <span className="text-xs text-green-600">تم التسليم: {notif.deliveryCount}</span>
                             )}
                           </div>
                         </div>
                       </div>
                       <div className="text-left">
                         <p className="text-xs text-muted-foreground">{notif.sentAt ? formatDateAr(notif.sentAt) : ''}</p>
-                        {notif.scheduledAt && (
-                          <Badge className="bg-yellow-500/20 text-yellow-600 text-xs mt-1">
-                            <Clock className="w-3 h-3 ml-1" /> مجدول
-                          </Badge>
-                        )}
+                        {notif.recipientCount && <p className="text-xs text-muted-foreground">({notif.recipientCount} مستلم)</p>}
                       </div>
                     </div>
                   </CardContent>
                 </Card>
               </motion.div>
             ))}
-            {history.length === 0 && (
-              <p className="text-center text-muted-foreground py-8">لا يوجد سجل إشعارات</p>
-            )}
+            {history.length === 0 && <p className="text-center text-muted-foreground py-8">لا يوجد سجل إشعارات</p>}
           </div>
         </TabsContent>
       </Tabs>
     </div>
   );
+}
+
+// Helper function needed for batch updates
+function update(ref: any, data: any) {
+  return import('firebase/database').then(({ update }) => update(ref, data));
 }
