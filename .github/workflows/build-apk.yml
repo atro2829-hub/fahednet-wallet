@@ -36,6 +36,14 @@ jobs:
       - name: Install dependencies
         run: npm ci --legacy-peer-deps
 
+      - name: Remove API routes (incompatible with static export)
+        run: |
+          rm -rf src/app/api/admin src/app/api/auth src/app/api/notifications \
+            src/app/api/products src/app/api/seed src/app/api/seed-banners \
+            src/app/api/send-push src/app/api/transactions src/app/api/transfer \
+            src/app/api/user src/app/api/__tests__ src/app/api/route.ts \
+            src/app/api/health/route.ts || true
+
       - name: Build Next.js static export
         run: npx next build
         env:
