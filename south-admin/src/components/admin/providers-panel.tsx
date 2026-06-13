@@ -19,13 +19,11 @@ import { Search, Plus, Edit, Trash2, Server, Upload, FileJson, CheckCircle, XCir
 import { motion } from 'framer-motion';
 
 const categoryOptions = [
-  { value: 'telecom', label: 'الاتصالات' },
-  { value: 'entertainment', label: 'خدمات ترفيهية' },
-  { value: 'cards', label: 'بطاقات رقمية' },
-  { value: 'streaming', label: 'منصات البث' },
-  { value: 'crypto', label: 'الكريبتو' },
-  { value: 'investment', label: 'استثمار الكريبتو' },
-  { value: 'service-providers', label: 'مزودين الخدمات' },
+  { value: 'telecom', label: 'الاتصالات والشحن' },
+  { value: 'entertainment', label: 'الخدمات الترفيهية' },
+  { value: 'games', label: 'الألعاب' },
+  { value: 'gift-cards', label: 'بطاقات الهدايا' },
+  { value: 'digital-wallets', label: 'المحافظ الرقمية' },
 ];
 
 // Sub-category options per category
@@ -36,6 +34,12 @@ const subCategoryOptions: Record<string, { value: string; label: string }[]> = {
     { value: 'telecom-offers', label: 'عروض الاتصالات' },
   ],
   entertainment: [
+    { value: 'video-streaming', label: 'بث الفيديو' },
+    { value: 'music-streaming', label: 'بث الموسيقى' },
+    { value: 'social-media', label: 'وسائل التواصل' },
+    { value: 'other-entertainment', label: 'أخرى ترفيهية' },
+  ],
+  games: [
     { value: 'shooting-games', label: 'ألعاب إطلاق النار' },
     { value: 'strategy-games', label: 'ألعاب الاستراتيجية' },
     { value: 'adventure-games', label: 'ألعاب المغامرات' },
@@ -46,14 +50,16 @@ const subCategoryOptions: Record<string, { value: string; label: string }[]> = {
     { value: 'gaming-platforms', label: 'منصات الألعاب' },
     { value: 'gaming-cards', label: 'بطاقات الألعاب' },
   ],
-  cards: [
+  'gift-cards': [
     { value: 'store-cards', label: 'بطاقات المتاجر' },
     { value: 'payment-cards', label: 'بطاقات الدفع' },
+    { value: 'gaming-cards', label: 'بطاقات الألعاب' },
     { value: 'communication-cards', label: 'بطاقات التواصل' },
   ],
-  streaming: [
-    { value: 'video-streaming', label: 'بث الفيديو' },
-    { value: 'music-streaming', label: 'بث الموسيقى' },
+  'digital-wallets': [
+    { value: 'mobile-wallets', label: 'محافظ الجوال' },
+    { value: 'crypto-wallets', label: 'محافظ العملات الرقمية' },
+    { value: 'bank-transfer', label: 'تحويل بنكي' },
   ],
 };
 
@@ -61,10 +67,9 @@ const subCategoryOptions: Record<string, { value: string; label: string }[]> = {
 const providerTypeOptions = [
   { value: 'telecom', label: 'اتصالات' },
   { value: 'entertainment', label: 'ترفيهية' },
-  { value: 'cards', label: 'بطاقات' },
-  { value: 'streaming', label: 'بث' },
-  { value: 'crypto', label: 'كريبتو' },
-  { value: 'providers', label: 'مزودين' },
+  { value: 'games', label: 'ألعاب' },
+  { value: 'gift-cards', label: 'بطاقات هدايا' },
+  { value: 'digital-wallets', label: 'محافظ رقمية' },
 ];
 
 export default function ProvidersPanel() {

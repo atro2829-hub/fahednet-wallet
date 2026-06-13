@@ -35,6 +35,14 @@ interface TelecomProvider {
   categoryId: string;
 }
 
+// Built-in Yemen network options (always available as fallback)
+const YEMEN_NETWORKS = [
+  { id: 'yemen-mobile', name: 'يمن موبايل', color: '#C41E3A' },
+  { id: 'yo', name: 'يو', color: '#FF6B00' },
+  { id: 'sabafon', name: 'سبأفون', color: '#2563EB' },
+  { id: 'y', name: 'واي', color: '#059669' },
+];
+
 const DEFAULT_PREFIXES: Omit<NetworkPrefix, 'id'>[] = [
   { prefix: '77', networkId: 'yemen-mobile', networkName: 'يمن موبايل', color: '#C41E3A', icon: '', isActive: true, order: 0 },
   { prefix: '78', networkId: 'yemen-mobile', networkName: 'يمن موبايل', color: '#C41E3A', icon: '', isActive: true, order: 1 },
@@ -120,9 +128,37 @@ export default function NetworkPrefixesPanel() {
     reader.readAsDataURL(file);
   };
 
+  // Build a combined network list: built-in Yemen networks + Firebase providers
+  const allNetworks = (() => {
+    const map = new Map<string, { id: string; name: string; color: string }>();
+    // Add built-in Yemen networks first
+    YEMEN_NETWORKS.forEach((n) => {
+      map.set(n.id, n);
+    });
+    // Add Firebase providers (may override built-in with same id)
+    providers.forEach((p) => {
+      map.set(p.id, { id: p.id, name: p.name, color: p.color || '#6C3CE1' });
+    });
+    return Array.from(map.values());
+  })();
+
+  const handleNetworkSelect = (networkId: string) => {
+    setFormNetworkId(networkId);
+    // Find from combined network list
+    const network = allNetworks.find((n) => n.id === networkId);
+    if (network) {
+      setFormNetworkName(network.name);
+      setFormColor(network.color);
+    }
+  };
+
   const handleSave = async () => {
-    if (!formPrefix || !formNetworkId) {
-      showToast('يرجى ملء الحقول المطلوبة', 'error');
+    if (!formPrefix) {
+      showToast('يرجى إدخال البادئة', 'error');
+      return;
+    }
+    if (!formNetworkId) {
+      showToast('يرجى اختيار أو إدخال الشبكة', 'error');
       return;
     }
     if (formPrefix.length < 2 || formPrefix.length > 3) {
@@ -149,8 +185,8 @@ export default function NetworkPrefixesPanel() {
         await update(ref(database), updates);
         showToast('تم تحديث البادئة', 'success');
       } else {
-        const newRef = push(ref(database, 'adminSettings/networkPrefixes'));
-        const newId = newRef.key!;
+        // Use a clean key based on network and prefix
+        const newId = `${formNetworkId}-${formPrefix}`;
         const updates: Record<string, any> = {
           [`adminSettings/networkPrefixes/${newId}`]: { ...data, id: newId },
           [`adminSettings/visibility/networkPrefixes/${newId}`]: formIsActive,
@@ -217,7 +253,7 @@ export default function NetworkPrefixesPanel() {
     try {
       const updates: Record<string, any> = {};
       DEFAULT_PREFIXES.forEach((def) => {
-        const newId = generateId();
+        const newId = `${def.networkId}-${def.prefix}`;
         updates[`adminSettings/networkPrefixes/${newId}`] = { ...def, id: newId };
         updates[`adminSettings/visibility/networkPrefixes/${newId}`] = def.isActive;
       });
@@ -225,16 +261,6 @@ export default function NetworkPrefixesPanel() {
       showToast('تم تهيئة البادئات الافتراضية', 'success');
     } catch (e) {
       showToast('حدث خطأ أثناء التهيئة', 'error');
-    }
-  };
-
-  const handleNetworkSelect = (networkId: string) => {
-    setFormNetworkId(networkId);
-    const provider = providers.find((p) => p.id === networkId);
-    if (provider) {
-      setFormNetworkName(provider.name);
-      if (provider.color) setFormColor(provider.color);
-      if (provider.icon) setFormIcon(provider.icon);
     }
   };
 
@@ -265,11 +291,9 @@ export default function NetworkPrefixesPanel() {
           <p className="text-muted-foreground text-sm mt-1">ربط بادئات أرقام الهاتف بشبكات الاتصالات</p>
         </div>
         <div className="flex gap-2">
-          {prefixes.length === 0 && (
-            <Button variant="outline" size="sm" onClick={handleInitializeDefaults}>
-              <RotateCcw className="w-4 h-4 ml-1" /> تهيئة الافتراضيات
-            </Button>
-          )}
+          <Button variant="outline" size="sm" onClick={handleInitializeDefaults}>
+            <RotateCcw className="w-4 h-4 ml-1" /> تهيئة الافتراضيات
+          </Button>
           <Button variant="outline" size="sm" onClick={() => handleBulkToggle(true)}>
             تفعيل الكل
           </Button>
@@ -450,22 +474,31 @@ export default function NetworkPrefixesPanel() {
                   <SelectValue placeholder="اختر الشبكة" />
                 </SelectTrigger>
                 <SelectContent>
-                  {providers.map((p) => (
-                    <SelectItem key={p.id} value={p.id}>
+                  {allNetworks.map((n) => (
+                    <SelectItem key={n.id} value={n.id}>
                       <div className="flex items-center gap-2">
-                        {p.icon && <img src={p.icon} className="w-5 h-5 rounded object-cover" alt="" />}
-                        <span>{p.name}</span>
+                        <div className="w-3 h-3 rounded-full" style={{ backgroundColor: n.color }} />
+                        <span>{n.name}</span>
                       </div>
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
-              {providers.length === 0 && (
-                <p className="text-xs text-muted-foreground mt-1">لا يوجد مزودي اتصالات. أضف مزودين بتصنيف "الاتصالات" أولاً.</p>
-              )}
             </div>
 
-            {/* Network name (manual override) */}
+            {/* Manual network ID (if not in list) */}
+            <div>
+              <Label>معرف الشبكة (networkId)</Label>
+              <Input
+                value={formNetworkId}
+                onChange={(e) => setFormNetworkId(e.target.value)}
+                placeholder="مثال: yemen-mobile"
+                dir="ltr"
+              />
+              <p className="text-xs text-muted-foreground mt-1">يمكنك اختيار من القائمة أعلاه أو إدخال معرف يدوياً</p>
+            </div>
+
+            {/* Network name */}
             <div>
               <Label>اسم الشبكة</Label>
               <Input

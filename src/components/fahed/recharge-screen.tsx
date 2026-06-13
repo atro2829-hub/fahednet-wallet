@@ -438,8 +438,7 @@ export default function RechargeScreen() {
         <div className="flex items-center gap-3">
           <button
             onClick={() => {
-              const prev = useAppStore.getState().previousScreen;
-              useAppStore.getState().setActiveScreen(prev || '');
+              useAppStore.getState().setActiveScreen('main');
             }}
             className="w-10 h-10 rounded-xl flex items-center justify-center active:scale-95 transition-transform"
             style={{ background: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)' }}
@@ -490,7 +489,16 @@ export default function RechargeScreen() {
                       : 'none',
                   }}
                 >
-                  <img src={serviceIcons[company.id]} alt={company.name} className="w-10 h-10 object-contain" />
+                  {serviceIcons[company.id] ? (
+                    <img src={serviceIcons[company.id]} alt={company.name} className="w-10 h-10 object-contain" />
+                  ) : (
+                    <div
+                      className="w-10 h-10 rounded-xl flex items-center justify-center"
+                      style={{ backgroundColor: company.color || '#8B1E3A' }}
+                    >
+                      <span className="text-white text-xs font-bold">{company.letter}</span>
+                    </div>
+                  )}
                 </div>
                 <span
                   className="text-[10px] font-bold transition-all"
@@ -557,7 +565,13 @@ export default function RechargeScreen() {
                   className="flex items-center gap-1 px-2 py-1 rounded-lg shrink-0"
                   style={{ background: selectedCompany.color + '15' }}
                 >
-                  <img src={serviceIcons[selectedCompany.id]} alt="" className="w-4 h-4 object-contain" />
+                  {serviceIcons[selectedCompany.id] ? (
+                    <img src={serviceIcons[selectedCompany.id]} alt="" className="w-4 h-4 object-contain" />
+                  ) : (
+                    <div className="w-4 h-4 rounded flex items-center justify-center" style={{ backgroundColor: selectedCompany.color }}>
+                      <span className="text-white text-[6px] font-bold">{selectedCompany.letter}</span>
+                    </div>
+                  )}
                   <span className="text-[9px] font-bold" style={{ color: selectedCompany.color }}>
                     {selectedCompany.name}
                   </span>

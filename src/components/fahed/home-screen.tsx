@@ -79,16 +79,14 @@ function hexToRgb(hex: string): string {
   return result ? `${parseInt(result[1], 16)},${parseInt(result[2], 16)},${parseInt(result[3], 16)}` : '255,255,255';
 }
 
-// Services with custom SVG icons - each maps to a category-detail screen
-// Now dynamically loaded from Firebase categories
+// Services with custom SVG icons - each maps to its own category screen
+// These 5 categories are the ONLY ones kept (per user request)
 const homeServices = [
-  { id: 'telecom', label: 'الاتصالات والشحن', iconKey: 'recharge' },
-  { id: 'entertainment', label: 'خدمات ترفيهية', iconKey: 'entertainment' },
-  { id: 'cards', label: 'بطاقات رقمية', iconKey: 'cards' },
-  { id: 'streaming', label: 'منصات البث', iconKey: 'streaming' },
-  { id: 'crypto', label: 'الكريبتو', iconKey: 'crypto-category' },
-  { id: 'investment', label: 'استثمار الكريبتو', iconKey: 'crypto-invest-category' },
-  { id: 'service-providers', label: 'مزودين الخدمات', iconKey: 'providers-category' },
+  { id: 'telecom', label: 'الاتصالات والشحن', iconKey: 'recharge', screenType: 'recharge' as const },
+  { id: 'entertainment', label: 'الخدمات الترفيهية', iconKey: 'entertainment', screenType: 'category' as const },
+  { id: 'games', label: 'الألعاب', iconKey: 'games-category', screenType: 'category' as const },
+  { id: 'gift-cards', label: 'بطاقات الهدايا', iconKey: 'gift-cards', screenType: 'category' as const },
+  { id: 'digital-wallets', label: 'المحافظ الرقمية', iconKey: 'digital-wallets', screenType: 'category' as const },
 ];
 
 const promoItems = [
@@ -490,40 +488,35 @@ export default function HomeScreen() {
       return;
     }
 
+    // Find the service in homeServices to determine its type
+    const service = homeServices.find(s => s.id === serviceId);
+
+    if (service) {
+      if (service.screenType === 'recharge') {
+        // Telecom goes to dedicated recharge screen
+        setActiveScreen('recharge');
+      } else {
+        // All other categories go to their own category-detail screen
+        // Each category is completely independent
+        useAppStore.getState().setSelectedCategory(serviceId);
+        useAppStore.getState().setActiveScreen('category-detail');
+      }
+      return;
+    }
+
+    // Legacy support for other service clicks
     switch (serviceId) {
       case 'transfer':
         setTransferOpen(true);
         break;
-      case 'recharge':
-        setActiveScreen('recharge');
-        break;
-      case 'digital-wallet':
-        useAppStore.getState().setActiveTab('wallet');
-        break;
-      case 'crypto':
-        useAppStore.getState().setSelectedCategory(serviceId);
-        useAppStore.getState().setActiveScreen('category-detail');
-        break;
-      case 'crypto-invest':
-        useAppStore.getState().setActiveScreen('investment');
-        break;
       case 'currency-exchange':
         setActiveScreen('exchange');
         break;
-      case 'telecom':
-        setActiveScreen('recharge');
+      default:
+        // Unknown service - go to category-detail with this ID
+        useAppStore.getState().setSelectedCategory(serviceId);
+        useAppStore.getState().setActiveScreen('category-detail');
         break;
-      default: {
-        // Other category services navigate to their dedicated screen
-        const categoryIds = ['service-providers'];
-        if (categoryIds.includes(serviceId)) {
-          useAppStore.getState().setSelectedCategory(serviceId);
-          useAppStore.getState().setActiveScreen('category-detail');
-        } else {
-          useAppStore.getState().setActiveTab('services');
-        }
-        break;
-      }
     }
   };
 

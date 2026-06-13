@@ -301,6 +301,73 @@ const providersSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="48" height=
   <path d="M30 10V14" stroke="#8B1E3A" stroke-width="1.5" stroke-linecap="round"/>
 </svg>`;
 
+// ─── Category Icons (SVGs for home screen) ────────────────────────
+
+const entertainmentCategorySvg = `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" fill="none">
+  <rect x="2" y="2" width="44" height="44" rx="12" fill="white"/>
+  <path d="M12 14H36V32C36 34 34 36 32 36H16C14 36 12 34 12 32V14Z" stroke="#1a1a1a" stroke-width="1.8" fill="none"/>
+  <path d="M12 14L24 8L36 14" stroke="#1a1a1a" stroke-width="1.8" stroke-linejoin="round" fill="none"/>
+  <circle cx="20" cy="23" r="2.5" fill="#8B1E3A"/>
+  <circle cx="28" cy="23" r="2.5" fill="#8B1E3A"/>
+  <path d="M20 29C20 29 22 31 24 31C26 31 28 29 28 29" stroke="#8B1E3A" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+</svg>`;
+
+const giftCardsCategorySvg = `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" fill="none">
+  <rect x="2" y="2" width="44" height="44" rx="12" fill="white"/>
+  <rect x="8" y="18" width="32" height="22" rx="3" stroke="#1a1a1a" stroke-width="1.8" fill="none"/>
+  <line x1="8" y1="26" x2="40" y2="26" stroke="#1a1a1a" stroke-width="1.5"/>
+  <path d="M20 18C20 14 24 10 24 14C24 10 28 14 28 18" stroke="#14B8A6" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+  <line x1="24" y1="14" x2="24" y2="18" stroke="#14B8A6" stroke-width="1.5"/>
+  <circle cx="34" cy="22" r="2" fill="#14B8A6"/>
+</svg>`;
+
+const streamingCategorySvg = `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" fill="none">
+  <rect x="2" y="2" width="44" height="44" rx="12" fill="white"/>
+  <rect x="10" y="10" width="28" height="22" rx="3" stroke="#1a1a1a" stroke-width="1.8" fill="none"/>
+  <polygon points="20,16 32,21 20,26" fill="#8B1E3A"/>
+  <line x1="16" y1="36" x2="32" y2="36" stroke="#1a1a1a" stroke-width="1.5" stroke-linecap="round"/>
+  <circle cx="24" cy="39" r="1.5" fill="#1a1a1a"/>
+</svg>`;
+
+const gamesCategorySvg = `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" fill="none">
+  <rect x="2" y="2" width="44" height="44" rx="12" fill="white"/>
+  <path d="M8 22C8 16 12 14 16 14H32C36 14 40 16 40 22C40 28 38 36 32 36C28 36 26 32 24 32C22 32 20 36 16 36C10 36 8 28 8 22Z" stroke="#1a1a1a" stroke-width="1.8" fill="none"/>
+  <line x1="13" y1="22" x2="13" y2="28" stroke="#1a1a1a" stroke-width="1.8" stroke-linecap="round"/>
+  <line x1="10" y1="25" x2="16" y2="25" stroke="#1a1a1a" stroke-width="1.8" stroke-linecap="round"/>
+  <circle cx="33" cy="22" r="2" fill="#8B1E3A"/>
+  <circle cx="30" cy="26" r="1.5" stroke="#1a1a1a" stroke-width="1.2" fill="none"/>
+  <circle cx="36" cy="26" r="1.5" stroke="#1a1a1a" stroke-width="1.2" fill="none"/>
+</svg>`;
+
+const cryptoCategorySvg = `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" fill="none">
+  <rect x="2" y="2" width="44" height="44" rx="12" fill="white"/>
+  <circle cx="24" cy="24" r="12" stroke="#1a1a1a" stroke-width="1.8" fill="none"/>
+  <path d="M24 14V34" stroke="#1a1a1a" stroke-width="1.5"/>
+  <path d="M20 18H27C29 18 30 19.5 30 21C30 22.5 29 24 27 24H20" stroke="#8B1E3A" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+  <path d="M20 24H28C30 24 31 25.5 31 27C31 28.5 30 30 28 30H20" stroke="#8B1E3A" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+  <line x1="24" y1="30" x2="24" y2="34" stroke="#8B1E3A" stroke-width="1.8"/>
+</svg>`;
+
+const cryptoInvestCategorySvg = `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" fill="none">
+  <rect x="2" y="2" width="44" height="44" rx="12" fill="white"/>
+  <path d="M10 34L18 24L24 28L32 16L38 20" stroke="#8B1E3A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <circle cx="38" cy="20" r="2.5" fill="#8B1E3A"/>
+  <line x1="10" y1="38" x2="38" y2="38" stroke="#1a1a1a" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="10" y1="12" x2="10" y2="38" stroke="#1a1a1a" stroke-width="1.5" stroke-linecap="round"/>
+</svg>`;
+
+const digitalWalletsCategorySvg = `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" fill="none">
+  <rect x="2" y="2" width="44" height="44" rx="12" fill="white"/>
+  <rect x="8" y="18" width="28" height="18" rx="3" stroke="#1a1a1a" stroke-width="1.8" fill="none"/>
+  <rect x="28" y="24" width="8" height="6" rx="2" stroke="#1a1a1a" stroke-width="1.5" fill="none"/>
+  <circle cx="32" cy="27" r="1.2" fill="#1a1a1a"/>
+  <path d="M18 18V14C18 12 20 10 22 10" stroke="#1a1a1a" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+  <path d="M24 9C26 9 28 10.5 28 12" stroke="#1a1a1a" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+  <path d="M36 10C37.5 8.5 38 7 37 6" stroke="#8B1E3A" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+  <path d="M39 8C40.5 6.5 41 5 40 4" stroke="#8B1E3A" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+  <path d="M33 12C34.5 10.5 35 9 34 8" stroke="#8B1E3A" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+</svg>`;
+
 // ─── Export all icons ────────────────────────────────────────────────
 
 export const serviceIcons: Record<string, string> = {
@@ -313,6 +380,20 @@ export const serviceIcons: Record<string, string> = {
   'instant-charge': svgToDataUrl(instantChargeSvg),
   'games': svgToDataUrl(gamesSvg),
   'digital-wallet': svgToDataUrl(digitalWalletSvg),
+
+  // Category Icons (for home screen grid)
+  'entertainment': svgToDataUrl(entertainmentCategorySvg),
+  'entertainment-category': svgToDataUrl(entertainmentCategorySvg),
+  'cards': svgToDataUrl(giftCardsCategorySvg),
+  'gift-cards': svgToDataUrl(giftCardsCategorySvg),
+  'gift-cards-category': svgToDataUrl(giftCardsCategorySvg),
+  'streaming': svgToDataUrl(streamingCategorySvg),
+  'streaming-category': svgToDataUrl(streamingCategorySvg),
+  'games-category': svgToDataUrl(gamesCategorySvg),
+  'crypto-category': svgToDataUrl(cryptoCategorySvg),
+  'crypto-invest-category': svgToDataUrl(cryptoInvestCategorySvg),
+  'digital-wallets': svgToDataUrl(digitalWalletsCategorySvg),
+  'digital-wallets-category': svgToDataUrl(digitalWalletsCategorySvg),
 
   // Telecom Companies
   'yemen-mobile': svgToDataUrl(yemenMobileSvg),
@@ -331,7 +412,6 @@ export const serviceIcons: Record<string, string> = {
   // Games & Entertainment
   'pubg': svgToDataUrl(pubgSvg),
   'freefire': svgToDataUrl(freefireSvg),
-  'gift-cards': svgToDataUrl(giftCardsSvg),
 
   // Other
   'support': svgToDataUrl(supportSvg),

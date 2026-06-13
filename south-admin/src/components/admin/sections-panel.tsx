@@ -15,14 +15,13 @@ import { Switch } from '@/components/ui/switch';
 import { Plus, Trash2, Edit, Layers, ArrowUp, ArrowDown, RotateCcw, Save } from 'lucide-react';
 import { motion } from 'framer-motion';
 
+// The 5 allowed categories that match the user app's serviceIcons keys
 const defaultSections = [
-  { name: 'الاتصالات', iconKey: 'phone', order: 0, isVisible: true, categoryId: 'telecom' },
-  { name: 'خدمات ترفيهية', iconKey: 'gamepad', order: 1, isVisible: true, categoryId: 'entertainment' },
-  { name: 'بطاقات رقمية', iconKey: 'credit-card', order: 2, isVisible: true, categoryId: 'cards' },
-  { name: 'منصات البث', iconKey: 'play-circle', order: 3, isVisible: true, categoryId: 'streaming' },
-  { name: 'الكريبتو', iconKey: 'bitcoin', order: 4, isVisible: true, categoryId: 'crypto' },
-  { name: 'استثمار الكريبتو', iconKey: 'trending-up', order: 5, isVisible: true, categoryId: 'investment' },
-  { name: 'مزودين الخدمات', iconKey: 'layers', order: 6, isVisible: true, categoryId: 'service-providers' },
+  { name: 'الاتصالات والشحن', iconKey: 'phone', order: 0, isVisible: true, categoryId: 'telecom' },
+  { name: 'الخدمات الترفيهية', iconKey: 'tv', order: 1, isVisible: true, categoryId: 'entertainment' },
+  { name: 'الألعاب', iconKey: 'gamepad-2', order: 2, isVisible: true, categoryId: 'games' },
+  { name: 'بطاقات الهدايا', iconKey: 'gift', order: 3, isVisible: true, categoryId: 'gift-cards' },
+  { name: 'المحافظ الرقمية', iconKey: 'wallet', order: 4, isVisible: true, categoryId: 'digital-wallets' },
 ];
 
 export default function SectionsPanel() {
@@ -39,7 +38,7 @@ export default function SectionsPanel() {
   const [initialized, setInitialized] = useState(false);
 
   useEffect(() => {
-    const secRef = ref(database, 'ownerSettings/sections');
+    const secRef = ref(database, 'categories');
     const unsub = onValue(secRef, (snapshot) => {
       const data = snapshot.val() || {};
       const list = Object.entries(data).map(([id, val]: [string, any]) => ({ id, ...val }));
@@ -57,8 +56,8 @@ export default function SectionsPanel() {
     try {
       const updates: Record<string, any> = {};
       defaultSections.forEach((sec, i) => {
-        const key = `section_${i}`;
-        updates[`ownerSettings/sections/${key}`] = { ...sec, order: i };
+        const key = sec.categoryId;
+        updates[`categories/${key}`] = { ...sec, order: i };
         // Sync visibility to adminSettings/visibility/sections
         updates[`adminSettings/visibility/sections/${sec.categoryId}`] = sec.isVisible !== false;
       });
@@ -70,27 +69,28 @@ export default function SectionsPanel() {
   const handleSave = async () => {
     if (!secName) return;
     try {
-      const data = { name: secName, icon: secIcon, order: parseInt(secOrder) || 0, isVisible: secVisible, categoryId: secCategoryId };
+      const data = { name: secName, iconKey: secIcon, order: parseInt(secOrder) || 0, isVisible: secVisible, categoryId: secCategoryId };
       if (editing) {
         const updates: Record<string, any> = {
-          [`ownerSettings/sections/${editing.id}`]: { ...editing, ...data },
+          [`categories/${editing.id}`]: { ...editing, ...data },
         };
         // Sync visibility to adminSettings/visibility/sections/{categoryId}
         const catId = secCategoryId || editing.categoryId || editing.id;
         updates[`adminSettings/visibility/sections/${catId}`] = secVisible;
         // If categoryId changed, remove the old entry
         if (editing.categoryId && editing.categoryId !== secCategoryId && secCategoryId) {
+          updates[`categories/${editing.categoryId}`] = null;
           updates[`adminSettings/visibility/sections/${editing.categoryId}`] = null;
         }
         await update(ref(database), updates);
         showToast('تم التحديث', 'success');
       } else {
-        const newRef = push(ref(database, 'ownerSettings/sections'));
+        const key = secCategoryId || generateId();
         const updates: Record<string, any> = {
-          [`ownerSettings/sections/${newRef.key}`]: data,
+          [`categories/${key}`]: { ...data, order: parseInt(secOrder) || sections.length },
         };
         // Sync visibility to adminSettings/visibility/sections/{categoryId}
-        const catId = secCategoryId || newRef.key!;
+        const catId = secCategoryId || key;
         updates[`adminSettings/visibility/sections/${catId}`] = secVisible;
         await update(ref(database), updates);
         showToast('تم الإضافة', 'success');
@@ -104,11 +104,11 @@ export default function SectionsPanel() {
     const sorted = [...sections].sort((a, b) => (a.order || 0) - (b.order || 0));
     const idx = sorted.findIndex(s => s.id === section.id);
     if (direction === 'up' && idx > 0) {
-      await update(ref(database, `ownerSettings/sections/${section.id}`), { order: sorted[idx - 1].order });
-      await update(ref(database, `ownerSettings/sections/${sorted[idx - 1].id}`), { order: section.order });
+      await update(ref(database, `categories/${section.id}`), { order: sorted[idx - 1].order });
+      await update(ref(database, `categories/${sorted[idx - 1].id}`), { order: section.order });
     } else if (direction === 'down' && idx < sorted.length - 1) {
-      await update(ref(database, `ownerSettings/sections/${section.id}`), { order: sorted[idx + 1].order });
-      await update(ref(database, `ownerSettings/sections/${sorted[idx + 1].id}`), { order: section.order });
+      await update(ref(database, `categories/${section.id}`), { order: sorted[idx + 1].order });
+      await update(ref(database, `categories/${sorted[idx + 1].id}`), { order: section.order });
     }
   };
 
@@ -118,7 +118,7 @@ export default function SectionsPanel() {
       const section = sections.find(s => s.id === id);
       const catId = section?.categoryId || id;
       const updates: Record<string, any> = {
-        [`ownerSettings/sections/${id}`]: null,
+        [`categories/${id}`]: null,
         [`adminSettings/visibility/sections/${catId}`]: null,
       };
       await update(ref(database), updates);
@@ -132,7 +132,7 @@ export default function SectionsPanel() {
       const newVisible = !s.isVisible;
       const catId = s.categoryId || s.id;
       const updates: Record<string, any> = {
-        [`ownerSettings/sections/${s.id}/isVisible`]: newVisible,
+        [`categories/${s.id}/isVisible`]: newVisible,
         [`adminSettings/visibility/sections/${catId}`]: newVisible,
       };
       await update(ref(database), updates);
@@ -150,11 +150,9 @@ export default function SectionsPanel() {
           <p className="text-muted-foreground text-sm mt-1">{formatNumber(sections.length)} قسم</p>
         </div>
         <div className="flex gap-2">
-          {sections.length === 0 && (
-            <Button variant="outline" size="sm" onClick={handleInitializeDefaults}>
-              <RotateCcw className="w-4 h-4 ml-1" /> إنشاء الأقسام الافتراضية
-            </Button>
-          )}
+          <Button variant="outline" size="sm" onClick={handleInitializeDefaults}>
+            <RotateCcw className="w-4 h-4 ml-1" /> إنشاء الأقسام الافتراضية
+          </Button>
           <Button size="sm" onClick={() => { setEditing(null); setSecName(''); setSecIcon(''); setSecOrder('0'); setSecVisible(true); setSecCategoryId(''); setDialog(true); }}>
             <Plus className="w-4 h-4 ml-1" /> قسم جديد
           </Button>
@@ -164,10 +162,10 @@ export default function SectionsPanel() {
       {/* Default sections reference */}
       <Card className="admin-card border-0 shadow-none">
         <CardContent className="p-4">
-          <p className="text-sm font-medium mb-2">الأقسام الافتراضية للتطبيق:</p>
+          <p className="text-sm font-medium mb-2">الأقسام المسموح بها في التطبيق:</p>
           <div className="flex flex-wrap gap-2">
             {defaultSections.map((sec, i) => (
-              <Badge key={i} variant="outline" className="text-xs">{sec.name}</Badge>
+              <Badge key={i} variant="outline" className="text-xs">{sec.name} ({sec.categoryId})</Badge>
             ))}
           </div>
         </CardContent>
@@ -186,14 +184,14 @@ export default function SectionsPanel() {
                   <div className="p-2 rounded-lg bg-[#8B1E3A]/10"><Layers className="w-4 h-4 text-[#8B1E3A]" /></div>
                   <div>
                     <p className="font-medium text-sm">{s.name}</p>
-                    <p className="text-xs text-muted-foreground">ترتيب: {s.order || i} {s.categoryId ? `- ${s.categoryId}` : ''}</p>
+                    <p className="text-xs text-muted-foreground">ترتيب: {s.order || i} {s.categoryId ? `- ${s.categoryId}` : ''} {s.iconKey ? `| أيقونة: ${s.iconKey}` : ''}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
                   <Switch checked={s.isVisible !== false} onCheckedChange={() => handleToggle(s)} />
                   <Badge className={s.isVisible !== false ? 'bg-green-500/20 text-green-600' : 'bg-red-500/20 text-red-600'}>{s.isVisible !== false ? 'ظاهر' : 'مخفي'}</Badge>
                   <Button variant="ghost" size="sm" onClick={() => {
-                    setEditing(s); setSecName(s.name); setSecIcon(s.icon || '');
+                    setEditing(s); setSecName(s.name); setSecIcon(s.iconKey || s.icon || '');
                     setSecOrder(String(s.order || i)); setSecVisible(s.isVisible !== false);
                     setSecCategoryId(s.categoryId || '');
                     setDialog(true);
@@ -215,10 +213,24 @@ export default function SectionsPanel() {
         <DialogContent>
           <DialogHeader><DialogTitle>{editing ? 'تعديل قسم' : 'إضافة قسم'}</DialogTitle></DialogHeader>
           <div className="space-y-4">
-            <div><Label>الاسم</Label><Input value={secName} onChange={(e) => setSecName(e.target.value)} /></div>
-            <div><Label>معرف التصنيف</Label><Input value={secCategoryId} onChange={(e) => setSecCategoryId(e.target.value)} placeholder="مثال: telecom" dir="ltr" /></div>
-            <div><Label>الأيقونة (مفتاح أو Base64)</Label><Input value={secIcon} onChange={(e) => setSecIcon(e.target.value)} /></div>
-            <div><Label>الترتيب</Label><Input type="number" value={secOrder} onChange={(e) => setSecOrder(e.target.value)} dir="ltr" /></div>
+            <div>
+              <Label>الاسم</Label>
+              <Input value={secName} onChange={(e) => setSecName(e.target.value)} />
+            </div>
+            <div>
+              <Label>معرف التصنيف (categoryId)</Label>
+              <Input value={secCategoryId} onChange={(e) => setSecCategoryId(e.target.value)} placeholder="مثال: telecom" dir="ltr" />
+              <p className="text-xs text-muted-foreground mt-1">المسموح: telecom, entertainment, games, gift-cards, digital-wallets</p>
+            </div>
+            <div>
+              <Label>مفتاح الأيقونة (iconKey)</Label>
+              <Input value={secIcon} onChange={(e) => setSecIcon(e.target.value)} placeholder="مثال: phone, tv, gamepad-2, gift, wallet" dir="ltr" />
+              <p className="text-xs text-muted-foreground mt-1">الأيقونات: phone, tv, gamepad-2, gift, wallet</p>
+            </div>
+            <div>
+              <Label>الترتيب</Label>
+              <Input type="number" value={secOrder} onChange={(e) => setSecOrder(e.target.value)} dir="ltr" />
+            </div>
             <div className="flex items-center gap-2"><Switch checked={secVisible} onCheckedChange={setSecVisible} /><Label>ظاهر</Label></div>
           </div>
           <DialogFooter>

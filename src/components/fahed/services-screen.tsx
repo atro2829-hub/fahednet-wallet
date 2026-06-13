@@ -57,6 +57,10 @@ interface FirebaseProvider {
 const categoryIconMap: Record<string, React.ReactNode> = {};
 function getCategoryIcon(iconKey: string, color: string) {
   const iconProps = { size: 16, strokeWidth: 2, color: color || '#8B1E3A' };
+  // Check if it's a serviceIcons key
+  if (serviceIcons[iconKey]) {
+    return <img src={serviceIcons[iconKey]} alt="" className="w-4 h-4 object-contain" />;
+  }
   switch (iconKey) {
     case 'phone': return <Phone {...iconProps} />;
     case 'gamepad-2': return <Gamepad2 {...iconProps} />;
@@ -69,13 +73,18 @@ function getCategoryIcon(iconKey: string, color: string) {
   }
 }
 
+// Only allow these categories
+const ALLOWED_CATEGORIES = ['telecom', 'entertainment', 'games', 'gift-cards', 'digital-wallets'];
+
 // Fallback icon for providers without custom icons
-function getIconForProvider(providerId: string, providerColor?: string): string {
-  // 1. Check productIcons first
+function getIconForProvider(providerId: string, providerIcon?: string, providerColor?: string): string {
+  // 1. Check if provider has a base64 icon from Firebase
+  if (providerIcon && providerIcon.startsWith('data:')) return providerIcon;
+  // 2. Check productIcons first
   if (productIcons[providerId]) return productIcons[providerId];
-  // 2. Check serviceIcons
+  // 3. Check serviceIcons
   if (serviceIcons[providerId]) return serviceIcons[providerId];
-  // 3. Return empty (will show colored circle with first letter)
+  // 4. Return empty (will show colored circle with first letter)
   return '';
 }
 
@@ -89,6 +98,7 @@ export default function ServicesScreen() {
     setSelectedProvider,
     setOrderOpen,
     setActiveScreen,
+    setSelectedCategory,
     providers: storeProviders,
   } = useAppStore();
 
@@ -166,10 +176,25 @@ export default function ServicesScreen() {
 
   // ─── Derived Data ─────────────────────────────────────────
 
-  // Sorted categories
+  // Sorted categories - only show allowed categories
   const sortedCategories = Object.values(fbCategories)
     .filter(cat => cat.isVisible !== false && visibilitySections[cat.id] !== false)
+    .filter(cat => ALLOWED_CATEGORIES.includes(cat.id))
     .sort((a, b) => (a.order || 0) - (b.order || 0));
+
+  // Fallback: if Firebase has no categories, show the 5 allowed ones with local data
+  const fallbackCategories: FirebaseCategory[] = ALLOWED_CATEGORIES.map((id, index) => ({
+    id,
+    nameAr: id === 'telecom' ? 'الاتصالات والشحن' : id === 'entertainment' ? 'الخدمات الترفيهية' : id === 'games' ? 'الألعاب' : id === 'gift-cards' ? 'بطاقات الهدايا' : 'المحافظ الرقمية',
+    nameEn: id === 'telecom' ? 'Telecom' : id === 'entertainment' ? 'Entertainment' : id === 'games' ? 'Games' : id === 'gift-cards' ? 'Gift Cards' : 'Digital Wallets',
+    icon: id === 'telecom' ? 'recharge' : id === 'entertainment' ? 'entertainment' : id === 'games' ? 'games-category' : id === 'gift-cards' ? 'gift-cards' : 'digital-wallets',
+    color: id === 'telecom' ? '#8B1E3A' : id === 'entertainment' ? '#7C3AED' : id === 'games' ? '#F59E0B' : id === 'gift-cards' ? '#14B8A6' : '#2563EB',
+    order: index,
+    isVisible: true,
+    type: id === 'telecom' ? 'telecom' : 'service',
+  }));
+
+  const displayCategories = sortedCategories.length > 0 ? sortedCategories : fallbackCategories;
 
   // Get sub-categories for a category
   const getSubCategories = (categoryId: string): FirebaseSubCategory[] => {
@@ -402,7 +427,7 @@ export default function ServicesScreen() {
       </motion.div>
 
       {/* Category Sections */}
-      {sortedCategories.map((category, sectionIndex) => {
+      {displayCategories.map((category, sectionIndex) => {
         const isExpanded = expandedCategories.has(category.id) || !!searchQuery.trim();
         const subCategories = getSubCategories(category.id);
         const totalProviders = getCategoryProviderCount(category.id);
@@ -428,9 +453,19 @@ export default function ServicesScreen() {
             transition={{ delay: 0.05 * sectionIndex, duration: 0.4 }}
             className="px-4 mt-4"
           >
-            {/* Section Header */}
+            {/* Section Header - Clickable to open category detail */}
             <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2">
+              <button
+                onClick={() => {
+                  if (category.id === 'telecom') {
+                    setActiveScreen('recharge');
+                  } else {
+                    setSelectedCategory(category.id);
+                    setActiveScreen('category-detail');
+                  }
+                }}
+                className="flex items-center gap-2 active:scale-95 transition-transform"
+              >
                 {getCategoryIcon(category.icon, category.color)}
                 <h3
                   className="text-sm font-bold"
@@ -447,7 +482,7 @@ export default function ServicesScreen() {
                 >
                   {totalProviders}
                 </span>
-              </div>
+              </button>
               {totalProviders > COMPACT_LIMIT && !searchQuery.trim() && (
                 <button
                   onClick={() => toggleCategoryExpand(category.id)}
@@ -519,7 +554,7 @@ export default function ServicesScreen() {
       })}
 
       {/* Empty state when search yields no results */}
-      {sortedCategories.length === 0 && !loading && (
+      {displayCategories.length === 0 && !loading && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -543,7 +578,7 @@ export default function ServicesScreen() {
       )}
 
       {/* No search results */}
-      {searchQuery.trim() && sortedCategories.every(cat => {
+      {searchQuery.trim() && displayCategories.every(cat => {
         const filtered = getProviders(cat.id).filter(p =>
           p.name.includes(searchQuery.trim()) ||
           (p.nameEn && p.nameEn.toLowerCase().includes(searchQuery.trim().toLowerCase()))

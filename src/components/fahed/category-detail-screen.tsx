@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useTheme } from 'next-themes';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, Search, ArrowLeft } from 'lucide-react';
@@ -52,11 +52,29 @@ interface FirebaseProvider {
   order: number;
 }
 
+// ─── Category display names (fallback if Firebase doesn't have category) ──
+
+const categoryDisplayNames: Record<string, { nameAr: string; nameEn: string; color: string; icon: string }> = {
+  'telecom': { nameAr: 'الاتصالات والشحن', nameEn: 'Telecom', color: '#8B1E3A', icon: 'recharge' },
+  'entertainment': { nameAr: 'الخدمات الترفيهية', nameEn: 'Entertainment', color: '#7C3AED', icon: 'entertainment' },
+  'games': { nameAr: 'الألعاب', nameEn: 'Games', color: '#F59E0B', icon: 'games-category' },
+  'gift-cards': { nameAr: 'بطاقات الهدايا', nameEn: 'Gift Cards', color: '#14B8A6', icon: 'gift-cards' },
+  'digital-wallets': { nameAr: 'المحافظ الرقمية', nameEn: 'Digital Wallets', color: '#2563EB', icon: 'digital-wallets' },
+  'streaming': { nameAr: 'منصات البث', nameEn: 'Streaming', color: '#EC4899', icon: 'streaming' },
+  'crypto': { nameAr: 'الكريبتو', nameEn: 'Crypto', color: '#F97316', icon: 'crypto-category' },
+  'service-providers': { nameAr: 'مزودين الخدمات', nameEn: 'Service Providers', color: '#6366F1', icon: 'providers-category' },
+};
+
 // ─── Helper: get icon for provider ──────────────────────────
 
-function getIconForProvider(providerId: string): string {
-  if (productIcons[providerId]) return productIcons[providerId];
-  if (serviceIcons[providerId]) return serviceIcons[providerId];
+function getIconForProvider(provider: FirebaseProvider): string {
+  // 1. Check if provider has a base64 icon from Firebase
+  if (provider.icon && provider.icon.startsWith('data:')) return provider.icon;
+  // 2. Check productIcons by provider id
+  if (productIcons[provider.id]) return productIcons[provider.id];
+  // 3. Check serviceIcons by provider id
+  if (serviceIcons[provider.id]) return serviceIcons[provider.id];
+  // 4. Return empty (will show colored circle with first letter)
   return '';
 }
 
@@ -84,6 +102,24 @@ export default function CategoryDetailScreen() {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeSubCategory, setActiveSubCategory] = useState<string | null>(null);
 
+  // Get category display info (from Firebase or fallback)
+  const categoryInfo = useMemo(() => {
+    if (category) {
+      return {
+        nameAr: category.nameAr,
+        nameEn: category.nameEn,
+        color: category.color || '#8B1E3A',
+        icon: category.icon,
+      };
+    }
+    return categoryDisplayNames[selectedCategory || ''] || {
+      nameAr: selectedCategory || 'قسم',
+      nameEn: selectedCategory || 'Category',
+      color: '#8B1E3A',
+      icon: '',
+    };
+  }, [category, selectedCategory]);
+
   const cardStyle = {
     background: isDark ? '#1A1A1A' : '#FFFFFF',
     border: `1px solid ${isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.05)'}`,
@@ -95,11 +131,19 @@ export default function CategoryDetailScreen() {
   useEffect(() => {
     if (!selectedCategory) return;
 
+    setLoading(true);
+    setSubCategories([]);
+    setProviders([]);
+    setActiveSubCategory(null);
+    setSearchQuery('');
+
     // Listen to category details
     const catRef = ref(database, `categories/${selectedCategory}`);
     const unsub1 = onValue(catRef, (snapshot) => {
       if (snapshot.exists()) {
         setCategory(snapshot.val());
+      } else {
+        setCategory(null);
       }
     });
 
@@ -113,9 +157,11 @@ export default function CategoryDetailScreen() {
           .sort((a: any, b: any) => (a.order || 0) - (b.order || 0)) as FirebaseSubCategory[];
         setSubCategories(subs);
         // Auto-select first sub-category
-        if (subs.length > 0 && !activeSubCategory) {
-          setActiveSubCategory(subs[0].id);
+        if (subs.length > 0) {
+          setActiveSubCategory(prev => prev || subs[0].id);
         }
+      } else {
+        setSubCategories([]);
       }
     });
 
@@ -128,7 +174,13 @@ export default function CategoryDetailScreen() {
           .filter((p: any) => p.categoryId === selectedCategory && p.isActive !== false)
           .sort((a: any, b: any) => (a.order || 0) - (b.order || 0)) as FirebaseProvider[];
         setProviders(provs);
+      } else {
+        setProviders([]);
       }
+      setLoading(false);
+    }, (error) => {
+      console.error('Firebase providers error:', error);
+      setProviders([]);
       setLoading(false);
     });
 
@@ -199,15 +251,16 @@ export default function CategoryDetailScreen() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="w-8 h-8 border-2 border-[#8B1E3A] border-t-transparent rounded-full animate-spin" />
+      <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
+        <div className="w-10 h-10 border-2 border-[#8B1E3A] border-t-transparent rounded-full animate-spin" />
+        <p className="text-sm" style={{ color: isDark ? '#666' : '#AAA' }}>جاري التحميل...</p>
       </div>
     );
   }
 
   return (
-    <div className="pb-6">
-      {/* Header */}
+    <div className="pb-6 min-h-screen" style={{ background: isDark ? '#0A0A0A' : '#F5F5F5' }}>
+      {/* Header - Independent for each category */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -215,22 +268,53 @@ export default function CategoryDetailScreen() {
       >
         <div className="flex items-center gap-3 mb-4">
           <button
-            onClick={() => setActiveScreen('services')}
+            onClick={() => setActiveScreen('main')}
             className="p-2 rounded-xl active:scale-95 transition-transform"
             style={{ background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' }}
           >
             <ArrowLeft size={20} color={isDark ? '#FFF' : '#1a1a1a'} />
           </button>
-          <div>
-            <h1 className="text-xl font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>
-              {category?.nameAr || selectedCategory}
-            </h1>
-            {category?.description && (
-              <p className="text-xs mt-0.5" style={{ color: isDark ? '#777' : '#999' }}>
-                {category.description}
-              </p>
+          <div className="flex items-center gap-2">
+            {/* Category icon */}
+            {categoryInfo.icon && (categoryInfo.icon.startsWith('data:') || serviceIcons[categoryInfo.icon]) ? (
+              <div
+                className="w-8 h-8 rounded-lg overflow-hidden flex items-center justify-center"
+                style={{ background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' }}
+              >
+                <img
+                  src={categoryInfo.icon.startsWith('data:') ? categoryInfo.icon : serviceIcons[categoryInfo.icon]}
+                  alt={categoryInfo.nameAr}
+                  className="w-6 h-6 object-contain"
+                />
+              </div>
+            ) : (
+              <div
+                className="w-8 h-8 rounded-lg flex items-center justify-center"
+                style={{ backgroundColor: categoryInfo.color + '15' }}
+              >
+                <span className="text-xs font-bold" style={{ color: categoryInfo.color }}>
+                  {categoryInfo.nameAr.substring(0, 2)}
+                </span>
+              </div>
             )}
+            <div>
+              <h1 className="text-xl font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>
+                {categoryInfo.nameAr}
+              </h1>
+              {category?.description && (
+                <p className="text-xs mt-0.5" style={{ color: isDark ? '#777' : '#999' }}>
+                  {category.description}
+                </p>
+              )}
+            </div>
           </div>
+        </div>
+
+        {/* Provider count */}
+        <div className="flex items-center justify-between mb-3">
+          <span className="text-xs" style={{ color: isDark ? '#666' : '#999' }}>
+            {visibleProviders.length} خدمة متاحة
+          </span>
         </div>
 
         {/* Search */}
@@ -266,7 +350,7 @@ export default function CategoryDetailScreen() {
               className="shrink-0 px-4 py-2 rounded-xl text-xs font-medium transition-all"
               style={{
                 background: !activeSubCategory
-                  ? (category?.color || '#8B1E3A')
+                  ? categoryInfo.color
                   : (isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'),
                 color: !activeSubCategory ? '#FFF' : (isDark ? '#BBB' : '#666'),
               }}
@@ -282,7 +366,7 @@ export default function CategoryDetailScreen() {
                   className="shrink-0 px-4 py-2 rounded-xl text-xs font-medium transition-all"
                   style={{
                     background: activeSubCategory === sub.id
-                      ? (category?.color || '#8B1E3A')
+                      ? categoryInfo.color
                       : (isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'),
                     color: activeSubCategory === sub.id ? '#FFF' : (isDark ? '#BBB' : '#666'),
                   }}
@@ -306,7 +390,7 @@ export default function CategoryDetailScreen() {
             <div className="grid grid-cols-4 gap-x-2 gap-y-4">
               <AnimatePresence mode="popLayout">
                 {filteredProviders.map((provider, index) => {
-                  const iconSrc = getIconForProvider(provider.id);
+                  const iconSrc = getIconForProvider(provider);
                   const hasCustomIcon = iconSrc !== '';
 
                   return (
@@ -358,9 +442,18 @@ export default function CategoryDetailScreen() {
               </AnimatePresence>
             </div>
           ) : (
-            <div className="py-8 text-center">
-              <p className="text-sm" style={{ color: isDark ? '#555' : '#AAA' }}>
+            <div className="py-12 flex flex-col items-center gap-3">
+              <div
+                className="w-16 h-16 rounded-2xl flex items-center justify-center"
+                style={{ background: isDark ? '#222' : '#F5F5F5' }}
+              >
+                <Search size={24} strokeWidth={1.5} color={isDark ? '#333' : '#CCC'} />
+              </div>
+              <p className="text-sm font-medium" style={{ color: isDark ? '#555' : '#AAA' }}>
                 لا توجد خدمات في هذا القسم
+              </p>
+              <p className="text-xs" style={{ color: isDark ? '#444' : '#CCC' }}>
+                سيتم إضافة خدمات قريباً
               </p>
             </div>
           )}
