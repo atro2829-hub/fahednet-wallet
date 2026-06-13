@@ -80,14 +80,15 @@ function hexToRgb(hex: string): string {
 }
 
 // Services with custom SVG icons - each maps to a category-detail screen
+// Now dynamically loaded from Firebase categories
 const homeServices = [
   { id: 'telecom', label: 'الاتصالات والشحن', iconKey: 'recharge' },
+  { id: 'entertainment', label: 'خدمات ترفيهية', iconKey: 'entertainment' },
+  { id: 'cards', label: 'بطاقات رقمية', iconKey: 'cards' },
+  { id: 'streaming', label: 'منصات البث', iconKey: 'streaming' },
+  { id: 'crypto', label: 'الكريبتو', iconKey: 'crypto-category' },
+  { id: 'investment', label: 'استثمار الكريبتو', iconKey: 'crypto-invest-category' },
   { id: 'service-providers', label: 'مزودين الخدمات', iconKey: 'providers-category' },
-  { id: 'transfer', label: 'تحويل الأموال', iconKey: 'transfer' },
-  { id: 'digital-wallet', label: 'المحفظة الرقمية', iconKey: 'digital-wallet' },
-  { id: 'crypto', label: '\u0627\u0644\u0643\u0631\u064A\u0628\u062A\u0648', iconKey: 'crypto-category' },
-  { id: 'crypto-invest', label: '\u0627\u0633\u062A\u062B\u0645\u0627\u0631 \u0627\u0644\u0643\u0631\u064A\u0628\u062A\u0648', iconKey: 'crypto-invest-category' },
-  { id: 'currency-exchange', label: '\u062A\u0628\u062F\u064A\u0644 \u0627\u0644\u0639\u0645\u0644\u0627\u062A', iconKey: 'currency-exchange' },
 ];
 
 const promoItems = [

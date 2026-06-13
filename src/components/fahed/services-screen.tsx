@@ -3,141 +3,107 @@
 import { useState, useEffect } from 'react';
 import { useTheme } from 'next-themes';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, ChevronLeft, Wallet, Gamepad2 } from 'lucide-react';
+import { Search, ChevronLeft, Wallet, Gamepad2, Phone, CreditCard, PlayCircle, Bitcoin, TrendingUp, Layers, ChevronDown, ChevronUp } from 'lucide-react';
 import { useAppStore } from '@/lib/store';
 import { productIcons } from '@/lib/product-icons';
 import { serviceIcons } from '@/lib/service-icons';
 import { database } from '@/lib/firebase';
 import { ref, onValue } from 'firebase/database';
-import type { ApiProviderConfig } from '@/lib/api-provider';
 
-// Category display order with display names (entertainment merges wallet-services + service-providers)
-const categoryOrder = [
-  { id: 'telecom', name: 'خدمات الاتصالات' },
-];
+// ─── Types ──────────────────────────────────────────────────
 
-// Wallet Private Services: wraps ALL existing entertainment + card sub-sections
-const walletPrivateServicesSubSections = [
-  { id: 'shooting', name: 'ألعاب إطلاق النار', providerIds: ['pubg', 'freefire', 'call-of-duty', 'fortnite', 'apex-legends', 'valorant'] },
-  { id: 'strategy', name: 'ألعاب الاستراتيجية', providerIds: ['clash-royale', 'clash-of-clans', 'league-legends'] },
-  { id: 'adventure', name: 'ألعاب المغامرات', providerIds: ['roblox', 'minecraft', 'genshin-impact', 'honkai-star'] },
-  { id: 'platforms', name: 'منصات الألعاب', providerIds: ['steam', 'ea-fc'] },
-  { id: 'streaming', name: 'خدمات البث', providerIds: ['netflix', 'spotify', 'youtube-premium'] },
-  { id: 'store-cards', name: 'بطاقات المتاجر', providerIds: ['google-play', 'apple-itunes', 'amazon-gift'] },
-  { id: 'gaming-cards', name: 'بطاقات الألعاب', providerIds: ['psn-card', 'xbox-card', 'nintendo-card'] },
-  { id: 'payment-cards', name: 'بطاقات الدفع', providerIds: ['visa-virtual', 'mastercard-virtual', 'paypal'] },
-];
+interface FirebaseCategory {
+  id: string;
+  nameAr: string;
+  nameEn: string;
+  icon: string;
+  color: string;
+  order: number;
+  isVisible: boolean;
+  type: string;
+  description?: string;
+}
 
-// Sub-sections mapping for other categories (non-entertainment)
-const categorySubSections: Record<string, { id: string; name: string; providerIds: string[] }[]> = {
-  telecom: [],
-};
+interface FirebaseSubCategory {
+  id: string;
+  categoryId: string;
+  nameAr: string;
+  nameEn: string;
+  icon: string;
+  order: number;
+  isVisible: boolean;
+}
 
-// Icon fallback mapping for providers without dedicated product icons
-const iconFallbackMap: Record<string, string> = {
-  'y-net-internet': 'y-net-internet',
-  'sabafon-internet': 'sabafon-internet',
-};
+interface FirebaseProvider {
+  id: string;
+  categoryId: string;
+  subCategoryId: string;
+  name: string;
+  nameEn?: string;
+  icon: string;
+  color: string;
+  isActive: boolean;
+  inputLabel: string;
+  inputType: string;
+  inputPrefix?: string;
+  inputPlaceholder?: string;
+  providerType: string;
+  executionType: string;
+  order: number;
+  createdAt?: string;
+}
 
-// Telecom provider IDs that navigate to recharge screen
-const telecomProviderIds = ['yemen-mobile', 'yo', 'sabafon', 'y'];
+// Icon mapping by category type
+const categoryIconMap: Record<string, React.ReactNode> = {};
+function getCategoryIcon(iconKey: string, color: string) {
+  const iconProps = { size: 16, strokeWidth: 2, color: color || '#8B1E3A' };
+  switch (iconKey) {
+    case 'phone': return <Phone {...iconProps} />;
+    case 'gamepad-2': return <Gamepad2 {...iconProps} />;
+    case 'credit-card': return <CreditCard {...iconProps} />;
+    case 'play-circle': return <PlayCircle {...iconProps} />;
+    case 'bitcoin': return <Bitcoin {...iconProps} />;
+    case 'trending-up': return <TrendingUp {...iconProps} />;
+    case 'layers': return <Layers {...iconProps} />;
+    default: return <Wallet {...iconProps} />;
+  }
+}
+
+// Fallback icon for providers without custom icons
+function getIconForProvider(providerId: string, providerColor?: string): string {
+  // 1. Check productIcons first
+  if (productIcons[providerId]) return productIcons[providerId];
+  // 2. Check serviceIcons
+  if (serviceIcons[providerId]) return serviceIcons[providerId];
+  // 3. Return empty (will show colored circle with first letter)
+  return '';
+}
 
 // Maximum items shown in compact (collapsed) view per section
 const COMPACT_LIMIT = 8;
-
-function getIconForProvider(providerId: string): string {
-  // 1. Check productIcons first
-  if (productIcons[providerId]) return productIcons[providerId];
-  // 2. Check iconFallbackMap → productIcons
-  const fallbackKey = iconFallbackMap[providerId];
-  if (fallbackKey && productIcons[fallbackKey]) return productIcons[fallbackKey];
-  // 3. Check serviceIcons
-  if (serviceIcons[providerId]) return serviceIcons[providerId];
-  // 4. Fallback key → serviceIcons
-  if (fallbackKey && serviceIcons[fallbackKey]) return serviceIcons[fallbackKey];
-  // 5. Generic fallback
-  return serviceIcons['instant-pay'] || '';
-}
 
 export default function ServicesScreen() {
   const { theme } = useTheme();
   const isDark = theme === 'dark';
   const {
-    providers,
-    categories,
     setSelectedProvider,
     setOrderOpen,
     setActiveScreen,
-    setSelectedCategory,
+    providers: storeProviders,
   } = useAppStore();
 
+  // Firebase data state
+  const [fbCategories, setFbCategories] = useState<Record<string, FirebaseCategory>>({});
+  const [fbSubCategories, setFbSubCategories] = useState<Record<string, FirebaseSubCategory>>({});
+  const [fbProviders, setFbProviders] = useState<Record<string, FirebaseProvider>>({});
   const [visibilitySections, setVisibilitySections] = useState<Record<string, boolean>>({});
   const [visibilityProviders, setVisibilityProviders] = useState<Record<string, boolean>>({});
-  const [apiProviders, setApiProviders] = useState<ApiProviderConfig[]>([]);
-
-  // Firebase visibility settings listener
-  useEffect(() => {
-    const visRef = ref(database, 'adminSettings/visibility');
-    const unsubscribe = onValue(visRef, (snapshot) => {
-      if (snapshot.exists()) {
-        const data = snapshot.val();
-        if (data.sections) setVisibilitySections(data.sections);
-        if (data.providers) setVisibilityProviders(data.providers);
-      }
-    }, (error) => {
-      console.error('Firebase visibility error:', error);
-    });
-
-    // Also listen to legacy sectionVisibility for backward compatibility
-    const legacyRef = ref(database, 'adminSettings/sectionVisibility');
-    const unsubLegacy = onValue(legacyRef, (snapshot) => {
-      if (snapshot.exists()) {
-        const data = snapshot.val();
-        setVisibilitySections(prev => ({ ...prev, ...data }));
-      }
-    });
-
-    return () => { unsubscribe(); unsubLegacy(); };
-  }, []);
-
-  // Firebase API providers listener
-  useEffect(() => {
-    const apiProvidersRef = ref(database, 'adminSettings/apiProviders');
-    const unsub = onValue(apiProvidersRef, (snapshot) => {
-      if (snapshot.exists()) {
-        const data = snapshot.val();
-        const providersList: ApiProviderConfig[] = Object.values(data)
-          .filter((p: any) => p.isActive)
-          .map((p: any) => ({
-            id: p.id || '',
-            name: p.name || '',
-            baseUrl: p.baseUrl || '',
-            apiKey: p.apiKey || '',
-            apiSecret: p.apiSecret || '',
-            method: p.method || 'POST',
-            headers: p.headers || {},
-            bodyTemplate: p.bodyTemplate || '',
-            responseFormat: p.responseFormat || 'json',
-            fieldMappings: p.fieldMappings || undefined,
-            isActive: p.isActive !== false,
-            createdAt: p.createdAt || '',
-            sectionName: p.sectionName || '',
-            sectionId: p.sectionId || '',
-            sectionIcon: p.sectionIcon || '',
-          }));
-        setApiProviders(providersList);
-      } else {
-        setApiProviders([]);
-      }
-    }, (error) => {
-      console.error('Firebase API providers error:', error);
-    });
-
-    return () => unsub();
-  }, []);
+  const [visibilitySubCategories, setVisibilitySubCategories] = useState<Record<string, boolean>>({});
+  const [loading, setLoading] = useState(true);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
+  const [expandedSubCategories, setExpandedSubCategories] = useState<Set<string>>(new Set());
 
   const dividerColor = isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.06)';
   const cardStyle = {
@@ -146,153 +112,147 @@ export default function ServicesScreen() {
     boxShadow: isDark ? 'none' : '0 1px 4px rgba(0,0,0,0.04)',
   };
 
+  // ─── Firebase Listeners ────────────────────────────────────
+
+  useEffect(() => {
+    const catRef = ref(database, 'categories');
+    const unsub1 = onValue(catRef, (snapshot) => {
+      if (snapshot.exists()) {
+        setFbCategories(snapshot.val());
+      } else {
+        setFbCategories({});
+      }
+      setLoading(false);
+    });
+
+    const subRef = ref(database, 'subCategories');
+    const unsub2 = onValue(subRef, (snapshot) => {
+      if (snapshot.exists()) {
+        setFbSubCategories(snapshot.val());
+      } else {
+        setFbSubCategories({});
+      }
+    });
+
+    const provRef = ref(database, 'providers');
+    const unsub3 = onValue(provRef, (snapshot) => {
+      if (snapshot.exists()) {
+        setFbProviders(snapshot.val());
+      } else {
+        setFbProviders({});
+      }
+    });
+
+    const visRef = ref(database, 'adminSettings/visibility');
+    const unsub4 = onValue(visRef, (snapshot) => {
+      if (snapshot.exists()) {
+        const data = snapshot.val();
+        setVisibilitySections(data.sections || {});
+        setVisibilityProviders(data.providers || {});
+        setVisibilitySubCategories(data.subCategories || {});
+      }
+    });
+
+    // Legacy compatibility
+    const legacyRef = ref(database, 'adminSettings/sectionVisibility');
+    const unsub5 = onValue(legacyRef, (snapshot) => {
+      if (snapshot.exists()) {
+        setVisibilitySections(prev => ({ ...prev, ...snapshot.val() }));
+      }
+    });
+
+    return () => { unsub1(); unsub2(); unsub3(); unsub4(); unsub5(); };
+  }, []);
+
+  // ─── Derived Data ─────────────────────────────────────────
+
+  // Sorted categories
+  const sortedCategories = Object.values(fbCategories)
+    .filter(cat => cat.isVisible !== false && visibilitySections[cat.id] !== false)
+    .sort((a, b) => (a.order || 0) - (b.order || 0));
+
+  // Get sub-categories for a category
+  const getSubCategories = (categoryId: string): FirebaseSubCategory[] => {
+    return Object.values(fbSubCategories)
+      .filter(sub => sub.categoryId === categoryId && sub.isVisible !== false && visibilitySubCategories[sub.id] !== false)
+      .sort((a, b) => (a.order || 0) - (b.order || 0));
+  };
+
+  // Get providers for a category or sub-category
+  const getProviders = (categoryId: string, subCategoryId?: string): FirebaseProvider[] => {
+    return Object.values(fbProviders)
+      .filter(p => {
+        if (p.isActive === false) return false;
+        if (visibilityProviders[p.id] === false) return false;
+        if (subCategoryId) {
+          return p.categoryId === categoryId && p.subCategoryId === subCategoryId;
+        }
+        return p.categoryId === categoryId;
+      })
+      .sort((a, b) => (a.order || 0) - (b.order || 0));
+  };
+
+  // Get total provider count for a category
+  const getCategoryProviderCount = (categoryId: string): number => {
+    return Object.values(fbProviders).filter(p =>
+      p.categoryId === categoryId && p.isActive !== false && visibilityProviders[p.id] !== false
+    ).length;
+  };
+
+  // ─── Handlers ──────────────────────────────────────────────
+
   const toggleCategoryExpand = (categoryId: string) => {
     setExpandedCategories(prev => {
       const next = new Set(prev);
-      if (next.has(categoryId)) {
-        next.delete(categoryId);
-      } else {
-        next.add(categoryId);
-      }
+      if (next.has(categoryId)) next.delete(categoryId);
+      else next.add(categoryId);
       return next;
     });
   };
 
-  const handleProviderClick = (providerId: string) => {
+  const toggleSubCategoryExpand = (subCatId: string) => {
+    setExpandedSubCategories(prev => {
+      const next = new Set(prev);
+      if (next.has(subCatId)) next.delete(subCatId);
+      else next.add(subCatId);
+      return next;
+    });
+  };
+
+  const handleProviderClick = (provider: FirebaseProvider) => {
     // Telecom providers go to recharge screen
-    if (telecomProviderIds.includes(providerId)) {
+    if (provider.providerType === 'telecom') {
       setActiveScreen('recharge');
       return;
     }
-    // Other providers open the order bottom sheet
-    const provider = providers.find(p => p.id === providerId);
-    if (provider) {
-      setSelectedProvider(provider);
+    // Other providers - try to find in store providers for order system
+    const storeProvider = storeProviders.find(p => p.id === provider.id);
+    if (storeProvider) {
+      setSelectedProvider(storeProvider);
+      setOrderOpen(true);
+    } else {
+      // Create a temporary provider object for the order
+      setSelectedProvider({
+        id: provider.id,
+        categoryId: provider.categoryId,
+        name: provider.name,
+        color: provider.color,
+        icon: provider.icon,
+        isActive: provider.isActive,
+        inputLabel: provider.inputLabel,
+        inputType: provider.inputType as 'phone' | 'text',
+        inputPrefix: provider.inputPrefix,
+      });
       setOrderOpen(true);
     }
   };
 
-  // Build Entertainment Services section (merges wallet-services + service-providers + API providers)
-  const buildEntertainmentServices = () => {
-    const walletProviders = providers.filter(
-      p => p.categoryId === 'wallet-services' && p.isActive && visibilityProviders[p.id] !== false
-    );
-    const serviceProviderProviders = providers.filter(
-      p => p.categoryId === 'service-providers' && p.isActive && visibilityProviders[p.id] !== false
-    );
+  // ─── Render Helpers ────────────────────────────────────────
 
-    // API provider sub-sections
-    const apiSubSections = apiProviders
-      .filter(ap => ap.sectionName && ap.sectionId)
-      .map(ap => {
-        const apProviders = providers.filter(
-          p => p.categoryId === `api-${ap.sectionId}` && p.isActive && visibilityProviders[p.id] !== false
-        );
-        if (apProviders.length === 0) return null;
-        return { id: `api-${ap.sectionId}`, name: ap.sectionName!, providers: apProviders };
-      })
-      .filter((s): s is NonNullable<typeof s> => s !== null);
+  const renderProviderItem = (provider: FirebaseProvider, index: number) => {
+    const iconSrc = getIconForProvider(provider.id, provider.color);
+    const hasCustomIcon = iconSrc !== '';
 
-    // Wallet private sub-sections
-    const walletSubSections = walletPrivateServicesSubSections
-      .map(sub => {
-        const subProviders = sub.providerIds
-          .map(pid => walletProviders.find(p => p.id === pid))
-          .filter((p): p is NonNullable<typeof p> => !!p);
-        return { id: sub.id, name: sub.name, providers: subProviders };
-      })
-      .filter(sub => sub.providers.length > 0);
-
-    // Service providers as sub-section
-    const spSubSection = serviceProviderProviders.length > 0
-      ? [{ id: 'service-providers', name: 'خدمات المزودين', providers: serviceProviderProviders }]
-      : [];
-
-    const allEntertainmentProviders = [...walletProviders, ...serviceProviderProviders];
-    const allSubSections = [...walletSubSections, ...spSubSection, ...apiSubSections];
-
-    if (allEntertainmentProviders.length === 0 && allSubSections.length === 0) return null;
-
-    return {
-      id: 'entertainment',
-      name: 'الخدمات الترفيهية',
-      providers: allEntertainmentProviders,
-      subSections: allSubSections,
-      isWalletSection: true as const,
-    };
-  };
-
-  // Build other (non-entertainment) sections
-  const buildOtherSections = () => {
-    return categoryOrder
-      .filter(cat => visibilitySections[cat.id] !== false)
-      .map(cat => {
-        const catProviders = providers.filter(p => p.categoryId === cat.id && p.isActive && visibilityProviders[p.id] !== false);
-        return {
-          id: cat.id,
-          name: cat.name,
-          providers: catProviders,
-          subSections: null as any,
-          isWalletSection: false as const,
-        };
-      })
-      .filter(section => section.providers.length > 0);
-  };
-
-  // Combine all sections: Entertainment → Other sections
-  const allSections = [
-    ...(buildEntertainmentServices() ? [buildEntertainmentServices()!] : []),
-    ...buildOtherSections(),
-  ];
-
-  // Filter by search query
-  const filteredSections = searchQuery.trim()
-    ? allSections
-        .map(section => ({
-          ...section,
-          providers: section.providers.filter(p =>
-            p.name.includes(searchQuery.trim())
-          ),
-        }))
-        .filter(section => section.providers.length > 0)
-    : allSections;
-
-  // Helper: build sub-section data for a category (non-wallet)
-  const buildSubSections = (
-    categoryId: string,
-    catProviders: typeof providers
-  ) => {
-    const subDefs = categorySubSections[categoryId];
-    if (!subDefs || subDefs.length === 0) return null;
-
-    return subDefs
-      .map(sub => {
-        const subProviders = sub.providerIds
-          .map(pid => catProviders.find(p => p.id === pid))
-          .filter((p): p is NonNullable<typeof p> => !!p);
-        return {
-          id: sub.id,
-          name: sub.name,
-          providers: subProviders,
-        };
-      })
-      .filter(sub => sub.providers.length > 0);
-  };
-
-  // Helper: flatten sub-sections into a single provider list (preserving order)
-  const flattenSubSectionProviders = (
-    subSections: { id: string; name: string; providers: typeof providers }[]
-  ) => {
-    const result: typeof providers = [];
-    for (const sub of subSections) {
-      result.push(...sub.providers);
-    }
-    return result;
-  };
-
-  // Render a provider grid item
-  const renderProviderItem = (provider: typeof providers[number], index: number) => {
-    const iconSrc = getIconForProvider(provider.id);
     return (
       <motion.button
         key={provider.id}
@@ -301,7 +261,7 @@ export default function ServicesScreen() {
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.8 }}
         transition={{ delay: 0.02 * index, duration: 0.25 }}
-        onClick={() => handleProviderClick(provider.id)}
+        onClick={() => handleProviderClick(provider)}
         whileTap={{ scale: 0.92 }}
         className="flex flex-col items-center justify-center gap-1.5 py-2"
       >
@@ -314,12 +274,23 @@ export default function ServicesScreen() {
               : 'rgba(0,0,0,0.03)',
           }}
         >
-          <img
-            src={iconSrc}
-            alt={provider.name}
-            className="w-10 h-10 object-contain"
-            draggable={false}
-          />
+          {hasCustomIcon ? (
+            <img
+              src={iconSrc}
+              alt={provider.name}
+              className="w-10 h-10 object-contain"
+              draggable={false}
+            />
+          ) : (
+            <div
+              className="w-10 h-10 rounded-xl flex items-center justify-center"
+              style={{ backgroundColor: provider.color || '#8B1E3A' }}
+            >
+              <span className="text-white text-xs font-bold">
+                {(provider.nameEn || provider.name).substring(0, 2).toUpperCase()}
+              </span>
+            </div>
+          )}
         </div>
         {/* Provider Name */}
         <span
@@ -338,73 +309,62 @@ export default function ServicesScreen() {
     );
   };
 
-  // Render sub-sections inside a section
-  const renderSubSections = (
-    subSections: { id: string; name: string; providers: typeof providers }[],
-    isExpanded: boolean
-  ) => {
-    // For collapsed view, limit total providers
-    let displaySubSections = subSections;
-    if (!isExpanded) {
-      let remaining = COMPACT_LIMIT;
-      displaySubSections = subSections.map(sub => {
-        const take = Math.min(sub.providers.length, remaining);
-        remaining -= take;
-        return {
-          ...sub,
-          providers: sub.providers.slice(0, take),
-        };
-      }).filter(sub => sub.providers.length > 0);
-    }
+  const renderSubCategory = (subCat: FirebaseSubCategory, parentCategoryId: string, isExpanded: boolean) => {
+    const providers = getProviders(parentCategoryId, subCat.id);
+    if (providers.length === 0) return null;
+
+    const displayProviders = isExpanded ? providers : providers.slice(0, COMPACT_LIMIT);
 
     return (
-      <AnimatePresence mode="popLayout">
-        {displaySubSections.map((sub, subIndex) => {
-          let itemIndexOffset = 0;
-          for (let i = 0; i < subIndex; i++) {
-            itemIndexOffset += displaySubSections[i].providers.length;
-          }
-
-          return (
-            <div key={sub.id}>
-              {/* Sub-section header */}
-              <div
-                className={`mb-2 pr-2 ${subIndex === 0 ? '' : 'mt-3'}`}
-                style={{
-                  borderRight: '2px solid #8B1E3A',
-                }}
+      <div key={subCat.id}>
+        {/* Sub-section header */}
+        <div
+          className="mb-2 pr-2 mt-3"
+          style={{
+            borderRight: `2px solid ${fbCategories[parentCategoryId]?.color || '#8B1E3A'}`,
+          }}
+        >
+          <div className="flex items-center justify-between">
+            <span
+              className="text-xs font-semibold"
+              style={{ color: isDark ? '#AAA' : '#666' }}
+            >
+              {subCat.nameAr} ({providers.length})
+            </span>
+            {providers.length > COMPACT_LIMIT && (
+              <button
+                onClick={() => toggleSubCategoryExpand(subCat.id)}
+                className="text-[10px] flex items-center gap-0.5"
+                style={{ color: fbCategories[parentCategoryId]?.color || '#8B1E3A' }}
               >
-                <span
-                  className="text-xs font-semibold"
-                  style={{ color: isDark ? '#AAA' : '#666' }}
-                >
-                  {sub.name}
-                </span>
-              </div>
+                {isExpanded ? 'إخفاء' : `+${providers.length - COMPACT_LIMIT}`}
+                {isExpanded ? <ChevronUp size={10} /> : <ChevronDown size={10} />}
+              </button>
+            )}
+          </div>
+        </div>
 
-              {/* Provider grid for this sub-section */}
-              <div className="grid grid-cols-4 gap-x-2 gap-y-4">
-                {sub.providers.map((provider, pIndex) =>
-                  renderProviderItem(provider, itemIndexOffset + pIndex)
-                )}
-              </div>
-
-              {/* Divider between sub-sections (not after last one) */}
-              {subIndex < displaySubSections.length - 1 && (
-                <div
-                  className="my-3"
-                  style={{
-                    height: '1px',
-                    background: dividerColor,
-                  }}
-                />
-              )}
-            </div>
-          );
-        })}
-      </AnimatePresence>
+        {/* Provider grid */}
+        <div className="grid grid-cols-4 gap-x-2 gap-y-4">
+          <AnimatePresence mode="popLayout">
+            {displayProviders.map((provider, pIndex) =>
+              renderProviderItem(provider, pIndex)
+            )}
+          </AnimatePresence>
+        </div>
+      </div>
     );
   };
+
+  // ─── Main Render ──────────────────────────────────────────
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="w-8 h-8 border-2 border-[#8B1E3A] border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="pb-6">
@@ -442,35 +402,27 @@ export default function ServicesScreen() {
       </motion.div>
 
       {/* Category Sections */}
-      {filteredSections.map((section, sectionIndex) => {
-        const isExpanded = expandedCategories.has(section.id) || !!searchQuery.trim();
-        const hasSubSections = section.isWalletSection
-          ? section.subSections && section.subSections.length > 0
-          : buildSubSections(section.id, section.providers) !== null;
+      {sortedCategories.map((category, sectionIndex) => {
+        const isExpanded = expandedCategories.has(category.id) || !!searchQuery.trim();
+        const subCategories = getSubCategories(category.id);
+        const totalProviders = getCategoryProviderCount(category.id);
 
-        const subSections = section.isWalletSection
-          ? section.subSections
-          : buildSubSections(section.id, section.providers);
+        // If no providers at all, skip this category
+        if (totalProviders === 0 && !searchQuery.trim()) return null;
 
-        // Determine total provider count and display providers
-        const totalProviders = section.providers.length;
-        const hasMore = totalProviders > COMPACT_LIMIT;
-
-        // For categories with sub-sections, compute display
-        let displayFlatProviders: typeof section.providers | null = null;
-
-        if (hasSubSections && subSections) {
-          // Sub-sections handle their own display in renderSubSections
-        } else {
-          // No sub-sections: flat grid
-          displayFlatProviders = isExpanded
-            ? section.providers
-            : section.providers.slice(0, COMPACT_LIMIT);
+        // Search filtering
+        let filteredProviders: FirebaseProvider[] = [];
+        if (searchQuery.trim()) {
+          filteredProviders = getProviders(category.id).filter(p =>
+            p.name.includes(searchQuery.trim()) ||
+            (p.nameEn && p.nameEn.toLowerCase().includes(searchQuery.trim().toLowerCase()))
+          );
+          if (filteredProviders.length === 0) return null;
         }
 
         return (
           <motion.div
-            key={section.id}
+            key={category.id}
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.05 * sectionIndex, duration: 0.4 }}
@@ -478,30 +430,29 @@ export default function ServicesScreen() {
           >
             {/* Section Header */}
             <div className="flex items-center justify-between mb-3">
-              <button
-                onClick={() => {
-                  setSelectedCategory(section.id);
-                  setActiveScreen('category-detail');
-                }}
-                className="active:scale-95 transition-transform"
-              >
+              <div className="flex items-center gap-2">
+                {getCategoryIcon(category.icon, category.color)}
                 <h3
-                  className="text-sm font-bold flex items-center gap-1.5"
+                  className="text-sm font-bold"
                   style={{ color: isDark ? '#FFF' : '#1a1a1a' }}
                 >
-                  {section.id === 'entertainment' ? (
-                    <Gamepad2 size={14} strokeWidth={2} color="#8B1E3A" />
-                  ) : section.isWalletSection ? (
-                    <Wallet size={14} strokeWidth={2} color="#8B1E3A" />
-                  ) : null}
-                  {section.name}
+                  {category.nameAr}
                 </h3>
-              </button>
-              {hasMore && !searchQuery.trim() && (
+                <span
+                  className="text-[10px] px-1.5 py-0.5 rounded-full"
+                  style={{
+                    background: `${category.color}15`,
+                    color: category.color,
+                  }}
+                >
+                  {totalProviders}
+                </span>
+              </div>
+              {totalProviders > COMPACT_LIMIT && !searchQuery.trim() && (
                 <button
-                  onClick={() => toggleCategoryExpand(section.id)}
+                  onClick={() => toggleCategoryExpand(category.id)}
                   className="text-xs font-medium flex items-center gap-0.5 active:scale-95 transition-transform"
-                  style={{ color: '#8B1E3A' }}
+                  style={{ color: category.color || '#8B1E3A' }}
                 >
                   {isExpanded ? 'إخفاء' : 'الكل'}
                   <ChevronLeft
@@ -517,20 +468,48 @@ export default function ServicesScreen() {
             </div>
 
             {/* Provider Content */}
-            <div
-              className="rounded-2xl p-4"
-              style={cardStyle}
-            >
-              {hasSubSections && subSections ? (
-                /* Render with sub-sections */
-                renderSubSections(subSections, isExpanded)
-              ) : (
-                /* Render flat grid (no sub-sections) */
+            <div className="rounded-2xl p-4" style={cardStyle}>
+              {searchQuery.trim() ? (
+                /* Search results - flat grid */
                 <div className="grid grid-cols-4 gap-x-2 gap-y-4">
                   <AnimatePresence mode="popLayout">
-                    {displayFlatProviders!.map((provider, index) =>
+                    {filteredProviders.map((provider, index) =>
                       renderProviderItem(provider, index)
                     )}
+                  </AnimatePresence>
+                </div>
+              ) : subCategories.length > 0 ? (
+                /* Sub-categories layout */
+                <div>
+                  {/* First show providers without sub-category */}
+                  {(() => {
+                    const noSubProviders = getProviders(category.id).filter(
+                      p => !p.subCategoryId || p.subCategoryId === ''
+                    );
+                    if (noSubProviders.length === 0) return null;
+                    const displayNoSub = isExpanded ? noSubProviders : noSubProviders.slice(0, COMPACT_LIMIT);
+                    return (
+                      <div className="grid grid-cols-4 gap-x-2 gap-y-4 mb-3">
+                        <AnimatePresence mode="popLayout">
+                          {displayNoSub.map((provider, index) =>
+                            renderProviderItem(provider, index)
+                          )}
+                        </AnimatePresence>
+                      </div>
+                    );
+                  })()}
+
+                  {/* Then show sub-categories with their providers */}
+                  {subCategories.map(subCat =>
+                    renderSubCategory(subCat, category.id, expandedSubCategories.has(subCat.id))
+                  )}
+                </div>
+              ) : (
+                /* No sub-categories - flat grid */
+                <div className="grid grid-cols-4 gap-x-2 gap-y-4">
+                  <AnimatePresence mode="popLayout">
+                    {(isExpanded ? getProviders(category.id) : getProviders(category.id).slice(0, COMPACT_LIMIT))
+                      .map((provider, index) => renderProviderItem(provider, index))}
                   </AnimatePresence>
                 </div>
               )}
@@ -540,16 +519,43 @@ export default function ServicesScreen() {
       })}
 
       {/* Empty state when search yields no results */}
-      {filteredSections.length === 0 && searchQuery.trim() && (
+      {sortedCategories.length === 0 && !loading && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           className="px-4 mt-8"
         >
-          <div
-            className="rounded-2xl p-8 flex flex-col items-center"
-            style={cardStyle}
-          >
+          <div className="rounded-2xl p-8 flex flex-col items-center" style={cardStyle}>
+            <div
+              className="w-14 h-14 rounded-2xl flex items-center justify-center mb-3"
+              style={{ background: isDark ? '#222' : '#F5F5F5' }}
+            >
+              <Search size={24} strokeWidth={1.5} color={isDark ? '#333' : '#DDD'} />
+            </div>
+            <p className="text-sm font-medium" style={{ color: isDark ? '#555' : '#AAA' }}>
+              لا توجد أقسام بعد
+            </p>
+            <p className="text-[11px] mt-1" style={{ color: isDark ? '#444' : '#CCC' }}>
+              قم بإضافة أقسام ومزودين من لوحة التحكم
+            </p>
+          </div>
+        </motion.div>
+      )}
+
+      {/* No search results */}
+      {searchQuery.trim() && sortedCategories.every(cat => {
+        const filtered = getProviders(cat.id).filter(p =>
+          p.name.includes(searchQuery.trim()) ||
+          (p.nameEn && p.nameEn.toLowerCase().includes(searchQuery.trim().toLowerCase()))
+        );
+        return filtered.length === 0;
+      }) && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="px-4 mt-8"
+        >
+          <div className="rounded-2xl p-8 flex flex-col items-center" style={cardStyle}>
             <div
               className="w-14 h-14 rounded-2xl flex items-center justify-center mb-3"
               style={{ background: isDark ? '#222' : '#F5F5F5' }}

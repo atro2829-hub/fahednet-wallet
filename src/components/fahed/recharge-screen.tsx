@@ -31,13 +31,26 @@ import { serviceIcons } from '@/lib/service-icons';
 import { LOGO_BASE64, RED_LOGO_FILTER } from '@/lib/logo';
 import { getProviderFromPhone } from '@/lib/yemen-phone';
 
-const telecomCompanies = [
-  { id: 'yemen-mobile', name: 'يمن موبايل', nameEn: 'Yemen Mobile', color: '#8B1E3A', letter: 'YM', inputLabel: 'رقم الهاتف', inputType: 'phone' as const, inputPrefix: '+967' },
+// Telecom companies are now loaded from Firebase
+// Fallback defaults if Firebase doesn't have data
+const defaultTelecomCompanies = [
+  { id: 'yemen-mobile', name: 'يمن موبايل', nameEn: 'Yemen Mobile', color: '#C41E3A', letter: 'YM', inputLabel: 'رقم الهاتف', inputType: 'phone' as const, inputPrefix: '+967' },
   { id: 'yo', name: 'يو', nameEn: 'YO', color: '#FF6B00', letter: 'YO', inputLabel: 'رقم الهاتف', inputType: 'phone' as const, inputPrefix: '+967' },
   { id: 'sabafon', name: 'سبأفون', nameEn: 'Sabafon', color: '#2563EB', letter: 'S', inputLabel: 'رقم الهاتف', inputType: 'phone' as const, inputPrefix: '+967' },
   { id: 'y', name: 'واي', nameEn: 'Y', color: '#059669', letter: 'Y', inputLabel: 'رقم الهاتف', inputType: 'phone' as const, inputPrefix: '+967' },
-  { id: 'yemen-net', name: 'يمن نت', nameEn: 'Yemen Net', color: '#8B5CF6', letter: 'YN', inputLabel: 'رقم الحساب', inputType: 'text' as const, inputPrefix: '' },
 ];
+
+// Network prefix interface
+interface NetworkPrefix {
+  id: string;
+  prefix: string;
+  networkId: string;
+  networkName: string;
+  color: string;
+  icon: string;
+  isActive: boolean;
+  order: number;
+}
 
 type RechargeMode = 'packages' | 'instant';
 type OrderResult = 'success' | 'insufficient' | 'error' | null;
@@ -70,6 +83,86 @@ export default function RechargeScreen() {
   // Refs
   const rechargeTypeRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
+
+  // Firebase telecom data
+  const [networkPrefixes, setNetworkPrefixes] = useState<NetworkPrefix[]>([]);
+  const [telecomCompanies, setTelecomCompanies] = useState(defaultTelecomCompanies);
+  const [detectedNetwork, setDetectedNetwork] = useState<string | null>(null);
+
+  // Load network prefixes from Firebase
+  useEffect(() => {
+    const prefixRef = ref(database, 'adminSettings/networkPrefixes');
+    const unsub1 = onValue(prefixRef, (snapshot) => {
+      if (snapshot.exists()) {
+        const data = snapshot.val();
+        const list = Object.entries(data).map(([id, val]: [string, any]) => ({
+          id,
+          prefix: val.prefix || '',
+          networkId: val.networkId || '',
+          networkName: val.networkName || '',
+          color: val.color || '#8B1E3A',
+          icon: val.icon || '',
+          isActive: val.isActive !== false,
+          order: val.order || 0,
+        }));
+        list.sort((a, b) => a.order - b.order);
+        setNetworkPrefixes(list.filter(p => p.isActive));
+      }
+    });
+
+    // Load telecom providers from Firebase
+    const provRef = ref(database, 'providers');
+    const unsub2 = onValue(provRef, (snapshot) => {
+      if (snapshot.exists()) {
+        const data = snapshot.val();
+        const telecoms = Object.values(data)
+          .filter((p: any) => p.categoryId === 'telecom' && p.isActive !== false)
+          .sort((a: any, b: any) => (a.order || 0) - (b.order || 0))
+          .map((p: any) => ({
+            id: p.id,
+            name: p.name,
+            nameEn: p.nameEn || p.name,
+            color: p.color || '#8B1E3A',
+            letter: (p.nameEn || p.name).substring(0, 2).toUpperCase(),
+            inputLabel: p.inputLabel || 'رقم الهاتف',
+            inputType: (p.inputType || 'phone') as 'phone' | 'text',
+            inputPrefix: p.inputPrefix || '+967',
+          }));
+        if (telecoms.length > 0) {
+          setTelecomCompanies(telecoms);
+        }
+      }
+    });
+
+    return () => { unsub1(); unsub2(); };
+  }, []);
+
+  // Detect network from phone number prefix
+  useEffect(() => {
+    if (!customerInput || customerInput.length < 2) {
+      setDetectedNetwork(null);
+      return;
+    }
+    // Extract the prefix (first 2 digits after country code)
+    const cleanInput = customerInput.replace(/[^0-9]/g, '');
+    const prefix2 = cleanInput.substring(0, 2);
+    const prefix3 = cleanInput.substring(0, 3);
+
+    // Try 3-digit prefix first, then 2-digit
+    const match3 = networkPrefixes.find(p => p.prefix === prefix3);
+    const match2 = networkPrefixes.find(p => p.prefix === prefix2);
+    const match = match3 || match2;
+
+    if (match) {
+      setDetectedNetwork(match.networkId);
+      // Auto-select the company if not already selected
+      if (!selectedCompanyId) {
+        setSelectedCompanyId(match.networkId);
+      }
+    } else {
+      setDetectedNetwork(null);
+    }
+  }, [customerInput, networkPrefixes, selectedCompanyId]);
 
   const selectedCompany = telecomCompanies.find(c => c.id === selectedCompanyId);
   const providerPackages = packages.filter(

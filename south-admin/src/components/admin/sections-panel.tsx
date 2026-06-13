@@ -19,9 +19,10 @@ const defaultSections = [
   { name: 'الاتصالات', iconKey: 'phone', order: 0, isVisible: true, categoryId: 'telecom' },
   { name: 'خدمات ترفيهية', iconKey: 'gamepad', order: 1, isVisible: true, categoryId: 'entertainment' },
   { name: 'بطاقات رقمية', iconKey: 'credit-card', order: 2, isVisible: true, categoryId: 'cards' },
-  { name: 'الكريبتو', iconKey: 'bitcoin', order: 3, isVisible: true, categoryId: 'crypto' },
-  { name: 'استثمار الكريبتو', iconKey: 'trending-up', order: 4, isVisible: true, categoryId: 'investment' },
-  { name: 'مزودين الخدمات', iconKey: 'layers', order: 5, isVisible: true, categoryId: 'service-providers' },
+  { name: 'منصات البث', iconKey: 'play-circle', order: 3, isVisible: true, categoryId: 'streaming' },
+  { name: 'الكريبتو', iconKey: 'bitcoin', order: 4, isVisible: true, categoryId: 'crypto' },
+  { name: 'استثمار الكريبتو', iconKey: 'trending-up', order: 5, isVisible: true, categoryId: 'investment' },
+  { name: 'مزودين الخدمات', iconKey: 'layers', order: 6, isVisible: true, categoryId: 'service-providers' },
 ];
 
 export default function SectionsPanel() {

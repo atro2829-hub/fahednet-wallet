@@ -20,20 +20,51 @@ import { motion } from 'framer-motion';
 
 const categoryOptions = [
   { value: 'telecom', label: 'الاتصالات' },
-  { value: 'internet', label: 'الإنترنت' },
   { value: 'entertainment', label: 'خدمات ترفيهية' },
   { value: 'cards', label: 'بطاقات رقمية' },
-  { value: 'wallet-services', label: 'خدمات المحفظة' },
-  { value: 'electricity', label: 'الكهرباء والماء' },
-  { value: 'government', label: 'خدمات حكومية' },
+  { value: 'streaming', label: 'منصات البث' },
   { value: 'crypto', label: 'الكريبتو' },
-  { value: 'crypto-invest', label: 'استثمار الكريبتو' },
-  { value: 'api-services', label: 'خدمات API' },
-  { value: 'shopping', label: 'التسوق' },
-  { value: 'education', label: 'التعليم' },
-  { value: 'health', label: 'الصحة' },
-  { value: 'travel', label: 'السفر والسياحة' },
-  { value: 'food', label: 'الطعام والتوصيل' },
+  { value: 'investment', label: 'استثمار الكريبتو' },
+  { value: 'service-providers', label: 'مزودين الخدمات' },
+];
+
+// Sub-category options per category
+const subCategoryOptions: Record<string, { value: string; label: string }[]> = {
+  telecom: [
+    { value: 'telecom-recharge', label: 'شحن الرصيد' },
+    { value: 'telecom-internet', label: 'باقات الإنترنت' },
+    { value: 'telecom-offers', label: 'عروض الاتصالات' },
+  ],
+  entertainment: [
+    { value: 'shooting-games', label: 'ألعاب إطلاق النار' },
+    { value: 'strategy-games', label: 'ألعاب الاستراتيجية' },
+    { value: 'adventure-games', label: 'ألعاب المغامرات' },
+    { value: 'sports-games', label: 'ألعاب الرياضة' },
+    { value: 'racing-games', label: 'ألعاب السباق' },
+    { value: 'social-games', label: 'ألعاب اجتماعية' },
+    { value: 'casual-games', label: 'ألعاب خفيفة' },
+    { value: 'gaming-platforms', label: 'منصات الألعاب' },
+    { value: 'gaming-cards', label: 'بطاقات الألعاب' },
+  ],
+  cards: [
+    { value: 'store-cards', label: 'بطاقات المتاجر' },
+    { value: 'payment-cards', label: 'بطاقات الدفع' },
+    { value: 'communication-cards', label: 'بطاقات التواصل' },
+  ],
+  streaming: [
+    { value: 'video-streaming', label: 'بث الفيديو' },
+    { value: 'music-streaming', label: 'بث الموسيقى' },
+  ],
+};
+
+// Provider type options
+const providerTypeOptions = [
+  { value: 'telecom', label: 'اتصالات' },
+  { value: 'entertainment', label: 'ترفيهية' },
+  { value: 'cards', label: 'بطاقات' },
+  { value: 'streaming', label: 'بث' },
+  { value: 'crypto', label: 'كريبتو' },
+  { value: 'providers', label: 'مزودين' },
 ];
 
 export default function ProvidersPanel() {
@@ -47,12 +78,17 @@ export default function ProvidersPanel() {
 
   // Form
   const [name, setName] = useState('');
+  const [nameEn, setNameEn] = useState('');
   const [categoryId, setCategoryId] = useState('telecom');
+  const [subCategoryId, setSubCategoryId] = useState('');
   const [color, setColor] = useState('#6C3CE1');
   const [icon, setIcon] = useState('');
   const [inputLabel, setInputLabel] = useState('رقم الهاتف');
   const [inputType, setInputType] = useState('phone');
   const [inputPrefix, setInputPrefix] = useState('');
+  const [inputPlaceholder, setInputPlaceholder] = useState('');
+  const [providerType, setProviderType] = useState('telecom');
+  const [executionType, setExecutionType] = useState('manual');
   const [isActive, setIsActive] = useState(true);
 
   // JSON Import state
@@ -74,9 +110,11 @@ export default function ProvidersPanel() {
   }, []);
 
   const resetForm = () => {
-    setName(''); setCategoryId('telecom'); setColor('#6C3CE1');
-    setIcon(''); setInputLabel('رقم الهاتف'); setInputType('phone');
-    setInputPrefix(''); setIsActive(true); setEditing(null);
+    setName(''); setNameEn(''); setCategoryId('telecom'); setSubCategoryId('');
+    setColor('#6C3CE1'); setIcon(''); setInputLabel('رقم الهاتف');
+    setInputType('phone'); setInputPrefix(''); setInputPlaceholder('');
+    setProviderType('telecom'); setExecutionType('manual');
+    setIsActive(true); setEditing(null);
   };
 
   const handleIconUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -98,7 +136,11 @@ export default function ProvidersPanel() {
     if (!name) { showToast('يرجى إدخال الاسم', 'error'); return; }
     try {
       const data = {
-        name, categoryId, color, icon, inputLabel, inputType, inputPrefix, isActive,
+        name, nameEn, categoryId, subCategoryId, color, icon,
+        inputLabel, inputType, inputPrefix, inputPlaceholder,
+        providerType, executionType, isActive,
+        order: editing?.order ?? 0,
+        createdAt: editing?.createdAt || new Date().toISOString(),
       };
       if (editing) {
         const updates: Record<string, any> = {
@@ -114,7 +156,7 @@ export default function ProvidersPanel() {
           .toLowerCase();
         const providerId = cleanId || `provider-${Date.now()}`;
         const updates: Record<string, any> = {
-          [`providers/${providerId}`]: { ...data, id: providerId },
+          [`providers/${providerId}`]: { ...data, id: providerId, order: providers.length, createdAt: new Date().toISOString() },
         };
         updates[`adminSettings/visibility/providers/${providerId}`] = isActive;
         await update(ref(database), updates);
@@ -378,10 +420,13 @@ export default function ProvidersPanel() {
                         </Badge>
                         <Button variant="ghost" size="sm" onClick={() => {
                           setEditing(prov);
-                          setName(prov.name); setCategoryId(prov.categoryId || 'telecom');
+                          setName(prov.name); setNameEn(prov.nameEn || '');
+                          setCategoryId(prov.categoryId || 'telecom'); setSubCategoryId(prov.subCategoryId || '');
                           setColor(prov.color || '#6C3CE1'); setIcon(prov.icon || '');
                           setInputLabel(prov.inputLabel || 'رقم الهاتف'); setInputType(prov.inputType || 'phone');
-                          setInputPrefix(prov.inputPrefix || ''); setIsActive(prov.isActive !== false);
+                          setInputPrefix(prov.inputPrefix || ''); setInputPlaceholder(prov.inputPlaceholder || '');
+                          setProviderType(prov.providerType || 'telecom'); setExecutionType(prov.executionType || 'manual');
+                          setIsActive(prov.isActive !== false);
                           setDialog(true);
                         }}><Edit className="w-4 h-4" /></Button>
                         <Button variant="ghost" size="sm" onClick={() => handleDelete(prov.id)}><Trash2 className="w-4 h-4 text-red-500" /></Button>
@@ -527,12 +572,40 @@ export default function ProvidersPanel() {
         <DialogContent>
           <DialogHeader><DialogTitle>{editing ? 'تعديل مزود' : 'إضافة مزود'}</DialogTitle></DialogHeader>
           <div className="space-y-4">
-            <div><Label>الاسم</Label><Input value={name} onChange={(e) => setName(e.target.value)} /></div>
-            <div><Label>التصنيف</Label>
-              <Select value={categoryId} onValueChange={setCategoryId}>
+            <div><Label>الاسم (عربي)</Label><Input value={name} onChange={(e) => setName(e.target.value)} /></div>
+            <div><Label>الاسم (إنجليزي)</Label><Input value={nameEn} onChange={(e) => setNameEn(e.target.value)} dir="ltr" placeholder="مثال: PUBG Mobile" /></div>
+            <div><Label>التصنيف الرئيسي</Label>
+              <Select value={categoryId} onValueChange={(v) => { setCategoryId(v); setSubCategoryId(''); }}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {categoryOptions.map(c => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            {subCategoryOptions[categoryId] && subCategoryOptions[categoryId].length > 0 && (
+              <div><Label>التصنيف الفرعي</Label>
+                <Select value={subCategoryId} onValueChange={setSubCategoryId}>
+                  <SelectTrigger><SelectValue placeholder="اختر التصنيف الفرعي" /></SelectTrigger>
+                  <SelectContent>
+                    {subCategoryOptions[categoryId].map(sc => <SelectItem key={sc.value} value={sc.value}>{sc.label}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+            <div><Label>نوع المزود</Label>
+              <Select value={providerType} onValueChange={setProviderType}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {providerTypeOptions.map(pt => <SelectItem key={pt.value} value={pt.value}>{pt.label}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div><Label>نوع التنفيذ</Label>
+              <Select value={executionType} onValueChange={setExecutionType}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="manual">يدوي</SelectItem>
+                  <SelectItem value="auto">تلقائي (API)</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -547,19 +620,18 @@ export default function ProvidersPanel() {
                 {icon && <Button variant="ghost" size="sm" onClick={() => setIcon('')}><Trash2 className="w-4 h-4" /></Button>}
               </div>
             </div>
-            <div><Label>تسمية الحقل</Label><Input value={inputLabel} onChange={(e) => setInputLabel(e.target.value)} /></div>
+            <div><Label>تسمية الحقل</Label><Input value={inputLabel} onChange={(e) => setInputLabel(e.target.value)} placeholder="مثال: رقم الهاتف أو Player ID" /></div>
             <div><Label>نوع الحقل</Label>
               <Select value={inputType} onValueChange={setInputType}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="phone">هاتف</SelectItem>
                   <SelectItem value="text">نص</SelectItem>
-                  <SelectItem value="number">رقم</SelectItem>
-                  <SelectItem value="account">حساب</SelectItem>
                 </SelectContent>
               </Select>
             </div>
-            <div><Label>بادئة الحقل</Label><Input value={inputPrefix} onChange={(e) => setInputPrefix(e.target.value)} dir="ltr" placeholder="مثال: 967" /></div>
+            <div><Label>بادئة الحقل</Label><Input value={inputPrefix} onChange={(e) => setInputPrefix(e.target.value)} dir="ltr" placeholder="مثال: +967" /></div>
+            <div><Label>نص توضيحي للحقل</Label><Input value={inputPlaceholder} onChange={(e) => setInputPlaceholder(e.target.value)} placeholder="مثال: أدخل معرف اللاعب" /></div>
             <div className="flex items-center gap-2"><Switch checked={isActive} onCheckedChange={setIsActive} /><Label>نشط</Label></div>
           </div>
           <DialogFooter>
