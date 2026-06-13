@@ -44,7 +44,7 @@ export default function ActivityLogPanel() {
   };
 
   const typeColor: Record<string, string> = {
-    admin: 'bg-purple-500/10 text-purple-600',
+    admin: 'bg-[#8B1E3A]/10 text-[#8B1E3A]',
     user: 'bg-blue-500/10 text-blue-600',
     system: 'bg-green-500/10 text-green-600',
   };
@@ -55,7 +55,7 @@ export default function ActivityLogPanel() {
     system: 'نظام',
   };
 
-  if (loading) return <div className="flex items-center justify-center min-h-[400px]"><div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" /></div>;
+  if (loading) return <div className="flex items-center justify-center min-h-[400px]"><div className="w-8 h-8 border-2 border-[#8B1E3A] border-t-transparent rounded-full animate-spin" /></div>;
 
   return (
     <div className="space-y-6">

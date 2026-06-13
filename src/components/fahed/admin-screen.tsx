@@ -166,7 +166,7 @@ export default function AdminScreen() {
 
   // Provider form
   const [showAddProvider, setShowAddProvider] = useState(false);
-  const [newProvider, setNewProvider] = useState({ name: '', color: '#E60000', categoryId: 'telecom', inputLabel: '', inputType: 'phone' as 'phone' | 'text', inputPrefix: '+967', icon: '' });
+  const [newProvider, setNewProvider] = useState({ name: '', color: '#8B1E3A', categoryId: 'telecom', inputLabel: '', inputType: 'phone' as 'phone' | 'text', inputPrefix: '+967', icon: '' });
   const [editingProvider, setEditingProvider] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -214,7 +214,7 @@ export default function AdminScreen() {
   const [banks, setBanks] = useState<BankAccount[]>([]);
   const [showAddBank, setShowAddBank] = useState(false);
   const [editingBank, setEditingBank] = useState<string | null>(null);
-  const [newBank, setNewBank] = useState({ bankName: '', accountHolderName: '', accountNumber: '', color: '#E60000' });
+  const [newBank, setNewBank] = useState({ bankName: '', accountHolderName: '', accountNumber: '', color: '#8B1E3A' });
 
   // Banners
   const [banners, setBanners] = useState<Banner[]>([]);
@@ -583,7 +583,7 @@ export default function AdminScreen() {
     };
     setProviders([...providers, provider]);
     try { set(ref(database, `providers/${id}`), provider); } catch {}
-    setNewProvider({ name: '', color: '#E60000', categoryId: 'telecom', inputLabel: '', inputType: 'phone', inputPrefix: '+967', icon: '' });
+    setNewProvider({ name: '', color: '#8B1E3A', categoryId: 'telecom', inputLabel: '', inputType: 'phone', inputPrefix: '+967', icon: '' });
     setShowAddProvider(false);
     addAuditEntry(`تم إضافة مزود ${provider.name}`);
   };
@@ -776,7 +776,7 @@ export default function AdminScreen() {
     const id = generateReference();
     const bank: BankAccount = { ...newBank, id, isActive: true };
     try { set(ref(database, `adminSettings/banks/${id}`), bank); } catch {}
-    setNewBank({ bankName: '', accountHolderName: '', accountNumber: '', color: '#E60000' });
+    setNewBank({ bankName: '', accountHolderName: '', accountNumber: '', color: '#8B1E3A' });
     setShowAddBank(false);
     addAuditEntry(`تم إضافة بنك ${bank.bankName}`);
   };
@@ -979,9 +979,9 @@ export default function AdminScreen() {
   const statusStyles: Record<string, { bg: string; color: string; label: string }> = {
     pending: { bg: 'rgba(245,158,11,0.15)', color: '#F59E0B', label: 'قيد الانتظار' },
     completed: { bg: 'rgba(16,185,129,0.15)', color: '#10B981', label: 'مكتمل' },
-    cancelled: { bg: 'rgba(230,0,0,0.15)', color: '#E60000', label: 'ملغى' },
+    cancelled: { bg: 'rgba(139,30,58,0.15)', color: '#8B1E3A', label: 'ملغى' },
     approved: { bg: 'rgba(16,185,129,0.15)', color: '#10B981', label: 'مقبول' },
-    rejected: { bg: 'rgba(230,0,0,0.15)', color: '#E60000', label: 'مرفوض' },
+    rejected: { bg: 'rgba(139,30,58,0.15)', color: '#8B1E3A', label: 'مرفوض' },
     open: { bg: 'rgba(59,130,246,0.15)', color: '#3B82F6', label: 'مفتوح' },
   };
 
@@ -989,11 +989,11 @@ export default function AdminScreen() {
     pending: { bg: 'rgba(245,158,11,0.15)', color: '#F59E0B', label: 'معلق' },
     submitted: { bg: 'rgba(59,130,246,0.15)', color: '#3B82F6', label: 'مُقدم' },
     verified: { bg: 'rgba(16,185,129,0.15)', color: '#10B981', label: 'موثق' },
-    rejected: { bg: 'rgba(230,0,0,0.15)', color: '#E60000', label: 'مرفوض' },
+    rejected: { bg: 'rgba(139,30,58,0.15)', color: '#8B1E3A', label: 'مرفوض' },
   };
 
   const categoryData = [
-    { name: 'اتصالات', count: allOrders.filter(o => providers.find(p => p.id === o.providerId)?.categoryId === 'telecom').length, color: '#E60000' },
+    { name: 'اتصالات', count: allOrders.filter(o => providers.find(p => p.id === o.providerId)?.categoryId === 'telecom').length, color: '#8B1E3A' },
     { name: 'ألعاب', count: allOrders.filter(o => providers.find(p => p.id === o.providerId)?.categoryId === 'games').length, color: '#F59E0B' },
     { name: 'إنترنت', count: allOrders.filter(o => providers.find(p => p.id === o.providerId)?.categoryId === 'internet').length, color: '#3B82F6' },
   ];
@@ -1028,8 +1028,8 @@ export default function AdminScreen() {
               <h1 className="text-white text-lg font-bold">لوحة التحكم</h1>
               <p className="text-white/40 text-[10px]">إدارة الحبيلين اونلاين - {activeTabInfo?.label}</p>
             </div>
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center glow-red" style={{ background: 'rgba(230,0,0,0.2)' }}>
-              <ShieldCheck size={20} strokeWidth={1.5} color="#E60000" />
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center glow-red" style={{ background: 'rgba(139,30,58,0.2)' }}>
+              <ShieldCheck size={20} strokeWidth={1.5} color="#8B1E3A" />
             </div>
           </div>
         </div>
@@ -1050,7 +1050,7 @@ export default function AdminScreen() {
                     { label: 'إجمالي الطلبات', value: statsData.totalOrders, icon: ShoppingBag, color: '#8B5CF6', bg: 'rgba(139,92,246,0.12)' },
                     { label: 'قيد الانتظار', value: statsData.pendingOrders, icon: Clock, color: '#F59E0B', bg: 'rgba(245,158,11,0.12)', glow: true },
                     { label: 'مكتملة', value: statsData.completedOrders, icon: CheckCircle2, color: '#10B981', bg: 'rgba(16,185,129,0.12)' },
-                    { label: 'الإيرادات (ر.ي)', value: statsData.revenueYER, icon: DollarSign, color: '#E60000', bg: 'rgba(230,0,0,0.12)' },
+                    { label: 'الإيرادات (ر.ي)', value: statsData.revenueYER, icon: DollarSign, color: '#8B1E3A', bg: 'rgba(139,30,58,0.12)' },
                   ].map((stat, i) => {
                     const Icon = stat.icon;
                     return (
@@ -1072,14 +1072,14 @@ export default function AdminScreen() {
                 {/* Revenue Chart */}
                 <div className="rounded-2xl p-4" style={cardStyle}>
                   <div className="flex items-center gap-2 mb-4">
-                    <Activity size={16} color="#E60000" />
+                    <Activity size={16} color="#8B1E3A" />
                     <h3 className="text-sm font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>الإيرادات - آخر 7 أيام</h3>
                   </div>
                   <div className="flex items-end gap-2 h-32">
                     {revenueChart.map((d, i) => (
                       <div key={i} className="flex-1 flex flex-col items-center gap-1">
                         <motion.div initial={{ height: 0 }} animate={{ height: `${Math.max((d.amount / maxRevenue) * 100, 4)}%` }} transition={{ delay: i * 0.05, duration: 0.5 }}
-                          className="w-full rounded-t-lg min-h-[4px]" style={{ background: 'linear-gradient(to top, #E60000, #FF4444)' }} />
+                          className="w-full rounded-t-lg min-h-[4px]" style={{ background: 'linear-gradient(to top, #8B1E3A, #FF4444)' }} />
                         <span className="text-[9px]" style={{ color: isDark ? '#666' : '#AAA' }}>{d.day}</span>
                       </div>
                     ))}
@@ -1089,7 +1089,7 @@ export default function AdminScreen() {
                 {/* Orders by Category */}
                 <div className="rounded-2xl p-4" style={cardStyle}>
                   <div className="flex items-center gap-2 mb-3">
-                    <PieChart size={16} color="#E60000" />
+                    <PieChart size={16} color="#8B1E3A" />
                     <h3 className="text-sm font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>الطلبات حسب الفئة</h3>
                   </div>
                   <div className="space-y-2">
@@ -1114,7 +1114,7 @@ export default function AdminScreen() {
                         <Clock size={14} color="#F59E0B" />
                         <h3 className="text-sm font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>طلبات بانتظار التنفيذ</h3>
                       </div>
-                      <button onClick={() => setActiveTab('orders')} className="text-xs font-medium" style={{ color: '#E60000' }}>عرض الكل</button>
+                      <button onClick={() => setActiveTab('orders')} className="text-xs font-medium" style={{ color: '#8B1E3A' }}>عرض الكل</button>
                     </div>
                     <div className="space-y-2">
                       {pendingOrders.slice(0, 5).map((order) => (
@@ -1127,8 +1127,8 @@ export default function AdminScreen() {
                             <motion.button whileTap={{ scale: 0.85 }} onClick={() => handleCompleteOrder(order)} className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'rgba(16,185,129,0.15)' }}>
                               <CheckCircle2 size={14} color="#10B981" />
                             </motion.button>
-                            <motion.button whileTap={{ scale: 0.85 }} onClick={() => handleCancelOrder(order)} className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'rgba(230,0,0,0.15)' }}>
-                              <XCircle size={14} color="#E60000" />
+                            <motion.button whileTap={{ scale: 0.85 }} onClick={() => handleCancelOrder(order)} className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'rgba(139,30,58,0.15)' }}>
+                              <XCircle size={14} color="#8B1E3A" />
                             </motion.button>
                           </div>
                         </div>
@@ -1143,8 +1143,8 @@ export default function AdminScreen() {
             {activeTab === 'orders' && (
               <motion.div key="orders" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-3">
                 <div className="flex items-center gap-2 px-1 mb-1">
-                  <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'rgba(230,0,0,0.1)' }}>
-                    <ShoppingBag size={16} color="#E60000" />
+                  <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'rgba(139,30,58,0.1)' }}>
+                    <ShoppingBag size={16} color="#8B1E3A" />
                   </div>
                   <div>
                     <h3 className="text-sm font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>طلبات الشحن والمنتجات</h3>
@@ -1159,7 +1159,7 @@ export default function AdminScreen() {
                   {(['all', 'pending', 'completed', 'cancelled'] as const).map((filter) => (
                     <motion.button key={filter} whileTap={{ scale: 0.95 }} onClick={() => setOrderFilter(filter)}
                       className="px-3 py-2 rounded-xl text-xs font-medium whitespace-nowrap"
-                      style={{ background: orderFilter === filter ? 'rgba(230,0,0,0.2)' : isDark ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.8)', color: orderFilter === filter ? '#FFF' : isDark ? '#BBB' : '#666', border: orderFilter === filter ? '1px solid rgba(230,0,0,0.3)' : isDark ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(0,0,0,0.06)' }}>
+                      style={{ background: orderFilter === filter ? 'rgba(139,30,58,0.2)' : isDark ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.8)', color: orderFilter === filter ? '#FFF' : isDark ? '#BBB' : '#666', border: orderFilter === filter ? '1px solid rgba(139,30,58,0.3)' : isDark ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(0,0,0,0.06)' }}>
                       {filter === 'all' ? 'الكل' : filter === 'pending' ? 'قيد الانتظار' : filter === 'completed' ? 'مكتمل' : 'ملغى'}
                     </motion.button>
                   ))}
@@ -1180,8 +1180,8 @@ export default function AdminScreen() {
                             {provider?.icon && provider.icon.startsWith('data:') ? (
                               <img src={provider.icon} alt={provider.name} className="w-8 h-8 rounded-lg object-cover" />
                             ) : (
-                              <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: `${provider?.color || '#E60000'}18` }}>
-                                <span className="font-bold text-xs" style={{ color: provider?.color || '#E60000' }}>{(provider?.name || order.providerName)?.charAt(0)}</span>
+                              <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: `${provider?.color || '#8B1E3A'}18` }}>
+                                <span className="font-bold text-xs" style={{ color: provider?.color || '#8B1E3A' }}>{(provider?.name || order.providerName)?.charAt(0)}</span>
                               </div>
                             )}
                             <div>
@@ -1193,7 +1193,7 @@ export default function AdminScreen() {
                             </div>
                           </div>
                           <div className="text-left">
-                            <p className="text-sm font-bold" style={{ color: '#E60000' }}>{order.amount.toLocaleString()} {currencySymbols[order.currency]}</p>
+                            <p className="text-sm font-bold" style={{ color: '#8B1E3A' }}>{order.amount.toLocaleString()} {currencySymbols[order.currency]}</p>
                             <p className="text-[10px]" style={{ color: isDark ? '#666' : '#AAA' }}>{timeAgo(order.createdAt)}</p>
                           </div>
                         </div>
@@ -1202,7 +1202,7 @@ export default function AdminScreen() {
                           <div className="w-px h-6" style={{ background: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)' }} />
                           <div><p className="text-[10px]" style={{ color: isDark ? '#666' : '#AAA' }}>الهاتف</p><p className="text-xs font-medium" dir="ltr" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>{order.userPhone || order.customerInput}</p></div>
                           <div className="w-px h-6" style={{ background: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)' }} />
-                          <div><p className="text-[10px]" style={{ color: isDark ? '#666' : '#AAA' }}>المبلغ</p><p className="text-xs font-bold" style={{ color: '#E60000' }}>{order.amount.toLocaleString()} {currencySymbols[order.currency]}</p></div>
+                          <div><p className="text-[10px]" style={{ color: isDark ? '#666' : '#AAA' }}>المبلغ</p><p className="text-xs font-bold" style={{ color: '#8B1E3A' }}>{order.amount.toLocaleString()} {currencySymbols[order.currency]}</p></div>
                           <div className="w-px h-6" style={{ background: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)' }} />
                           <div><p className="text-[10px]" style={{ color: isDark ? '#666' : '#AAA' }}>النوع</p>
                             <span className="text-[10px] px-1.5 py-0.5 rounded" style={{ background: order.executionType === 'manual' ? 'rgba(245,158,11,0.15)' : 'rgba(16,185,129,0.15)', color: order.executionType === 'manual' ? '#F59E0B' : '#10B981' }}>
@@ -1215,7 +1215,7 @@ export default function AdminScreen() {
                             <motion.button whileTap={{ scale: 0.95 }} onClick={() => handleCompleteOrder(order)} className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-bold text-white" style={{ background: '#10B981' }}>
                               <CheckCircle2 size={14} /> تم الشحن
                             </motion.button>
-                            <motion.button whileTap={{ scale: 0.95 }} onClick={() => handleCancelOrder(order)} className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-bold" style={{ background: 'rgba(230,0,0,0.1)', color: '#E60000' }}>
+                            <motion.button whileTap={{ scale: 0.95 }} onClick={() => handleCancelOrder(order)} className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-bold" style={{ background: 'rgba(139,30,58,0.1)', color: '#8B1E3A' }}>
                               <RotateCcw size={14} /> إلغاء وإعادة
                             </motion.button>
                           </div>
@@ -1246,8 +1246,8 @@ export default function AdminScreen() {
                     <div key={u.id} className="rounded-2xl p-4" style={cardStyle}>
                       <div className="flex items-start justify-between mb-3">
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'rgba(230,0,0,0.1)' }}>
-                            <span className="font-bold text-sm" style={{ color: '#E60000' }}>{u.name?.charAt(0) || '?'}</span>
+                          <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'rgba(139,30,58,0.1)' }}>
+                            <span className="font-bold text-sm" style={{ color: '#8B1E3A' }}>{u.name?.charAt(0) || '?'}</span>
                           </div>
                           <div>
                             <p className="text-sm font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>{u.name || 'بدون اسم'}</p>
@@ -1271,7 +1271,7 @@ export default function AdminScreen() {
                       <div className="flex items-center gap-2">
                         <motion.button whileTap={{ scale: 0.95 }} onClick={() => handleToggleBlock(u)}
                           className="flex items-center gap-1 px-3 py-2 rounded-xl text-xs font-medium"
-                          style={{ background: u.isBlocked ? 'rgba(16,185,129,0.15)' : 'rgba(230,0,0,0.1)', color: u.isBlocked ? '#10B981' : '#E60000' }}>
+                          style={{ background: u.isBlocked ? 'rgba(16,185,129,0.15)' : 'rgba(139,30,58,0.1)', color: u.isBlocked ? '#10B981' : '#8B1E3A' }}>
                           {u.isBlocked ? <Unlock size={12} /> : <Lock size={12} />}
                           <span>{u.isBlocked ? 'إلغاء الحظر' : 'حظر'}</span>
                         </motion.button>
@@ -1292,7 +1292,7 @@ export default function AdminScreen() {
                               <select value={balanceCurrency} onChange={e => setBalanceCurrency(e.target.value as 'YER' | 'SAR' | 'USD')} className="px-2 py-1.5 rounded-lg text-xs outline-none" style={inputStyle}>
                                 <option value="YER">YER</option><option value="SAR">SAR</option><option value="USD">USD</option>
                               </select>
-                              <motion.button whileTap={{ scale: 0.9 }} onClick={() => handleBalanceAdjust(u)} className="px-3 py-1.5 rounded-lg text-xs font-bold text-white" style={{ background: '#E60000' }}>تطبيق</motion.button>
+                              <motion.button whileTap={{ scale: 0.9 }} onClick={() => handleBalanceAdjust(u)} className="px-3 py-1.5 rounded-lg text-xs font-bold text-white" style={{ background: '#8B1E3A' }}>تطبيق</motion.button>
                             </div>
                           </motion.div>
                         )}
@@ -1312,7 +1312,7 @@ export default function AdminScreen() {
                 <div className="flex gap-2 overflow-x-auto pb-1">
                   {(['pending', 'approved', 'rejected', 'all'] as const).map((f) => (
                     <button key={f} onClick={() => setDepositFilter(f)} className="px-3 py-2 rounded-xl text-xs font-medium whitespace-nowrap"
-                      style={{ background: depositFilter === f ? 'rgba(230,0,0,0.2)' : isDark ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.8)', color: depositFilter === f ? '#FFF' : isDark ? '#BBB' : '#666', border: depositFilter === f ? '1px solid rgba(230,0,0,0.3)' : isDark ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(0,0,0,0.06)' }}>
+                      style={{ background: depositFilter === f ? 'rgba(139,30,58,0.2)' : isDark ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.8)', color: depositFilter === f ? '#FFF' : isDark ? '#BBB' : '#666', border: depositFilter === f ? '1px solid rgba(139,30,58,0.3)' : isDark ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(0,0,0,0.06)' }}>
                       {f === 'pending' ? 'قيد الانتظار' : f === 'approved' ? 'مقبول' : f === 'rejected' ? 'مرفوض' : 'الكل'}
                     </button>
                   ))}
@@ -1327,7 +1327,7 @@ export default function AdminScreen() {
                           <p className="text-[10px]" style={{ color: isDark ? '#666' : '#AAA' }}>{dep.method === 'bank_transfer' ? 'تحويل بنكي' : dep.method === 'cash' ? 'نقدي' : 'بطاقة'} - {timeAgo(dep.createdAt)}</p>
                         </div>
                         <div className="text-left">
-                          <p className="text-sm font-bold" style={{ color: '#E60000' }}>{dep.amount.toLocaleString()} {currencySymbols[dep.currency]}</p>
+                          <p className="text-sm font-bold" style={{ color: '#8B1E3A' }}>{dep.amount.toLocaleString()} {currencySymbols[dep.currency]}</p>
                           <span className="text-[10px] px-2 py-0.5 rounded-full" style={{ background: s.bg, color: s.color }}>{s.label}</span>
                         </div>
                       </div>
@@ -1341,7 +1341,7 @@ export default function AdminScreen() {
                           <motion.button whileTap={{ scale: 0.95 }} onClick={() => handleApproveDeposit(dep)} className="flex-1 flex items-center justify-center gap-1 py-2.5 rounded-xl text-xs font-bold text-white" style={{ background: '#10B981' }}>
                             <CheckCircle2 size={14} /> قبول
                           </motion.button>
-                          <motion.button whileTap={{ scale: 0.95 }} onClick={() => handleRejectDeposit(dep)} className="flex-1 flex items-center justify-center gap-1 py-2.5 rounded-xl text-xs font-bold" style={{ background: 'rgba(230,0,0,0.1)', color: '#E60000' }}>
+                          <motion.button whileTap={{ scale: 0.95 }} onClick={() => handleRejectDeposit(dep)} className="flex-1 flex items-center justify-center gap-1 py-2.5 rounded-xl text-xs font-bold" style={{ background: 'rgba(139,30,58,0.1)', color: '#8B1E3A' }}>
                             <XCircle size={14} /> رفض
                           </motion.button>
                         </div>
@@ -1361,7 +1361,7 @@ export default function AdminScreen() {
                 <div className="flex gap-2 overflow-x-auto pb-1">
                   {(['pending', 'approved', 'rejected', 'all'] as const).map((f) => (
                     <button key={f} onClick={() => setWithdrawFilter(f)} className="px-3 py-2 rounded-xl text-xs font-medium whitespace-nowrap"
-                      style={{ background: withdrawFilter === f ? 'rgba(230,0,0,0.2)' : isDark ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.8)', color: withdrawFilter === f ? '#FFF' : isDark ? '#BBB' : '#666', border: withdrawFilter === f ? '1px solid rgba(230,0,0,0.3)' : isDark ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(0,0,0,0.06)' }}>
+                      style={{ background: withdrawFilter === f ? 'rgba(139,30,58,0.2)' : isDark ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.8)', color: withdrawFilter === f ? '#FFF' : isDark ? '#BBB' : '#666', border: withdrawFilter === f ? '1px solid rgba(139,30,58,0.3)' : isDark ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(0,0,0,0.06)' }}>
                       {f === 'pending' ? 'قيد الانتظار' : f === 'approved' ? 'مقبول' : f === 'rejected' ? 'مرفوض' : 'الكل'}
                     </button>
                   ))}
@@ -1376,7 +1376,7 @@ export default function AdminScreen() {
                           <p className="text-[10px]" style={{ color: isDark ? '#666' : '#AAA' }}>{w.method === 'bank_transfer' ? 'تحويل بنكي' : 'نقدي'} - {timeAgo(w.createdAt)}</p>
                         </div>
                         <div className="text-left">
-                          <p className="text-sm font-bold" style={{ color: '#E60000' }}>{w.amount.toLocaleString()} {currencySymbols[w.currency]}</p>
+                          <p className="text-sm font-bold" style={{ color: '#8B1E3A' }}>{w.amount.toLocaleString()} {currencySymbols[w.currency]}</p>
                           <span className="text-[10px] px-2 py-0.5 rounded-full" style={{ background: s.bg, color: s.color }}>{s.label}</span>
                         </div>
                       </div>
@@ -1391,7 +1391,7 @@ export default function AdminScreen() {
                           <motion.button whileTap={{ scale: 0.95 }} onClick={() => handleApproveWithdraw(w)} className="flex-1 flex items-center justify-center gap-1 py-2.5 rounded-xl text-xs font-bold text-white" style={{ background: '#10B981' }}>
                             <CheckCircle2 size={14} /> قبول
                           </motion.button>
-                          <motion.button whileTap={{ scale: 0.95 }} onClick={() => handleRejectWithdraw(w)} className="flex-1 flex items-center justify-center gap-1 py-2.5 rounded-xl text-xs font-bold" style={{ background: 'rgba(230,0,0,0.1)', color: '#E60000' }}>
+                          <motion.button whileTap={{ scale: 0.95 }} onClick={() => handleRejectWithdraw(w)} className="flex-1 flex items-center justify-center gap-1 py-2.5 rounded-xl text-xs font-bold" style={{ background: 'rgba(139,30,58,0.1)', color: '#8B1E3A' }}>
                             <XCircle size={14} /> رفض
                           </motion.button>
                         </div>
@@ -1436,7 +1436,7 @@ export default function AdminScreen() {
                       <motion.button whileTap={{ scale: 0.95 }} onClick={() => handleApproveKyc(u)} className="flex-1 flex items-center justify-center gap-1 py-2.5 rounded-xl text-xs font-bold text-white" style={{ background: '#10B981' }}>
                         <BadgeCheck size={14} /> توثيق
                       </motion.button>
-                      <motion.button whileTap={{ scale: 0.95 }} onClick={() => handleRejectKyc(u)} className="flex-1 flex items-center justify-center gap-1 py-2.5 rounded-xl text-xs font-bold" style={{ background: 'rgba(230,0,0,0.1)', color: '#E60000' }}>
+                      <motion.button whileTap={{ scale: 0.95 }} onClick={() => handleRejectKyc(u)} className="flex-1 flex items-center justify-center gap-1 py-2.5 rounded-xl text-xs font-bold" style={{ background: 'rgba(139,30,58,0.1)', color: '#8B1E3A' }}>
                         <UserX size={14} /> رفض
                       </motion.button>
                     </div>
@@ -1456,7 +1456,7 @@ export default function AdminScreen() {
               <motion.div key="banks" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-3">
                 <motion.button whileTap={{ scale: 0.95 }} onClick={() => { setShowAddBank(!showAddBank); setEditingBank(null); }}
                   className="w-full py-3.5 rounded-2xl flex items-center justify-center gap-2 text-sm font-medium"
-                  style={{ background: 'rgba(230,0,0,0.1)', color: '#E60000', border: '1px solid rgba(230,0,0,0.2)', backdropFilter: 'blur(20px)' }}>
+                  style={{ background: 'rgba(139,30,58,0.1)', color: '#8B1E3A', border: '1px solid rgba(139,30,58,0.2)', backdropFilter: 'blur(20px)' }}>
                   <Plus size={18} strokeWidth={1.5} /><span>إضافة بنك جديد</span>
                 </motion.button>
 
@@ -1470,7 +1470,7 @@ export default function AdminScreen() {
                         <label className="text-xs" style={{ color: isDark ? '#AAA' : '#888' }}>اللون</label>
                         <input type="color" value={newBank.color} onChange={(e) => setNewBank({ ...newBank, color: e.target.value })} className="w-10 h-8 rounded cursor-pointer" style={{ background: 'transparent' }} />
                       </div>
-                      <motion.button whileTap={{ scale: 0.95 }} onClick={handleAddBank} className="w-full py-3 rounded-xl text-sm font-bold text-white" style={{ background: '#E60000' }}>إضافة البنك</motion.button>
+                      <motion.button whileTap={{ scale: 0.95 }} onClick={handleAddBank} className="w-full py-3 rounded-xl text-sm font-bold text-white" style={{ background: '#8B1E3A' }}>إضافة البنك</motion.button>
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -1490,7 +1490,7 @@ export default function AdminScreen() {
                           <motion.button whileTap={{ scale: 0.95 }} onClick={() => handleUpdateBank(bank)} className="flex-1 py-2.5 rounded-xl text-xs font-bold text-white flex items-center justify-center gap-1" style={{ background: '#10B981' }}>
                             <Save size={14} /> حفظ
                           </motion.button>
-                          <motion.button whileTap={{ scale: 0.95 }} onClick={() => setEditingBank(null)} className="flex-1 py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1" style={{ background: 'rgba(230,0,0,0.1)', color: '#E60000' }}>
+                          <motion.button whileTap={{ scale: 0.95 }} onClick={() => setEditingBank(null)} className="flex-1 py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1" style={{ background: 'rgba(139,30,58,0.1)', color: '#8B1E3A' }}>
                             <X size={14} /> إلغاء
                           </motion.button>
                         </div>
@@ -1507,7 +1507,7 @@ export default function AdminScreen() {
                               <p className="text-[10px]" style={{ color: isDark ? '#666' : '#AAA' }}>{bank.accountHolderName}</p>
                             </div>
                           </div>
-                          <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${bank.isActive ? '' : ''}`} style={{ background: bank.isActive ? 'rgba(16,185,129,0.15)' : 'rgba(230,0,0,0.15)', color: bank.isActive ? '#10B981' : '#E60000' }}>
+                          <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${bank.isActive ? '' : ''}`} style={{ background: bank.isActive ? 'rgba(16,185,129,0.15)' : 'rgba(139,30,58,0.15)', color: bank.isActive ? '#10B981' : '#8B1E3A' }}>
                             {bank.isActive ? 'مفعّل' : 'معطّل'}
                           </span>
                         </div>
@@ -1522,11 +1522,11 @@ export default function AdminScreen() {
                           <motion.button whileTap={{ scale: 0.95 }} onClick={() => setEditingBank(bank.id)} className="flex items-center gap-1 px-3 py-2 rounded-xl text-xs font-medium" style={{ background: 'rgba(59,130,246,0.15)', color: '#3B82F6' }}>
                             <Edit3 size={12} /> تعديل
                           </motion.button>
-                          <motion.button whileTap={{ scale: 0.95 }} onClick={() => handleToggleBank(bank)} className="flex items-center gap-1 px-3 py-2 rounded-xl text-xs font-medium" style={{ background: bank.isActive ? 'rgba(230,0,0,0.1)' : 'rgba(16,185,129,0.15)', color: bank.isActive ? '#E60000' : '#10B981' }}>
+                          <motion.button whileTap={{ scale: 0.95 }} onClick={() => handleToggleBank(bank)} className="flex items-center gap-1 px-3 py-2 rounded-xl text-xs font-medium" style={{ background: bank.isActive ? 'rgba(139,30,58,0.1)' : 'rgba(16,185,129,0.15)', color: bank.isActive ? '#8B1E3A' : '#10B981' }}>
                             {bank.isActive ? <ToggleRight size={14} /> : <ToggleLeft size={14} />}
                             <span>{bank.isActive ? 'تعطيل' : 'تفعيل'}</span>
                           </motion.button>
-                          <motion.button whileTap={{ scale: 0.95 }} onClick={() => handleDeleteBank(bank)} className="flex items-center gap-1 px-3 py-2 rounded-xl text-xs font-medium" style={{ background: 'rgba(230,0,0,0.1)', color: '#E60000' }}>
+                          <motion.button whileTap={{ scale: 0.95 }} onClick={() => handleDeleteBank(bank)} className="flex items-center gap-1 px-3 py-2 rounded-xl text-xs font-medium" style={{ background: 'rgba(139,30,58,0.1)', color: '#8B1E3A' }}>
                             <Trash2 size={12} /> حذف
                           </motion.button>
                         </div>
@@ -1546,7 +1546,7 @@ export default function AdminScreen() {
                 {/* Rates form */}
                 <div className="rounded-2xl p-4" style={cardStyle}>
                   <div className="flex items-center gap-2 mb-4">
-                    <RefreshCw size={16} color="#E60000" />
+                    <RefreshCw size={16} color="#8B1E3A" />
                     <h3 className="text-sm font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>أسعار الصرف</h3>
                   </div>
                   <div className="space-y-3">
@@ -1573,7 +1573,7 @@ export default function AdminScreen() {
                 {/* Commission */}
                 <div className="rounded-2xl p-4" style={cardStyle}>
                   <div className="flex items-center gap-2 mb-3">
-                    <Percent size={16} color="#E60000" />
+                    <Percent size={16} color="#8B1E3A" />
                     <h3 className="text-sm font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>نسبة العمولة على التحويلات</h3>
                   </div>
                   <div className="flex items-center gap-3">
@@ -1585,14 +1585,14 @@ export default function AdminScreen() {
                 {/* Save button */}
                 <motion.button whileTap={{ scale: 0.95 }} onClick={handleSaveExchangeRates}
                   className="w-full py-3.5 rounded-2xl flex items-center justify-center gap-2 text-sm font-bold text-white"
-                  style={{ background: '#E60000' }}>
+                  style={{ background: '#8B1E3A' }}>
                   {ratesSaved ? <><CheckCircle2 size={18} /> تم الحفظ</> : <><Save size={18} /> حفظ أسعار الصرف والعمولة</>}
                 </motion.button>
 
                 {/* Live Preview */}
                 <div className="rounded-2xl p-4" style={cardStyle}>
                   <div className="flex items-center gap-2 mb-3">
-                    <Eye size={16} color="#E60000" />
+                    <Eye size={16} color="#8B1E3A" />
                     <h3 className="text-sm font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>معاينة مباشرة</h3>
                   </div>
                   <div className="space-y-2">
@@ -1610,7 +1610,7 @@ export default function AdminScreen() {
                           <div className="flex items-center justify-between mb-1">
                             <span className="text-xs font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>{formatNumber(preview.amount)} {currencySymbols[preview.from as keyof typeof currencySymbols]}</span>
                             <ArrowLeftRight size={12} color={isDark ? '#666' : '#AAA'} />
-                            <span className="text-xs font-bold" style={{ color: '#E60000' }}>{formatNumber(Math.round(afterCommission * 100) / 100)} {currencySymbols[preview.to as keyof typeof currencySymbols]}</span>
+                            <span className="text-xs font-bold" style={{ color: '#8B1E3A' }}>{formatNumber(Math.round(afterCommission * 100) / 100)} {currencySymbols[preview.to as keyof typeof currencySymbols]}</span>
                           </div>
                           <div className="flex items-center justify-between">
                             <span className="text-[9px]" style={{ color: isDark ? '#555' : '#AAA' }}>السعر: {preview.rate}</span>
@@ -1629,7 +1629,7 @@ export default function AdminScreen() {
               <motion.div key="instantRecharge" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-3">
                 <motion.button whileTap={{ scale: 0.95 }} onClick={() => setShowAddProduct(!showAddProduct)}
                   className="w-full py-3.5 rounded-2xl flex items-center justify-center gap-2 text-sm font-medium"
-                  style={{ background: 'rgba(230,0,0,0.1)', color: '#E60000', border: '1px solid rgba(230,0,0,0.2)', backdropFilter: 'blur(20px)' }}>
+                  style={{ background: 'rgba(139,30,58,0.1)', color: '#8B1E3A', border: '1px solid rgba(139,30,58,0.2)', backdropFilter: 'blur(20px)' }}>
                   <Plus size={18} strokeWidth={1.5} /><span>إضافة منتج جديد</span>
                 </motion.button>
                 <AnimatePresence>
@@ -1649,7 +1649,7 @@ export default function AdminScreen() {
                       <select value={newProduct.executionType} onChange={(e) => setNewProduct({ ...newProduct, executionType: e.target.value as 'manual' | 'auto' })} className="w-full px-3 py-2.5 rounded-xl text-sm outline-none" style={inputStyle}>
                         <option value="manual">تنفيذ يدوي</option><option value="auto">تنفيذ تلقائي</option>
                       </select>
-                      <motion.button whileTap={{ scale: 0.95 }} onClick={handleAddProduct} className="w-full py-3 rounded-xl text-sm font-bold text-white" style={{ background: '#E60000' }}>إضافة المنتج</motion.button>
+                      <motion.button whileTap={{ scale: 0.95 }} onClick={handleAddProduct} className="w-full py-3 rounded-xl text-sm font-bold text-white" style={{ background: '#8B1E3A' }}>إضافة المنتج</motion.button>
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -1730,7 +1730,7 @@ export default function AdminScreen() {
                                   {sub.isActive ? <ToggleRight size={16} color="#10B981" /> : <ToggleLeft size={16} color={isDark ? '#444' : '#CCC'} />}
                                 </button>
                                 <button onClick={() => { try { remove(ref(database, `adminSettings/instantRechargeSubsections/${sub.id}`)); } catch {} }}>
-                                  <Trash2 size={10} color="#E60000" />
+                                  <Trash2 size={10} color="#8B1E3A" />
                                 </button>
                               </div>
                             </div>
@@ -1743,7 +1743,7 @@ export default function AdminScreen() {
                                   <button onClick={() => {
                                     setNewProduct({ ...newProduct, providerId: provider.id });
                                     setShowAddProduct(true);
-                                  }} className="px-2 py-1 rounded text-[9px] font-medium" style={{ background: 'rgba(230,0,0,0.1)', color: '#E60000' }}>
+                                  }} className="px-2 py-1 rounded text-[9px] font-medium" style={{ background: 'rgba(139,30,58,0.1)', color: '#8B1E3A' }}>
                                     <Plus size={10} /> منتج
                                   </button>
                                 </div>
@@ -1751,13 +1751,13 @@ export default function AdminScreen() {
                                   <div key={product.id} className="flex items-center justify-between py-1.5" style={{ borderBottom: isDark ? '1px solid rgba(255,255,255,0.02)' : '1px solid rgba(0,0,0,0.02)' }}>
                                     <div>
                                       <p className="text-[11px] font-medium" style={{ color: isDark ? '#DDD' : '#444' }}>{product.name}</p>
-                                      <span className="text-[10px] font-bold" style={{ color: '#E60000' }}>{product.price.toLocaleString()} {currencySymbols[product.currency]}</span>
+                                      <span className="text-[10px] font-bold" style={{ color: '#8B1E3A' }}>{product.price.toLocaleString()} {currencySymbols[product.currency]}</span>
                                     </div>
                                     <div className="flex items-center gap-1">
                                       <button onClick={() => handleToggleProduct(product.id)}>
                                         {product.isActive ? <ToggleRight size={16} color="#10B981" /> : <ToggleLeft size={16} color={isDark ? '#444' : '#CCC'} />}
                                       </button>
-                                      <button onClick={() => handleDeleteProduct(product.id)}><Trash2 size={10} color="#E60000" /></button>
+                                      <button onClick={() => handleDeleteProduct(product.id)}><Trash2 size={10} color="#8B1E3A" /></button>
                                     </div>
                                   </div>
                                 ))}
@@ -1777,13 +1777,13 @@ export default function AdminScreen() {
                                 <input type="text" value={editProductData.name} onChange={e => setEditProductData({ ...editProductData, name: e.target.value })} className="px-2 py-1 rounded text-xs outline-none w-28" style={inputStyle} />
                                 <input type="number" value={editProductData.price} onChange={e => setEditProductData({ ...editProductData, price: parseFloat(e.target.value) || 0 })} className="px-2 py-1 rounded text-xs outline-none w-16" style={inputStyle} dir="ltr" />
                                 <button onClick={() => { updatePackage(product.id, { name: editProductData.name, price: editProductData.price }); try { update(ref(database, `packages/${product.id}`), { name: editProductData.name, price: editProductData.price }); } catch {} setEditingProduct(null); }}><Save size={14} color="#10B981" /></button>
-                                <button onClick={() => setEditingProduct(null)}><X size={14} color="#E60000" /></button>
+                                <button onClick={() => setEditingProduct(null)}><X size={14} color="#8B1E3A" /></button>
                               </div>
                             ) : (
                               <>
                                 <p className="text-sm font-medium" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>{product.name}</p>
                                 <div className="flex items-center gap-2 mt-0.5">
-                                  <span className="text-xs font-bold" style={{ color: '#E60000' }}>{product.price.toLocaleString()} {currencySymbols[product.currency]}</span>
+                                  <span className="text-xs font-bold" style={{ color: '#8B1E3A' }}>{product.price.toLocaleString()} {currencySymbols[product.currency]}</span>
                                   <span className="text-[10px] px-1.5 py-0.5 rounded" style={{ background: product.executionType === 'manual' ? 'rgba(245,158,11,0.15)' : 'rgba(16,185,129,0.15)', color: product.executionType === 'manual' ? '#F59E0B' : '#10B981' }}>
                                     {product.executionType === 'manual' ? 'يدوي' : 'تلقائي'}
                                   </span>
@@ -1797,7 +1797,7 @@ export default function AdminScreen() {
                               <button onClick={() => handleToggleProduct(product.id)}>
                                 {product.isActive ? <ToggleRight size={22} color="#10B981" /> : <ToggleLeft size={22} color={isDark ? '#444' : '#CCC'} />}
                               </button>
-                              <button onClick={() => handleDeleteProduct(product.id)}><Trash2 size={14} color="#E60000" /></button>
+                              <button onClick={() => handleDeleteProduct(product.id)}><Trash2 size={14} color="#8B1E3A" /></button>
                             </div>
                           )}
                         </div>
@@ -1825,7 +1825,7 @@ export default function AdminScreen() {
                 </div>
                 <motion.button whileTap={{ scale: 0.95 }} onClick={() => setShowAddProduct(!showAddProduct)}
                   className="w-full py-3.5 rounded-2xl flex items-center justify-center gap-2 text-sm font-medium"
-                  style={{ background: 'rgba(230,0,0,0.1)', color: '#E60000', border: '1px solid rgba(230,0,0,0.2)', backdropFilter: 'blur(20px)' }}>
+                  style={{ background: 'rgba(139,30,58,0.1)', color: '#8B1E3A', border: '1px solid rgba(139,30,58,0.2)', backdropFilter: 'blur(20px)' }}>
                   <Plus size={18} strokeWidth={1.5} /><span>إضافة منتج جديد</span>
                 </motion.button>
                 <AnimatePresence>
@@ -1833,7 +1833,7 @@ export default function AdminScreen() {
                     <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="rounded-2xl p-4 space-y-3 overflow-hidden" style={cardStyle}>
                       <select value={newProduct.providerId} onChange={(e) => setNewProduct({ ...newProduct, providerId: e.target.value })} className="w-full px-3 py-2.5 rounded-xl text-sm outline-none" style={inputStyle}>
                         <option value="">اختر المزود</option>
-                        {providers.filter(p => p.categoryId === 'entertainment' || p.categoryId === 'cards').map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                        {providers.filter(p => p.categoryId === 'wallet-services' || p.categoryId === 'entertainment' || p.categoryId === 'cards').map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
                       </select>
                       <input type="text" placeholder="اسم المنتج" value={newProduct.name} onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })} className="w-full px-3 py-2.5 rounded-xl text-sm outline-none" style={inputStyle} />
                       <div className="flex gap-2">
@@ -1845,7 +1845,7 @@ export default function AdminScreen() {
                       <select value={newProduct.executionType} onChange={(e) => setNewProduct({ ...newProduct, executionType: e.target.value as 'manual' | 'auto' })} className="w-full px-3 py-2.5 rounded-xl text-sm outline-none" style={inputStyle}>
                         <option value="manual">تنفيذ يدوي</option><option value="auto">تنفيذ تلقائي</option>
                       </select>
-                      <motion.button whileTap={{ scale: 0.95 }} onClick={handleAddProduct} className="w-full py-3 rounded-xl text-sm font-bold text-white" style={{ background: '#E60000' }}>إضافة المنتج</motion.button>
+                      <motion.button whileTap={{ scale: 0.95 }} onClick={handleAddProduct} className="w-full py-3 rounded-xl text-sm font-bold text-white" style={{ background: '#8B1E3A' }}>إضافة المنتج</motion.button>
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -1858,8 +1858,8 @@ export default function AdminScreen() {
                 {['games', 'cards', 'subscriptions'].map((subType) => {
                   const subTypeLabel = subType === 'games' ? 'ألعاب' : subType === 'cards' ? 'بطاقات رقمية' : 'اشتراكات';
                   const subProviders = providers.filter(p => {
-                    if (subType === 'games') return p.categoryId === 'entertainment';
-                    if (subType === 'cards') return p.categoryId === 'cards';
+                    if (subType === 'games') return p.categoryId === 'wallet-services' || p.categoryId === 'entertainment';
+                    if (subType === 'cards') return p.categoryId === 'wallet-services' || p.categoryId === 'cards';
                     return false;
                   });
                   const subsForType = entertainmentSubs.filter(s => s.parentId === subType);
@@ -1933,7 +1933,7 @@ export default function AdminScreen() {
                                   {sub.isActive ? <ToggleRight size={16} color="#10B981" /> : <ToggleLeft size={16} color={isDark ? '#444' : '#CCC'} />}
                                 </button>
                                 <button onClick={() => { try { remove(ref(database, `adminSettings/entertainmentSubsections/${sub.id}`)); } catch {} }}>
-                                  <Trash2 size={10} color="#E60000" />
+                                  <Trash2 size={10} color="#8B1E3A" />
                                 </button>
                               </div>
                             </div>
@@ -1964,13 +1964,13 @@ export default function AdminScreen() {
                                       <input type="text" value={editProductData.name} onChange={e => setEditProductData({ ...editProductData, name: e.target.value })} className="px-2 py-1 rounded text-xs outline-none w-28" style={inputStyle} />
                                       <input type="number" value={editProductData.price} onChange={e => setEditProductData({ ...editProductData, price: parseFloat(e.target.value) || 0 })} className="px-2 py-1 rounded text-xs outline-none w-16" style={inputStyle} dir="ltr" />
                                       <button onClick={() => { updatePackage(product.id, { name: editProductData.name, price: editProductData.price }); try { update(ref(database, `packages/${product.id}`), { name: editProductData.name, price: editProductData.price }); } catch {} setEditingProduct(null); }}><Save size={14} color="#10B981" /></button>
-                                      <button onClick={() => setEditingProduct(null)}><X size={14} color="#E60000" /></button>
+                                      <button onClick={() => setEditingProduct(null)}><X size={14} color="#8B1E3A" /></button>
                                     </div>
                                   ) : (
                                     <>
                                       <p className="text-sm font-medium" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>{product.name}</p>
                                       <div className="flex items-center gap-2 mt-0.5">
-                                        <span className="text-xs font-bold" style={{ color: '#E60000' }}>{product.price.toLocaleString()} {currencySymbols[product.currency]}</span>
+                                        <span className="text-xs font-bold" style={{ color: '#8B1E3A' }}>{product.price.toLocaleString()} {currencySymbols[product.currency]}</span>
                                         <span className="text-[10px] px-1.5 py-0.5 rounded" style={{ background: product.executionType === 'manual' ? 'rgba(245,158,11,0.15)' : 'rgba(16,185,129,0.15)', color: product.executionType === 'manual' ? '#F59E0B' : '#10B981' }}>
                                           {product.executionType === 'manual' ? 'يدوي' : 'تلقائي'}
                                         </span>
@@ -1984,7 +1984,7 @@ export default function AdminScreen() {
                                     <button onClick={() => handleToggleProduct(product.id)}>
                                       {product.isActive ? <ToggleRight size={22} color="#10B981" /> : <ToggleLeft size={22} color={isDark ? '#444' : '#CCC'} />}
                                     </button>
-                                    <button onClick={() => handleDeleteProduct(product.id)}><Trash2 size={14} color="#E60000" /></button>
+                                    <button onClick={() => handleDeleteProduct(product.id)}><Trash2 size={14} color="#8B1E3A" /></button>
                                   </div>
                                 )}
                               </div>
@@ -1996,7 +1996,7 @@ export default function AdminScreen() {
                   );
                 })}
 
-                {providers.filter(p => p.categoryId === 'entertainment' || p.categoryId === 'cards').length === 0 && (
+                {providers.filter(p => p.categoryId === 'wallet-services' || p.categoryId === 'entertainment' || p.categoryId === 'cards').length === 0 && (
                   <div className="flex flex-col items-center py-8"><Gamepad2 size={40} strokeWidth={1.5} color={isDark ? '#333' : '#DDD'} /><p className="text-sm mt-2" style={{ color: isDark ? '#666' : '#AAA' }}>لا توجد خدمات ترفيهية</p></div>
                 )}
               </motion.div>
@@ -2007,7 +2007,7 @@ export default function AdminScreen() {
               <motion.div key="providers" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-3">
                 <motion.button whileTap={{ scale: 0.95 }} onClick={() => setShowAddProvider(!showAddProvider)}
                   className="w-full py-3.5 rounded-2xl flex items-center justify-center gap-2 text-sm font-medium"
-                  style={{ background: 'rgba(230,0,0,0.1)', color: '#E60000', border: '1px solid rgba(230,0,0,0.2)', backdropFilter: 'blur(20px)' }}>
+                  style={{ background: 'rgba(139,30,58,0.1)', color: '#8B1E3A', border: '1px solid rgba(139,30,58,0.2)', backdropFilter: 'blur(20px)' }}>
                   <Plus size={18} strokeWidth={1.5} /><span>إضافة مزود خدمة</span>
                 </motion.button>
                 <AnimatePresence>
@@ -2034,7 +2034,7 @@ export default function AdminScreen() {
                           {newProvider.icon && <img src={newProvider.icon} alt="icon" className="w-8 h-8 rounded-lg object-cover" />}
                         </div>
                       </div>
-                      <motion.button whileTap={{ scale: 0.95 }} onClick={handleAddProvider} className="w-full py-3 rounded-xl text-sm font-bold text-white" style={{ background: '#E60000' }}>إضافة المزود</motion.button>
+                      <motion.button whileTap={{ scale: 0.95 }} onClick={handleAddProvider} className="w-full py-3 rounded-xl text-sm font-bold text-white" style={{ background: '#8B1E3A' }}>إضافة المزود</motion.button>
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -2065,7 +2065,7 @@ export default function AdminScreen() {
                         <button onClick={() => handleToggleProvider(provider.id)}>
                           {provider.isActive ? <ToggleRight size={22} color="#10B981" /> : <ToggleLeft size={22} color={isDark ? '#444' : '#CCC'} />}
                         </button>
-                        <button onClick={() => handleDeleteProvider(provider.id)}><Trash2 size={14} color="#E60000" /></button>
+                        <button onClick={() => handleDeleteProvider(provider.id)}><Trash2 size={14} color="#8B1E3A" /></button>
                       </div>
                     </div>
                   </div>
@@ -2078,7 +2078,7 @@ export default function AdminScreen() {
               <motion.div key="codes" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-3">
                 <motion.button whileTap={{ scale: 0.95 }} onClick={() => setShowAddCode(!showAddCode)}
                   className="w-full py-3.5 rounded-2xl flex items-center justify-center gap-2 text-sm font-medium"
-                  style={{ background: 'rgba(230,0,0,0.1)', color: '#E60000', border: '1px solid rgba(230,0,0,0.2)', backdropFilter: 'blur(20px)' }}>
+                  style={{ background: 'rgba(139,30,58,0.1)', color: '#8B1E3A', border: '1px solid rgba(139,30,58,0.2)', backdropFilter: 'blur(20px)' }}>
                   <Plus size={18} strokeWidth={1.5} /><span>إضافة كود خصم</span>
                 </motion.button>
                 <AnimatePresence>
@@ -2098,7 +2098,7 @@ export default function AdminScreen() {
                         <input type="number" placeholder="الحد الأقصى" value={newCode.maxUses || ''} onChange={e => setNewCode({ ...newCode, maxUses: parseInt(e.target.value) || 100 })} className="flex-1 px-3 py-2.5 rounded-xl text-sm outline-none" style={inputStyle} dir="ltr" />
                       </div>
                       <input type="date" value={newCode.expiresAt} onChange={e => setNewCode({ ...newCode, expiresAt: e.target.value })} className="w-full px-3 py-2.5 rounded-xl text-sm outline-none" style={inputStyle} />
-                      <motion.button whileTap={{ scale: 0.95 }} onClick={handleAddPromoCode} className="w-full py-3 rounded-xl text-sm font-bold text-white" style={{ background: '#E60000' }}>إضافة الكود</motion.button>
+                      <motion.button whileTap={{ scale: 0.95 }} onClick={handleAddPromoCode} className="w-full py-3 rounded-xl text-sm font-bold text-white" style={{ background: '#8B1E3A' }}>إضافة الكود</motion.button>
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -2106,8 +2106,8 @@ export default function AdminScreen() {
                   <div key={c.id} className="rounded-2xl p-4" style={cardStyle}>
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-2">
-                        <span className="text-lg font-mono font-bold" style={{ color: '#E60000' }} dir="ltr">{c.code}</span>
-                        <span className="text-[10px] px-2 py-0.5 rounded-full font-bold" style={{ background: 'rgba(230,0,0,0.15)', color: '#E60000' }}>
+                        <span className="text-lg font-mono font-bold" style={{ color: '#8B1E3A' }} dir="ltr">{c.code}</span>
+                        <span className="text-[10px] px-2 py-0.5 rounded-full font-bold" style={{ background: 'rgba(139,30,58,0.15)', color: '#8B1E3A' }}>
                           {c.type === 'percentage' ? `${c.discount}%` : `${c.discount} ${currencySymbols[c.currency]}`}
                         </span>
                       </div>
@@ -2121,7 +2121,7 @@ export default function AdminScreen() {
                       {c.expiresAt && <span className="text-[10px]" style={{ color: isDark ? '#666' : '#AAA' }}>ينتهي: {new Date(c.expiresAt).toLocaleDateString('ar-SA')}</span>}
                     </div>
                     <div className="mt-2 h-1.5 rounded-full overflow-hidden" style={{ background: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)' }}>
-                      <div className="h-full rounded-full" style={{ width: `${Math.min((c.usedCount / c.maxUses) * 100, 100)}%`, background: '#E60000' }} />
+                      <div className="h-full rounded-full" style={{ width: `${Math.min((c.usedCount / c.maxUses) * 100, 100)}%`, background: '#8B1E3A' }} />
                     </div>
                   </div>
                 ))}
@@ -2136,14 +2136,14 @@ export default function AdminScreen() {
               <motion.div key="giftCodes" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-3">
                 <motion.button whileTap={{ scale: 0.95 }} onClick={() => setShowAddGiftCode(!showAddGiftCode)}
                   className="w-full py-3.5 rounded-2xl flex items-center justify-center gap-2 text-sm font-medium"
-                  style={{ background: 'rgba(230,0,0,0.1)', color: '#E60000', border: '1px solid rgba(230,0,0,0.2)', backdropFilter: 'blur(20px)' }}>
+                  style={{ background: 'rgba(139,30,58,0.1)', color: '#8B1E3A', border: '1px solid rgba(139,30,58,0.2)', backdropFilter: 'blur(20px)' }}>
                   <Plus size={18} strokeWidth={1.5} /><span>إنشاء كود هدية جديد</span>
                 </motion.button>
                 <AnimatePresence>
                   {showAddGiftCode && (
                     <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="rounded-2xl p-4 space-y-3 overflow-hidden" style={cardStyle}>
                       <div className="flex items-center gap-2 mb-1">
-                        <Gift size={16} color="#E60000" />
+                        <Gift size={16} color="#8B1E3A" />
                         <h3 className="text-sm font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>إنشاء كود هدية</h3>
                       </div>
                       <div className="flex gap-2">
@@ -2162,7 +2162,7 @@ export default function AdminScreen() {
                           <input type="date" value={newGiftCode.expiresAt} onChange={(e) => setNewGiftCode({ ...newGiftCode, expiresAt: e.target.value })} className="w-full px-3 py-2.5 rounded-xl text-sm outline-none" style={inputStyle} />
                         </div>
                       </div>
-                      <motion.button whileTap={{ scale: 0.95 }} onClick={handleAddGiftCode} className="w-full py-3 rounded-xl text-sm font-bold text-white" style={{ background: '#E60000' }}>إنشاء الكود</motion.button>
+                      <motion.button whileTap={{ scale: 0.95 }} onClick={handleAddGiftCode} className="w-full py-3 rounded-xl text-sm font-bold text-white" style={{ background: '#8B1E3A' }}>إنشاء الكود</motion.button>
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -2170,7 +2170,7 @@ export default function AdminScreen() {
                 {/* Gift codes stats */}
                 <div className="grid grid-cols-3 gap-2">
                   <div className="rounded-2xl p-3 text-center" style={cardStyle}>
-                    <p className="text-lg font-bold" style={{ color: '#E60000' }}>{giftCodes.length}</p>
+                    <p className="text-lg font-bold" style={{ color: '#8B1E3A' }}>{giftCodes.length}</p>
                     <p className="text-[10px]" style={{ color: isDark ? '#888' : '#AAA' }}>إجمالي الأكواد</p>
                   </div>
                   <div className="rounded-2xl p-3 text-center" style={cardStyle}>
@@ -2189,7 +2189,7 @@ export default function AdminScreen() {
                   return (
                     <div key={gc.id} className="rounded-2xl overflow-hidden" style={{
                       ...cardStyle,
-                      border: isExpired ? '1px solid rgba(245,158,11,0.3)' : isFullyUsed ? '1px solid rgba(230,0,0,0.2)' : cardStyle.border,
+                      border: isExpired ? '1px solid rgba(245,158,11,0.3)' : isFullyUsed ? '1px solid rgba(139,30,58,0.2)' : cardStyle.border,
                     }}>
                       <div className="p-4">
                         <div className="flex items-start justify-between mb-2">
@@ -2199,7 +2199,7 @@ export default function AdminScreen() {
                             </div>
                             <div>
                               <p className="text-sm font-mono font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }} dir="ltr">{gc.code}</p>
-                              <p className="text-xs font-bold" style={{ color: '#E60000' }}>{gc.amount.toLocaleString()} {currencySymbols[gc.currency]}</p>
+                              <p className="text-xs font-bold" style={{ color: '#8B1E3A' }}>{gc.amount.toLocaleString()} {currencySymbols[gc.currency]}</p>
                             </div>
                           </div>
                           <div className="flex items-center gap-2">
@@ -2210,14 +2210,14 @@ export default function AdminScreen() {
                               {gc.isActive ? <ToggleRight size={22} color="#10B981" /> : <ToggleLeft size={22} color={isDark ? '#444' : '#CCC'} />}
                             </button>
                             <button onClick={() => handleDeleteGiftCode(gc)}>
-                              <Trash2 size={14} color="#E60000" />
+                              <Trash2 size={14} color="#8B1E3A" />
                             </button>
                           </div>
                         </div>
                         <div className="flex items-center gap-3 mt-2">
                           <span className="text-[10px] px-2 py-0.5 rounded-full font-medium" style={{
-                            background: isExpired ? 'rgba(245,158,11,0.15)' : isFullyUsed ? 'rgba(230,0,0,0.15)' : gc.isActive ? 'rgba(16,185,129,0.15)' : 'rgba(102,102,102,0.15)',
-                            color: isExpired ? '#F59E0B' : isFullyUsed ? '#E60000' : gc.isActive ? '#10B981' : '#666',
+                            background: isExpired ? 'rgba(245,158,11,0.15)' : isFullyUsed ? 'rgba(139,30,58,0.15)' : gc.isActive ? 'rgba(16,185,129,0.15)' : 'rgba(102,102,102,0.15)',
+                            color: isExpired ? '#F59E0B' : isFullyUsed ? '#8B1E3A' : gc.isActive ? '#10B981' : '#666',
                           }}>
                             {isExpired ? 'منتهي الصلاحية' : isFullyUsed ? 'تم الاستخدام بالكامل' : gc.isActive ? 'نشط' : 'معطل'}
                           </span>
@@ -2225,7 +2225,7 @@ export default function AdminScreen() {
                           {gc.expiresAt && <span className="text-[10px]" style={{ color: isDark ? '#666' : '#AAA' }}>ينتهي: {new Date(gc.expiresAt).toLocaleDateString('ar-SA')}</span>}
                         </div>
                         <div className="mt-2 h-1.5 rounded-full overflow-hidden" style={{ background: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)' }}>
-                          <div className="h-full rounded-full transition-all" style={{ width: `${Math.min((gc.usedCount / gc.maxUses) * 100, 100)}%`, background: gc.usedCount >= gc.maxUses ? '#E60000' : '#8B5CF6' }} />
+                          <div className="h-full rounded-full transition-all" style={{ width: `${Math.min((gc.usedCount / gc.maxUses) * 100, 100)}%`, background: gc.usedCount >= gc.maxUses ? '#8B1E3A' : '#8B5CF6' }} />
                         </div>
                       </div>
                     </div>
@@ -2242,7 +2242,7 @@ export default function AdminScreen() {
               <motion.div key="banners" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-3">
                 <motion.button whileTap={{ scale: 0.95 }} onClick={() => setShowAddBanner(!showAddBanner)}
                   className="w-full py-3.5 rounded-2xl flex items-center justify-center gap-2 text-sm font-medium"
-                  style={{ background: 'rgba(230,0,0,0.1)', color: '#E60000', border: '1px solid rgba(230,0,0,0.2)', backdropFilter: 'blur(20px)' }}>
+                  style={{ background: 'rgba(139,30,58,0.1)', color: '#8B1E3A', border: '1px solid rgba(139,30,58,0.2)', backdropFilter: 'blur(20px)' }}>
                   <Plus size={18} strokeWidth={1.5} /><span>إضافة بانر</span>
                 </motion.button>
 
@@ -2272,7 +2272,7 @@ export default function AdminScreen() {
                         <span className="text-xs" style={{ color: isDark ? '#AAA' : '#888' }}>ترتيب العرض</span>
                         <input type="number" value={newBanner.order || ''} onChange={e => setNewBanner({ ...newBanner, order: parseInt(e.target.value) || 0 })} className="w-20 px-3 py-2.5 rounded-xl text-sm outline-none text-center" style={inputStyle} dir="ltr" />
                       </div>
-                      <motion.button whileTap={{ scale: 0.95 }} onClick={handleAddBanner} className="w-full py-3 rounded-xl text-sm font-bold text-white" style={{ background: '#E60000' }}>إضافة البانر</motion.button>
+                      <motion.button whileTap={{ scale: 0.95 }} onClick={handleAddBanner} className="w-full py-3 rounded-xl text-sm font-bold text-white" style={{ background: '#8B1E3A' }}>إضافة البانر</motion.button>
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -2313,7 +2313,7 @@ export default function AdminScreen() {
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2">
                               <h4 className="text-sm font-bold truncate" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>{banner.title}</h4>
-                              <span className="text-[10px] px-1.5 py-0.5 rounded-full font-bold flex-shrink-0" style={{ background: 'rgba(230,0,0,0.15)', color: '#E60000' }}>#{banner.order}</span>
+                              <span className="text-[10px] px-1.5 py-0.5 rounded-full font-bold flex-shrink-0" style={{ background: 'rgba(139,30,58,0.15)', color: '#8B1E3A' }}>#{banner.order}</span>
                             </div>
                             <p className="text-xs mt-0.5 line-clamp-2" style={{ color: isDark ? '#888' : '#999' }}>{banner.description}</p>
                             {banner.link && (
@@ -2336,8 +2336,8 @@ export default function AdminScreen() {
                               <Edit3 size={14} color={isDark ? '#AAA' : '#888'} />
                             </motion.button>
                             <motion.button whileTap={{ scale: 0.85 }} onClick={() => handleDeleteBanner(banner)}
-                              className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'rgba(230,0,0,0.1)' }}>
-                              <Trash2 size={14} color="#E60000" />
+                              className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'rgba(139,30,58,0.1)' }}>
+                              <Trash2 size={14} color="#8B1E3A" />
                             </motion.button>
                           </div>
                         </div>
@@ -2356,7 +2356,7 @@ export default function AdminScreen() {
               <motion.div key="socialLinks" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-3">
                 <div className="rounded-2xl p-4 space-y-3" style={cardStyle}>
                   <div className="flex items-center gap-2 mb-2">
-                    <Link size={16} color="#E60000" />
+                    <Link size={16} color="#8B1E3A" />
                     <h3 className="text-sm font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>روابط التواصل الاجتماعي</h3>
                   </div>
                   <p className="text-xs mb-2" style={{ color: isDark ? '#888' : '#AAA' }}>ادارة روابط التواصل التي تظهر للمستخدمين في التطبيق</p>
@@ -2374,8 +2374,8 @@ export default function AdminScreen() {
                     const Icon = field.icon;
                     return (
                       <div key={field.key} className="flex items-center gap-2">
-                        <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'rgba(230,0,0,0.08)' }}>
-                          <Icon size={16} color="#E60000" />
+                        <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'rgba(139,30,58,0.08)' }}>
+                          <Icon size={16} color="#8B1E3A" />
                         </div>
                         <div className="flex-1">
                           <label className="text-[10px] font-medium block mb-0.5" style={{ color: isDark ? '#AAA' : '#888' }}>{field.label}</label>
@@ -2389,7 +2389,7 @@ export default function AdminScreen() {
                 {/* Contact Admin Message */}
                 <div className="rounded-2xl p-4 space-y-3" style={cardStyle}>
                   <div className="flex items-center gap-2 mb-2">
-                    <MessageSquare size={16} color="#E60000" />
+                    <MessageSquare size={16} color="#8B1E3A" />
                     <h3 className="text-sm font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>رسالة تواصل مع الأدمن</h3>
                   </div>
                   <p className="text-xs mb-2" style={{ color: isDark ? '#888' : '#AAA' }}>رسالة تظهر للمستخدمين في صفحة الدعم عند الضغط على تواصل مع الأدمن</p>
@@ -2406,7 +2406,7 @@ export default function AdminScreen() {
                 {/* Preview */}
                 <div className="rounded-2xl p-4" style={cardStyle}>
                   <div className="flex items-center gap-2 mb-3">
-                    <Eye size={16} color="#E60000" />
+                    <Eye size={16} color="#8B1E3A" />
                     <h3 className="text-sm font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>معاينة الروابط</h3>
                   </div>
                   <div className="space-y-2">
@@ -2421,7 +2421,7 @@ export default function AdminScreen() {
                       return (
                         <div key={key} className="flex items-center justify-between p-2.5 rounded-xl" style={{ background: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)' }}>
                           <span className="text-xs font-medium" style={{ color: isDark ? '#CCC' : '#555' }}>{labels[key] || key}</span>
-                          <span className="text-[10px] truncate max-w-[180px]" style={{ color: '#E60000' }} dir="ltr">{value}</span>
+                          <span className="text-[10px] truncate max-w-[180px]" style={{ color: '#8B1E3A' }} dir="ltr">{value}</span>
                         </div>
                       );
                     })}
@@ -2433,7 +2433,7 @@ export default function AdminScreen() {
 
                 <motion.button whileTap={{ scale: 0.95 }} onClick={handleSaveSocialLinks}
                   className="w-full py-3.5 rounded-2xl flex items-center justify-center gap-2 text-sm font-bold text-white"
-                  style={{ background: socialLinksSaved ? '#10B981' : '#E60000' }}>
+                  style={{ background: socialLinksSaved ? '#10B981' : '#8B1E3A' }}>
                   {socialLinksSaved ? <CheckCircle2 size={18} /> : <Save size={18} />}
                   <span>{socialLinksSaved ? 'تم الحفظ' : 'حفظ روابط التواصل'}</span>
                 </motion.button>
@@ -2446,7 +2446,7 @@ export default function AdminScreen() {
                 {/* FAQ */}
                 <div className="rounded-2xl p-4 space-y-3" style={cardStyle}>
                   <div className="flex items-center gap-2 mb-1">
-                    <HelpCircle size={16} color="#E60000" />
+                    <HelpCircle size={16} color="#8B1E3A" />
                     <h3 className="text-sm font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>الاسئلة الشائعة</h3>
                   </div>
                   <textarea placeholder="اكتب محتوى الاسئلة الشائعة هنا..." value={legalContent.faq} onChange={(e) => setLegalContent({ ...legalContent, faq: e.target.value })} rows={6} className="w-full px-3 py-2.5 rounded-xl text-sm outline-none resize-none" style={inputStyle} />
@@ -2455,7 +2455,7 @@ export default function AdminScreen() {
                 {/* Privacy Policy */}
                 <div className="rounded-2xl p-4 space-y-3" style={cardStyle}>
                   <div className="flex items-center gap-2 mb-1">
-                    <Scale size={16} color="#E60000" />
+                    <Scale size={16} color="#8B1E3A" />
                     <h3 className="text-sm font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>سياسة الخصوصية</h3>
                   </div>
                   <textarea placeholder="اكتب محتوى سياسة الخصوصية هنا..." value={legalContent.privacyPolicy} onChange={(e) => setLegalContent({ ...legalContent, privacyPolicy: e.target.value })} rows={6} className="w-full px-3 py-2.5 rounded-xl text-sm outline-none resize-none" style={inputStyle} />
@@ -2464,7 +2464,7 @@ export default function AdminScreen() {
                 {/* About App */}
                 <div className="rounded-2xl p-4 space-y-3" style={cardStyle}>
                   <div className="flex items-center gap-2 mb-1">
-                    <BookOpen size={16} color="#E60000" />
+                    <BookOpen size={16} color="#8B1E3A" />
                     <h3 className="text-sm font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>حول التطبيق</h3>
                   </div>
                   <textarea placeholder="اكتب محتوى حول التطبيق هنا..." value={legalContent.aboutApp} onChange={(e) => setLegalContent({ ...legalContent, aboutApp: e.target.value })} rows={6} className="w-full px-3 py-2.5 rounded-xl text-sm outline-none resize-none" style={inputStyle} />
@@ -2472,7 +2472,7 @@ export default function AdminScreen() {
 
                 <motion.button whileTap={{ scale: 0.95 }} onClick={handleSaveLegalContent}
                   className="w-full py-3.5 rounded-2xl flex items-center justify-center gap-2 text-sm font-bold text-white"
-                  style={{ background: legalContentSaved ? '#10B981' : '#E60000' }}>
+                  style={{ background: legalContentSaved ? '#10B981' : '#8B1E3A' }}>
                   {legalContentSaved ? <CheckCircle2 size={18} /> : <Save size={18} />}
                   <span>{legalContentSaved ? 'تم الحفظ' : 'حفظ المحتوى'}</span>
                 </motion.button>
@@ -2485,8 +2485,8 @@ export default function AdminScreen() {
                 {/* Admin info */}
                 <div className="rounded-2xl p-5" style={cardStyle}>
                   <div className="flex items-center gap-3 mb-4">
-                    <div className="w-12 h-12 rounded-xl flex items-center justify-center glow-red" style={{ background: 'rgba(230,0,0,0.15)' }}>
-                      <ShieldCheck size={24} strokeWidth={1.5} color="#E60000" />
+                    <div className="w-12 h-12 rounded-xl flex items-center justify-center glow-red" style={{ background: 'rgba(139,30,58,0.15)' }}>
+                      <ShieldCheck size={24} strokeWidth={1.5} color="#8B1E3A" />
                     </div>
                     <div>
                       <p className="text-sm font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>مدير النظام</p>
@@ -2496,7 +2496,7 @@ export default function AdminScreen() {
                   <div className="space-y-2">
                     <div className="flex items-center justify-between py-2" style={{ borderBottom: isDark ? '1px solid rgba(255,255,255,0.06)' : '1px solid rgba(0,0,0,0.06)' }}>
                       <span className="text-xs" style={{ color: isDark ? '#AAA' : '#888' }}>الدور</span>
-                      <span className="text-xs font-bold" style={{ color: '#E60000' }}>مدير</span>
+                      <span className="text-xs font-bold" style={{ color: '#8B1E3A' }}>مدير</span>
                     </div>
                     <div className="flex items-center justify-between py-2">
                       <span className="text-xs" style={{ color: isDark ? '#AAA' : '#888' }}>رقم الحساب</span>
@@ -2532,7 +2532,7 @@ export default function AdminScreen() {
                 {/* Exchange rates */}
                 <div className="rounded-2xl p-5" style={cardStyle}>
                   <div className="flex items-center gap-2 mb-3">
-                    <Globe size={16} color="#E60000" />
+                    <Globe size={16} color="#8B1E3A" />
                     <h3 className="text-sm font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>أسعار الصرف (قديم)</h3>
                   </div>
                   <div className="space-y-2">
@@ -2542,14 +2542,14 @@ export default function AdminScreen() {
                         <input type="number" step="0.0001" value={exchangeRatesForm[cur]} onChange={e => setExchangeRatesForm({ ...exchangeRatesForm, [cur]: parseFloat(e.target.value) || 0 })} className="flex-1 px-3 py-2 rounded-xl text-xs outline-none" style={inputStyle} dir="ltr" />
                       </div>
                     ))}
-                    <motion.button whileTap={{ scale: 0.95 }} onClick={handleSaveRates} className="w-full py-2.5 rounded-xl text-xs font-bold text-white mt-2" style={{ background: '#E60000' }}>حفظ أسعار الصرف</motion.button>
+                    <motion.button whileTap={{ scale: 0.95 }} onClick={handleSaveRates} className="w-full py-2.5 rounded-xl text-xs font-bold text-white mt-2" style={{ background: '#8B1E3A' }}>حفظ أسعار الصرف</motion.button>
                   </div>
                 </div>
 
                 {/* Commission rates */}
                 <div className="rounded-2xl p-5" style={cardStyle}>
                   <div className="flex items-center gap-2 mb-3">
-                    <Percent size={16} color="#E60000" />
+                    <Percent size={16} color="#8B1E3A" />
                     <h3 className="text-sm font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>نسبة العمولة</h3>
                   </div>
                   <div className="flex items-center gap-3">
@@ -2561,13 +2561,13 @@ export default function AdminScreen() {
                 {/* Bulk notification */}
                 <div className="rounded-2xl p-5" style={cardStyle}>
                   <div className="flex items-center gap-2 mb-3">
-                    <Send size={16} color="#E60000" />
+                    <Send size={16} color="#8B1E3A" />
                     <h3 className="text-sm font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>إرسال إشعار جماعي</h3>
                   </div>
                   <div className="space-y-2">
                     <input type="text" placeholder="عنوان الإشعار" value={bulkNotif.title} onChange={e => setBulkNotif({ ...bulkNotif, title: e.target.value })} className="w-full px-3 py-2.5 rounded-xl text-sm outline-none" style={inputStyle} />
                     <textarea placeholder="نص الإشعار" value={bulkNotif.body} onChange={e => setBulkNotif({ ...bulkNotif, body: e.target.value })} rows={3} className="w-full px-3 py-2.5 rounded-xl text-sm outline-none resize-none" style={inputStyle} />
-                    <motion.button whileTap={{ scale: 0.95 }} onClick={handleSendBulkNotif} className="w-full py-2.5 rounded-xl text-xs font-bold text-white" style={{ background: '#E60000' }}>إرسال لجميع المستخدمين ({firebaseUsers.length})</motion.button>
+                    <motion.button whileTap={{ scale: 0.95 }} onClick={handleSendBulkNotif} className="w-full py-2.5 rounded-xl text-xs font-bold text-white" style={{ background: '#8B1E3A' }}>إرسال لجميع المستخدمين ({firebaseUsers.length})</motion.button>
                   </div>
                 </div>
 
@@ -2575,13 +2575,13 @@ export default function AdminScreen() {
                 {auditLog.length > 0 && (
                   <div className="rounded-2xl p-5" style={cardStyle}>
                     <div className="flex items-center gap-2 mb-3">
-                      <FileText size={16} color="#E60000" />
+                      <FileText size={16} color="#8B1E3A" />
                       <h3 className="text-sm font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>سجل العمليات</h3>
                     </div>
                     <div className="space-y-2 max-h-64 overflow-y-auto scrollbar-thin">
                       {auditLog.map((entry, i) => (
                         <div key={i} className="flex items-start gap-2 p-2 rounded-lg" style={{ background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)' }}>
-                          <div className="w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0" style={{ background: '#E60000' }} />
+                          <div className="w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0" style={{ background: '#8B1E3A' }} />
                           <div className="flex-1">
                             <p className="text-xs" style={{ color: isDark ? '#CCC' : '#333' }}>{entry.action}</p>
                             <p className="text-[10px]" style={{ color: isDark ? '#555' : '#AAA' }}>{timeAgo(entry.time)}</p>
@@ -2614,27 +2614,27 @@ export default function AdminScreen() {
                   onClick={() => setActiveTab(tab.id)}
                   className="w-full flex flex-col items-center justify-center py-2.5 px-1 relative transition-all"
                   style={{
-                    background: isActive ? 'rgba(230,0,0,0.15)' : 'transparent',
+                    background: isActive ? 'rgba(139,30,58,0.15)' : 'transparent',
                   }}
                 >
                   {isActive && (
                     <motion.div
                       layoutId="sidebar-active-indicator"
                       className="absolute right-0 top-1 bottom-1 w-[3px] rounded-l-full"
-                      style={{ background: '#E60000' }}
+                      style={{ background: '#8B1E3A' }}
                       transition={{ type: 'spring', stiffness: 500, damping: 30 }}
                     />
                   )}
                   <div className="relative">
-                    <Icon size={20} strokeWidth={1.5} color={isActive ? '#E60000' : isDark ? '#666' : '#AAA'} />
+                    <Icon size={20} strokeWidth={1.5} color={isActive ? '#8B1E3A' : isDark ? '#666' : '#AAA'} />
                     {tab.badge && tab.badge > 0 && (
                       <span className="absolute -top-1.5 -left-1.5 min-w-[14px] h-[14px] rounded-full flex items-center justify-center text-[7px] font-bold px-0.5"
-                        style={{ background: '#E60000', color: '#FFF' }}>
+                        style={{ background: '#8B1E3A', color: '#FFF' }}>
                         {tab.badge > 99 ? '99+' : tab.badge}
                       </span>
                     )}
                   </div>
-                  <span className="text-[8px] mt-1 leading-tight text-center font-medium" style={{ color: isActive ? '#E60000' : isDark ? '#666' : '#AAA' }}>
+                  <span className="text-[8px] mt-1 leading-tight text-center font-medium" style={{ color: isActive ? '#8B1E3A' : isDark ? '#666' : '#AAA' }}>
                     {tab.label}
                   </span>
                 </motion.button>

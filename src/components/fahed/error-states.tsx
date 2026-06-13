@@ -39,8 +39,8 @@ export const ERROR_TYPES: Record<string, ErrorTypeConfig> = {
     title: 'خطأ في الخادم',
     message: 'حدث خطأ في الخادم. يرجى المحاولة لاحقاً',
     actionLabel: 'إعادة المحاولة',
-    color: '#E60000',
-    bgColor: 'rgba(230,0,0,0.1)',
+    color: '#8B1E3A',
+    bgColor: 'rgba(139,30,58,0.1)',
   },
   auth: {
     icon: ShieldAlert,
@@ -55,8 +55,8 @@ export const ERROR_TYPES: Record<string, ErrorTypeConfig> = {
     title: 'رصيد غير كافي',
     message: 'رصيدك الحالي لا يكفي لإتمام هذه العملية',
     actionLabel: 'إيداع رصيد',
-    color: '#E60000',
-    bgColor: 'rgba(230,0,0,0.1)',
+    color: '#8B1E3A',
+    bgColor: 'rgba(139,30,58,0.1)',
   },
   validation: {
     icon: AlertTriangle,
@@ -71,8 +71,8 @@ export const ERROR_TYPES: Record<string, ErrorTypeConfig> = {
     title: 'فشل عملية الدفع',
     message: 'لم تتم عملية الدفع بنجاح. جرب طريقة دفع أخرى',
     actionLabel: 'إعادة المحاولة',
-    color: '#E60000',
-    bgColor: 'rgba(230,0,0,0.1)',
+    color: '#8B1E3A',
+    bgColor: 'rgba(139,30,58,0.1)',
   },
   recipientNotFound: {
     icon: ShieldAlert,
@@ -103,8 +103,8 @@ export const ERROR_TYPES: Record<string, ErrorTypeConfig> = {
     title: 'الخدمة غير متاحة',
     message: 'هذه الخدمة غير متاحة حالياً. حاول لاحقاً',
     actionLabel: 'رجوع',
-    color: '#E60000',
-    bgColor: 'rgba(230,0,0,0.1)',
+    color: '#8B1E3A',
+    bgColor: 'rgba(139,30,58,0.1)',
   },
   amountLimit: {
     icon: Wallet,

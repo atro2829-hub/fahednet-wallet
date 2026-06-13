@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { ref, onValue, update } from 'firebase/database';
+import { ref, onValue, set } from 'firebase/database';
 import { database } from '@/lib/firebase';
 import { useAdminStore } from '@/lib/store';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -110,24 +110,21 @@ export default function VisibilityPanel() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      const updates: Record<string, any> = {};
-
-      // Write sections visibility
-      Object.entries(sections).forEach(([key, val]) => {
-        updates[`adminSettings/visibility/sections/${key}`] = val;
-      });
-
-      // Write providers visibility
-      Object.entries(providers).forEach(([key, val]) => {
-        updates[`adminSettings/visibility/providers/${key}`] = val;
-      });
-
-      // Write features visibility
-      Object.entries(features).forEach(([key, val]) => {
-        updates[`adminSettings/visibility/features/${key}`] = val;
-      });
-
-      await update(ref(database), updates);
+      // Write each value individually using set() to avoid listener overwrites
+      for (const [key, val] of Object.entries(sections)) {
+        await set(ref(database, `adminSettings/visibility/sections/${key}`), val);
+        // Also update section isVisible in ownerSettings
+        const section = sectionMeta.find(s => (s.categoryId || s.id) === key);
+        if (section) {
+          await set(ref(database, `ownerSettings/sections/${section.id}/isVisible`), val);
+        }
+      }
+      for (const [key, val] of Object.entries(providers)) {
+        await set(ref(database, `adminSettings/visibility/providers/${key}`), val);
+      }
+      for (const [key, val] of Object.entries(features)) {
+        await set(ref(database, `adminSettings/visibility/features/${key}`), val);
+      }
       showToast('تم حفظ إعدادات الظهور', 'success');
     } catch (e) {
       showToast('حدث خطأ', 'error');
@@ -149,7 +146,7 @@ export default function VisibilityPanel() {
     { key: 'investments', label: 'الاستثمار', desc: 'إظهار أو إخفاء ميزة الاستثمار' },
   ];
 
-  if (loading) return <div className="flex items-center justify-center min-h-[400px]"><div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" /></div>;
+  if (loading) return <div className="flex items-center justify-center min-h-[400px]"><div className="w-8 h-8 border-2 border-[#8B1E3A] border-t-transparent rounded-full animate-spin" /></div>;
 
   return (
     <div className="space-y-6">
@@ -163,7 +160,7 @@ export default function VisibilityPanel() {
         <Card className="admin-card border-0 shadow-none">
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center gap-2">
-              <Layers className="w-5 h-5 text-purple-500" />
+              <Layers className="w-5 h-5 text-[#8B1E3A]" />
               ظهور الأقسام
             </CardTitle>
             <p className="text-xs text-muted-foreground">إظهار أو إخفاء الأقسام للمستخدمين</p>
@@ -275,7 +272,7 @@ export default function VisibilityPanel() {
       </motion.div>
 
       {/* Save Button */}
-      <Button onClick={handleSave} disabled={saving} className="w-full bg-purple-600 hover:bg-purple-700">
+      <Button onClick={handleSave} disabled={saving} className="w-full bg-[#7B1A30] hover:bg-[#5C1225]">
         {saving ? <Loader2 className="w-4 h-4 ml-2 animate-spin" /> : <Save className="w-4 h-4 ml-2" />}
         حفظ الإعدادات
       </Button>

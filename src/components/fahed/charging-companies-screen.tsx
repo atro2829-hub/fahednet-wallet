@@ -12,7 +12,7 @@ import { useAppStore } from '@/lib/store';
 
 // Jaib-style charging companies with brand colors
 const chargingCompanies = [
-  { id: 'yemen-mobile', name: 'يمن موبايل', nameEn: 'Yemen Mobile', color: '#E60000', bgColor: '#E60000', letter: 'YM' },
+  { id: 'yemen-mobile', name: 'يمن موبايل', nameEn: 'Yemen Mobile', color: '#8B1E3A', bgColor: '#8B1E3A', letter: 'YM' },
   { id: 'yo', name: 'يو', nameEn: 'YO', color: '#FF6B00', bgColor: '#FF6B00', letter: 'YO' },
   { id: 'sabafon', name: 'سبأفون', nameEn: 'Sabafon', color: '#2563EB', bgColor: '#2563EB', letter: 'S' },
   { id: 'y', name: 'واي', nameEn: 'Y', color: '#059669', bgColor: '#059669', letter: 'Y' },

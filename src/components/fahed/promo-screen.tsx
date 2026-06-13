@@ -140,6 +140,14 @@ export default function PromoScreen() {
           
           await update(ref(database), updates);
           
+          // Send FCM push notification for gift code redemption
+          try {
+            const { notifyGiftCodeRedeemed } = await import('@/lib/notifications');
+            await notifyGiftCodeRedeemed(user?.id || '', codeData.amount, codeData.currency, giftCodeInput.trim());
+          } catch (notifErr) {
+            console.warn('Gift code notification failed:', notifErr);
+          }
+          
           setGiftResult({ 
             success: true, 
             message: `تم استرداد قسيمة الهدية بنجاح! تم إضافة ${codeData.amount} ${currencySymbols[codeData.currency]} إلى رصيدك`,
@@ -187,8 +195,8 @@ export default function PromoScreen() {
               <h1 className="text-white text-xl font-bold">الأكواد والهدايا</h1>
               <p className="text-white/40 text-xs">وفر أكثر مع محفظة الجنوب</p>
             </div>
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'rgba(230,0,0,0.2)' }}>
-              {activeTab === 'promo' ? <Tag size={20} strokeWidth={1.5} color="#E60000" /> : <Gift size={20} strokeWidth={1.5} color="#E60000" />}
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'rgba(139,30,58,0.2)' }}>
+              {activeTab === 'promo' ? <Tag size={20} strokeWidth={1.5} color="#8B1E3A" /> : <Gift size={20} strokeWidth={1.5} color="#8B1E3A" />}
             </div>
           </div>
         </div>
@@ -201,9 +209,9 @@ export default function PromoScreen() {
             onClick={() => setActiveTab('promo')}
             className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl transition-all duration-200"
             style={{
-              background: activeTab === 'promo' ? '#E60000' : 'transparent',
+              background: activeTab === 'promo' ? '#8B1E3A' : 'transparent',
               color: activeTab === 'promo' ? '#FFF' : (isDark ? '#999' : '#666'),
-              boxShadow: activeTab === 'promo' ? '0 4px 12px rgba(230,0,0,0.3)' : 'none',
+              boxShadow: activeTab === 'promo' ? '0 4px 12px rgba(139,30,58,0.3)' : 'none',
             }}
           >
             <Tag size={16} />
@@ -213,9 +221,9 @@ export default function PromoScreen() {
             onClick={() => setActiveTab('gift')}
             className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl transition-all duration-200"
             style={{
-              background: activeTab === 'gift' ? '#E60000' : 'transparent',
+              background: activeTab === 'gift' ? '#8B1E3A' : 'transparent',
               color: activeTab === 'gift' ? '#FFF' : (isDark ? '#999' : '#666'),
-              boxShadow: activeTab === 'gift' ? '0 4px 12px rgba(230,0,0,0.3)' : 'none',
+              boxShadow: activeTab === 'gift' ? '0 4px 12px rgba(139,30,58,0.3)' : 'none',
             }}
           >
             <Gift size={16} />
@@ -239,7 +247,7 @@ export default function PromoScreen() {
               <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
                 className="rounded-2xl p-4" style={{ background: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.85)', backdropFilter: 'blur(20px)', border: isDark ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(0,0,0,0.06)' }}>
                 <div className="flex items-center gap-2 mb-3">
-                  <Percent size={16} color="#E60000" />
+                  <Percent size={16} color="#8B1E3A" />
                   <h3 className="text-sm font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>تطبيق كود خصم</h3>
                 </div>
 
@@ -250,7 +258,7 @@ export default function PromoScreen() {
                       className="flex-1 bg-transparent outline-none text-sm font-mono" style={{ color: isDark ? '#FFF' : '#1a1a1a' }} dir="ltr" />
                   </div>
                   <motion.button whileTap={{ scale: 0.9 }} onClick={handleApplyCode}
-                    className="px-5 py-3 rounded-xl text-sm font-bold text-white" style={{ background: '#E60000' }}>
+                    className="px-5 py-3 rounded-xl text-sm font-bold text-white" style={{ background: '#8B1E3A' }}>
                     تطبيق
                   </motion.button>
                 </div>
@@ -260,16 +268,16 @@ export default function PromoScreen() {
                   {applyResult && (
                     <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden mt-3">
                       <div className="flex items-center gap-2 p-3 rounded-xl" style={{
-                        background: applyResult.success ? 'rgba(16,185,129,0.1)' : 'rgba(230,0,0,0.1)',
-                        border: applyResult.success ? '1px solid rgba(16,185,129,0.2)' : '1px solid rgba(230,0,0,0.2)',
+                        background: applyResult.success ? 'rgba(16,185,129,0.1)' : 'rgba(139,30,58,0.1)',
+                        border: applyResult.success ? '1px solid rgba(16,185,129,0.2)' : '1px solid rgba(139,30,58,0.2)',
                       }}>
                         {applyResult.success ? (
                           <CheckCircle2 size={18} color="#10B981" />
                         ) : (
-                          <XCircle size={18} color="#E60000" />
+                          <XCircle size={18} color="#8B1E3A" />
                         )}
                         <div className="flex-1">
-                          <p className="text-xs font-medium" style={{ color: applyResult.success ? '#10B981' : '#E60000' }}>{applyResult.message}</p>
+                          <p className="text-xs font-medium" style={{ color: applyResult.success ? '#10B981' : '#8B1E3A' }}>{applyResult.message}</p>
                           {applyResult.discountType && (
                             <p className="text-lg font-bold mt-0.5" style={{ color: '#10B981' }}>خصم {applyResult.discountType}</p>
                           )}
@@ -284,23 +292,23 @@ export default function PromoScreen() {
               <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
                 className="rounded-2xl p-4" style={{ background: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.85)', backdropFilter: 'blur(20px)', border: isDark ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(0,0,0,0.06)' }}>
                 <div className="flex items-center gap-2 mb-3">
-                  <Percent size={16} color="#E60000" />
+                  <Percent size={16} color="#8B1E3A" />
                   <h3 className="text-sm font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>الأكواد المتاحة</h3>
-                  <span className="text-[10px] px-2 py-0.5 rounded-full mr-auto" style={{ background: 'rgba(230,0,0,0.15)', color: '#E60000' }}>{activeCodes.length} كود</span>
+                  <span className="text-[10px] px-2 py-0.5 rounded-full mr-auto" style={{ background: 'rgba(139,30,58,0.15)', color: '#8B1E3A' }}>{activeCodes.length} كود</span>
                 </div>
 
                 <div className="space-y-3 max-h-96 overflow-y-auto scrollbar-thin">
                   {activeCodes.map((code) => (
-                    <div key={code.id} className="rounded-xl p-4" style={{ background: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)', borderRight: '3px solid #E60000' }}>
+                    <div key={code.id} className="rounded-xl p-4" style={{ background: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)', borderRight: '3px solid #8B1E3A' }}>
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center gap-2">
-                          <span className="text-lg font-mono font-bold" style={{ color: '#E60000' }} dir="ltr">{code.code}</span>
+                          <span className="text-lg font-mono font-bold" style={{ color: '#8B1E3A' }} dir="ltr">{code.code}</span>
                           <motion.button whileTap={{ scale: 0.8 }} onClick={() => handleCopyCode(code.code)}
-                            className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: 'rgba(230,0,0,0.1)' }}>
-                            {copiedCode === code.code ? <Check size={12} color="#10B981" /> : <Copy size={12} color="#E60000" />}
+                            className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: 'rgba(139,30,58,0.1)' }}>
+                            {copiedCode === code.code ? <Check size={12} color="#10B981" /> : <Copy size={12} color="#8B1E3A" />}
                           </motion.button>
                         </div>
-                        <span className="text-sm font-bold px-3 py-1 rounded-full" style={{ background: 'rgba(230,0,0,0.15)', color: '#E60000' }}>
+                        <span className="text-sm font-bold px-3 py-1 rounded-full" style={{ background: 'rgba(139,30,58,0.15)', color: '#8B1E3A' }}>
                           {code.type === 'percentage' ? `${code.discount}%` : `${code.discount} ${currencySymbols[code.currency]}`}
                         </span>
                       </div>
@@ -318,7 +326,7 @@ export default function PromoScreen() {
                       </div>
                       <div className="mt-2 flex items-center gap-2">
                         <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)' }}>
-                          <div className="h-full rounded-full" style={{ width: `${Math.min((code.usedCount / code.maxUses) * 100, 100)}%`, background: '#E60000' }} />
+                          <div className="h-full rounded-full" style={{ width: `${Math.min((code.usedCount / code.maxUses) * 100, 100)}%`, background: '#8B1E3A' }} />
                         </div>
                         <span className="text-[9px]" style={{ color: isDark ? '#555' : '#BBB' }}>متبقي {code.maxUses - code.usedCount}</span>
                       </div>
@@ -374,7 +382,7 @@ export default function PromoScreen() {
               <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
                 className="rounded-2xl p-4" style={{ background: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.85)', backdropFilter: 'blur(20px)', border: isDark ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(0,0,0,0.06)' }}>
                 <div className="flex items-center gap-2 mb-3">
-                  <Gift size={16} color="#E60000" />
+                  <Gift size={16} color="#8B1E3A" />
                   <h3 className="text-sm font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>استرداد كود هدية</h3>
                 </div>
                 <p className="text-xs mb-3" style={{ color: isDark ? '#888' : '#999' }}>أدخل كود الهدية لإضافة الرصيد مباشرة إلى حسابك</p>
@@ -386,7 +394,7 @@ export default function PromoScreen() {
                       className="flex-1 bg-transparent outline-none text-sm font-mono" style={{ color: isDark ? '#FFF' : '#1a1a1a' }} dir="ltr" disabled={isRedeeming} />
                   </div>
                   <motion.button whileTap={{ scale: 0.9 }} onClick={handleRedeemGiftCode} disabled={isRedeeming}
-                    className="px-5 py-3 rounded-xl text-sm font-bold text-white flex items-center gap-2" style={{ background: isRedeeming ? '#666' : '#E60000' }}>
+                    className="px-5 py-3 rounded-xl text-sm font-bold text-white flex items-center gap-2" style={{ background: isRedeeming ? '#666' : '#8B1E3A' }}>
                     {isRedeeming ? (
                       <Loader2 size={16} className="animate-spin" />
                     ) : null}
@@ -399,16 +407,16 @@ export default function PromoScreen() {
                   {giftResult && (
                     <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden mt-3">
                       <div className="flex items-center gap-2 p-3 rounded-xl" style={{
-                        background: giftResult.success ? 'rgba(16,185,129,0.1)' : 'rgba(230,0,0,0.1)',
-                        border: giftResult.success ? '1px solid rgba(16,185,129,0.2)' : '1px solid rgba(230,0,0,0.2)',
+                        background: giftResult.success ? 'rgba(16,185,129,0.1)' : 'rgba(139,30,58,0.1)',
+                        border: giftResult.success ? '1px solid rgba(16,185,129,0.2)' : '1px solid rgba(139,30,58,0.2)',
                       }}>
                         {giftResult.success ? (
                           <CheckCircle2 size={18} color="#10B981" />
                         ) : (
-                          <XCircle size={18} color="#E60000" />
+                          <XCircle size={18} color="#8B1E3A" />
                         )}
                         <div className="flex-1">
-                          <p className="text-xs font-medium" style={{ color: giftResult.success ? '#10B981' : '#E60000' }}>{giftResult.message}</p>
+                          <p className="text-xs font-medium" style={{ color: giftResult.success ? '#10B981' : '#8B1E3A' }}>{giftResult.message}</p>
                           {giftResult.success && giftResult.amount && (
                             <div className="flex items-center gap-2 mt-1">
                               <Wallet size={16} color="#10B981" />
@@ -428,7 +436,7 @@ export default function PromoScreen() {
               <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
                 className="rounded-2xl p-4" style={{ background: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.85)', backdropFilter: 'blur(20px)', border: isDark ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(0,0,0,0.06)' }}>
                 <div className="flex items-center gap-2 mb-3">
-                  <AlertCircle size={16} color="#E60000" />
+                  <AlertCircle size={16} color="#8B1E3A" />
                   <h3 className="text-sm font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>كيف تعمل أكواد الهدايا؟</h3>
                 </div>
                 <div className="space-y-3">
@@ -438,7 +446,7 @@ export default function PromoScreen() {
                     { step: '3', text: 'سيتم إضافة المبلغ مباشرة إلى رصيدك' },
                   ].map((item) => (
                     <div key={item.step} className="flex items-start gap-3">
-                      <div className="w-6 h-6 rounded-full flex items-center justify-center shrink-0 text-[10px] font-bold text-white" style={{ background: '#E60000' }}>
+                      <div className="w-6 h-6 rounded-full flex items-center justify-center shrink-0 text-[10px] font-bold text-white" style={{ background: '#8B1E3A' }}>
                         {item.step}
                       </div>
                       <p className="text-xs leading-relaxed" style={{ color: isDark ? '#AAA' : '#666' }}>{item.text}</p>
@@ -452,9 +460,9 @@ export default function PromoScreen() {
                 <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
                   className="rounded-2xl p-4" style={{ background: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.85)', backdropFilter: 'blur(20px)', border: isDark ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(0,0,0,0.06)' }}>
                   <div className="flex items-center gap-2 mb-3">
-                    <Gift size={16} color="#E60000" />
+                    <Gift size={16} color="#8B1E3A" />
                     <h3 className="text-sm font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>أكواد هدايا متاحة</h3>
-                    <span className="text-[10px] px-2 py-0.5 rounded-full mr-auto" style={{ background: 'rgba(230,0,0,0.15)', color: '#E60000' }}>{activeGiftCodes.length} كود</span>
+                    <span className="text-[10px] px-2 py-0.5 rounded-full mr-auto" style={{ background: 'rgba(139,30,58,0.15)', color: '#8B1E3A' }}>{activeGiftCodes.length} كود</span>
                   </div>
 
                   <div className="space-y-3 max-h-96 overflow-y-auto scrollbar-thin">

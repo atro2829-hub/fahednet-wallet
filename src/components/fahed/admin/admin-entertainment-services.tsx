@@ -27,8 +27,8 @@ const defaultEntertainmentSubSections: SubSection[] = [
   { id: 'sub-streaming', name: 'المنصات والبث', icon: '', order: 2, categoryIds: ['streaming'] },
 ];
 
-// Category IDs that belong to entertainment section
-const entertainmentCategoryIds = ['games', 'cards', 'streaming'];
+// Category IDs that belong to wallet services section
+const walletServicesCategoryIds = ['wallet-services', 'games', 'cards', 'streaming'];
 
 // Provider name patterns for streaming services
 const streamingProviderNames = ['netflix', 'spotify', 'youtube', 'steam', 'apple', 'google play', 'playstation', 'xbox', 'nintendo', 'twitch', 'disney', 'hulu', 'crunchyroll', 'roblox', 'fortnite', 'epic'];
@@ -84,11 +84,11 @@ export default function AdminEntertainmentServices() {
     return () => unsubscribe();
   }, []);
 
-  // Filter providers that belong to entertainment categories
-  // This includes providers with categoryId in entertainment list,
-  // plus providers whose names match streaming patterns but have 'games' categoryId
+  // Filter providers that belong to wallet services categories
+  // This includes providers with categoryId in wallet services list,
+  // plus providers whose names match streaming patterns
   const entertainmentProviders = providers.filter(p => {
-    if (entertainmentCategoryIds.includes(p.categoryId)) return true;
+    if (walletServicesCategoryIds.includes(p.categoryId)) return true;
     // Also include providers with 'games' categoryId whose name matches streaming patterns
     const nameLower = p.name.toLowerCase();
     if (streamingProviderNames.some(sp => nameLower.includes(sp))) return true;
@@ -222,6 +222,7 @@ export default function AdminEntertainmentServices() {
 
   const getCategoryIdLabel = (categoryId: string) => {
     switch (categoryId) {
+      case 'wallet-services': return 'خدمات المحفظة';
       case 'games': return 'ألعاب';
       case 'cards': return 'بطاقات';
       case 'streaming': return 'بث';
@@ -301,8 +302,8 @@ export default function AdminEntertainmentServices() {
                 <p className="text-[10px]" style={{ color: isDark ? '#888' : '#AAA' }}>{subProviders.length} مزود</p>
               </div>
               <div className="flex items-center gap-2">
-                <button onClick={(e) => { e.stopPropagation(); handleDeleteSubSection(sub); }} className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: 'rgba(230,0,0,0.08)' }}>
-                  <Trash2 size={12} color="#E60000" />
+                <button onClick={(e) => { e.stopPropagation(); handleDeleteSubSection(sub); }} className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: 'rgba(139,30,58,0.08)' }}>
+                  <Trash2 size={12} color="#8B1E3A" />
                 </button>
                 {isExpanded ? <ChevronUp size={16} color={isDark ? '#888' : '#AAA'} /> : <ChevronDown size={16} color={isDark ? '#888' : '#AAA'} />}
               </div>
@@ -420,8 +421,8 @@ export default function AdminEntertainmentServices() {
                                   <button onClick={() => handleToggleProvider(provider.id)}>
                                     {provider.isActive ? <ToggleRight size={18} color="#10B981" /> : <ToggleLeft size={18} color={isDark ? '#444' : '#CCC'} />}
                                   </button>
-                                  <button onClick={() => handleDeleteProvider(provider.id)} className="w-6 h-6 rounded flex items-center justify-center" style={{ background: 'rgba(230,0,0,0.08)' }}>
-                                    <Trash2 size={10} color="#E60000" />
+                                  <button onClick={() => handleDeleteProvider(provider.id)} className="w-6 h-6 rounded flex items-center justify-center" style={{ background: 'rgba(139,30,58,0.08)' }}>
+                                    <Trash2 size={10} color="#8B1E3A" />
                                   </button>
                                 </div>
                               </>
@@ -465,7 +466,7 @@ export default function AdminEntertainmentServices() {
                                       <input type="text" value={editProductData.name} onChange={e => setEditProductData({ ...editProductData, name: e.target.value })} className="px-2 py-1 rounded text-[10px] outline-none flex-1" style={inputStyle} />
                                       <input type="number" value={editProductData.price} onChange={e => setEditProductData({ ...editProductData, price: parseFloat(e.target.value) || 0 })} className="px-2 py-1 rounded text-[10px] outline-none w-16" style={inputStyle} dir="ltr" />
                                       <button onClick={() => { updatePackage(product.id, { name: editProductData.name, price: editProductData.price }); try { update(ref(database, `packages/${product.id}`), { name: editProductData.name, price: editProductData.price }); } catch {} setEditingProduct(null); }}><Save size={10} color="#10B981" /></button>
-                                      <button onClick={() => setEditingProduct(null)}><X size={10} color="#E60000" /></button>
+                                      <button onClick={() => setEditingProduct(null)}><X size={10} color="#8B1E3A" /></button>
                                     </div>
                                   ) : (
                                     <>
@@ -483,7 +484,7 @@ export default function AdminEntertainmentServices() {
                                         <button onClick={() => handleToggleProduct(product.id)}>
                                           {product.isActive ? <ToggleRight size={16} color="#10B981" /> : <ToggleLeft size={16} color={isDark ? '#444' : '#CCC'} />}
                                         </button>
-                                        <button onClick={() => handleDeleteProduct(product.id)}><Trash2 size={10} color="#E60000" /></button>
+                                        <button onClick={() => handleDeleteProduct(product.id)}><Trash2 size={10} color="#8B1E3A" /></button>
                                       </div>
                                     </>
                                   )}

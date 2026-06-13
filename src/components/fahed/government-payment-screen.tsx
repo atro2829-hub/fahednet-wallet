@@ -316,7 +316,7 @@ export default function GovernmentPaymentScreen() {
                   className="mt-6"
                 >
                   <div className="flex items-center gap-2 mb-3">
-                    <Clock size={16} strokeWidth={1.5} color="#E60000" />
+                    <Clock size={16} strokeWidth={1.5} color="#8B1E3A" />
                     <h3 className="text-sm font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>
                       سجل المدفوعات
                     </h3>
@@ -451,7 +451,7 @@ export default function GovernmentPaymentScreen() {
                   />
                   <span
                     className="text-[10px] px-2 py-1 rounded-lg font-bold text-white shrink-0"
-                    style={{ background: '#E60000' }}
+                    style={{ background: '#8B1E3A' }}
                   >
                     {currencySymbols.YER}
                   </span>
@@ -492,7 +492,7 @@ export default function GovernmentPaymentScreen() {
                 style={{ background: cardBg, border: `1px solid ${borderColor}` }}
               >
                 <div className="flex items-center gap-2 mb-4">
-                  <Receipt size={16} strokeWidth={1.5} color="#E60000" />
+                  <Receipt size={16} strokeWidth={1.5} color="#8B1E3A" />
                   <span className="text-xs font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>
                     تأكيد الدفع
                   </span>
@@ -513,7 +513,7 @@ export default function GovernmentPaymentScreen() {
                   <div className="h-px" style={{ background: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)' }} />
                   <div className="flex justify-between">
                     <span className="text-xs" style={{ color: subTextColor }}>المبلغ</span>
-                    <span className="text-sm font-bold" style={{ color: '#E60000' }}>
+                    <span className="text-sm font-bold" style={{ color: '#8B1E3A' }}>
                       {effectiveAmount.toLocaleString()} {currencySymbols.YER}
                     </span>
                   </div>
@@ -527,7 +527,7 @@ export default function GovernmentPaymentScreen() {
                     <span className="text-xs font-medium" style={{ color: isDark ? '#AAA' : '#888' }}>الرصيد بعد الدفع</span>
                     <span
                       className="text-sm font-bold"
-                      style={{ color: (user?.balanceYER || 0) - effectiveAmount >= 0 ? '#10B981' : '#E60000' }}
+                      style={{ color: (user?.balanceYER || 0) - effectiveAmount >= 0 ? '#10B981' : '#8B1E3A' }}
                     >
                       {((user?.balanceYER || 0) - effectiveAmount).toLocaleString()} {currencySymbols.YER}
                     </span>
@@ -649,7 +649,7 @@ export default function GovernmentPaymentScreen() {
                   <div className="h-px" style={{ background: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)' }} />
                   <div className="flex justify-between">
                     <span className="text-xs" style={{ color: subTextColor }}>المبلغ</span>
-                    <span className="text-sm font-bold" style={{ color: '#E60000' }}>
+                    <span className="text-sm font-bold" style={{ color: '#8B1E3A' }}>
                       {completedPayment.amount.toLocaleString()} {currencySymbols.YER}
                     </span>
                   </div>

@@ -183,11 +183,11 @@ export default function AdminAnalytics() {
       {/* Revenue Per User */}
       <motion.div custom={5} variants={cardVariants} initial="hidden" animate="visible" className="rounded-2xl p-4" style={cardStyle}>
         <div className="flex items-center gap-2 mb-3">
-          <DollarSign size={16} color="#E60000" />
+          <DollarSign size={16} color="#8B1E3A" />
           <h3 className="text-sm font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>متوسط الإيرادات لكل مستخدم</h3>
         </div>
         <div className="flex items-end gap-2">
-          <span className="text-3xl font-bold" style={{ color: '#E60000' }}>{formatNumber(revenuePerUser)}</span>
+          <span className="text-3xl font-bold" style={{ color: '#8B1E3A' }}>{formatNumber(revenuePerUser)}</span>
           <span className="text-sm mb-1" style={{ color: isDark ? '#666' : '#AAA' }}>ر.ي</span>
         </div>
         <div className="mt-3 h-2 rounded-full overflow-hidden" style={{ background: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)' }}>
@@ -196,7 +196,7 @@ export default function AdminAnalytics() {
             animate={{ width: `${Math.min((revenuePerUser / 50000) * 100, 100)}%` }}
             transition={{ duration: 1 }}
             className="h-full rounded-full"
-            style={{ background: 'linear-gradient(90deg, #E60000, #FF4444)' }}
+            style={{ background: 'linear-gradient(90deg, #8B1E3A, #FF4444)' }}
           />
         </div>
       </motion.div>
@@ -204,7 +204,7 @@ export default function AdminAnalytics() {
       {/* Conversion Funnel */}
       <motion.div custom={6} variants={cardVariants} initial="hidden" animate="visible" className="rounded-2xl p-4" style={cardStyle}>
         <div className="flex items-center gap-2 mb-4">
-          <Target size={16} color="#E60000" />
+          <Target size={16} color="#8B1E3A" />
           <h3 className="text-sm font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>قمع التحويل</h3>
         </div>
 
@@ -247,7 +247,7 @@ export default function AdminAnalytics() {
           <div>
             <div className="flex items-center justify-between mb-1">
               <span className="text-[10px]" style={{ color: isDark ? '#AAA' : '#666' }}>تسجيل → أول طلب (مباشر)</span>
-              <span className="text-xs font-bold" style={{ color: '#E60000' }}>{conversionRates.regToOrder}%</span>
+              <span className="text-xs font-bold" style={{ color: '#8B1E3A' }}>{conversionRates.regToOrder}%</span>
             </div>
             <div className="h-3 rounded-full overflow-hidden" style={{ background: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)' }}>
               <motion.div
@@ -255,7 +255,7 @@ export default function AdminAnalytics() {
                 animate={{ width: `${conversionRates.regToOrder}%` }}
                 transition={{ duration: 0.8, delay: 0.2 }}
                 className="h-full rounded-full"
-                style={{ background: '#E60000' }}
+                style={{ background: '#8B1E3A' }}
               />
             </div>
           </div>
@@ -265,7 +265,7 @@ export default function AdminAnalytics() {
       {/* Popular Services Ranking */}
       <motion.div custom={7} variants={cardVariants} initial="hidden" animate="visible" className="rounded-2xl p-4" style={cardStyle}>
         <div className="flex items-center gap-2 mb-4">
-          <Award size={16} color="#E60000" />
+          <Award size={16} color="#8B1E3A" />
           <h3 className="text-sm font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>الخدمات الأكثر طلباً</h3>
         </div>
 
@@ -277,7 +277,7 @@ export default function AdminAnalytics() {
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: i * 0.05 }}
               className="flex items-center gap-3 p-2.5 rounded-xl"
-              style={{ background: i === 0 ? 'rgba(230,0,0,0.06)' : isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)' }}
+              style={{ background: i === 0 ? 'rgba(139,30,58,0.06)' : isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)' }}
             >
               {/* Rank */}
               <div

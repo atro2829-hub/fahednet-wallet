@@ -199,7 +199,7 @@ export default function BillsScreen() {
   const inputBg = isDark ? '#141414' : '#F8F8F8';
 
   const getCategoryColor = (catId: BillCategory) => {
-    return billCategories.find(c => c.id === catId)?.color || '#E60000';
+    return billCategories.find(c => c.id === catId)?.color || '#8B1E3A';
   };
 
   const getCategoryIcon = (catId: BillCategory) => {
@@ -560,7 +560,7 @@ export default function BillsScreen() {
                   transition={{ delay: 0.2 }}
                 >
                   <div className="flex items-center gap-2 mb-3">
-                    <Bookmark size={16} strokeWidth={1.5} color="#E60000" />
+                    <Bookmark size={16} strokeWidth={1.5} color="#8B1E3A" />
                     <h3 className="text-sm font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>
                       الحسابات المحفوظة
                     </h3>
@@ -621,7 +621,7 @@ export default function BillsScreen() {
                   transition={{ delay: 0.3 }}
                 >
                   <div className="flex items-center gap-2 mb-3">
-                    <Clock size={16} strokeWidth={1.5} color="#E60000" />
+                    <Clock size={16} strokeWidth={1.5} color="#8B1E3A" />
                     <h3 className="text-sm font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>
                       سجل المدفوعات
                     </h3>
@@ -767,7 +767,7 @@ export default function BillsScreen() {
                   <span className="text-xs font-medium" style={{ color: isDark ? '#AAA' : '#888' }}>الرصيد بعد الدفع</span>
                   <span
                     className="text-sm font-bold"
-                    style={{ color: (user?.balanceYER || 0) - billDetails.amount >= 0 ? '#10B981' : '#E60000' }}
+                    style={{ color: (user?.balanceYER || 0) - billDetails.amount >= 0 ? '#10B981' : '#8B1E3A' }}
                   >
                     {((user?.balanceYER || 0) - billDetails.amount).toLocaleString()} {currencySymbols.YER}
                   </span>
@@ -830,7 +830,7 @@ export default function BillsScreen() {
                 style={{ background: cardBg, border: `1px solid ${borderColor}` }}
               >
                 <div className="flex items-center gap-2 mb-4">
-                  <Receipt size={16} strokeWidth={1.5} color="#E60000" />
+                  <Receipt size={16} strokeWidth={1.5} color="#8B1E3A" />
                   <span className="text-xs font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>
                     تأكيد دفع الفاتورة
                   </span>
@@ -857,7 +857,7 @@ export default function BillsScreen() {
                   <div className="h-px" style={{ background: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)' }} />
                   <div className="flex justify-between">
                     <span className="text-xs" style={{ color: subTextColor }}>المبلغ</span>
-                    <span className="text-sm font-bold" style={{ color: '#E60000' }}>
+                    <span className="text-sm font-bold" style={{ color: '#8B1E3A' }}>
                       {billDetails.amount.toLocaleString()} {currencySymbols.YER}
                     </span>
                   </div>
@@ -865,7 +865,7 @@ export default function BillsScreen() {
                     <span className="text-xs font-medium" style={{ color: isDark ? '#AAA' : '#888' }}>الرصيد بعد الدفع</span>
                     <span
                       className="text-sm font-bold"
-                      style={{ color: (user?.balanceYER || 0) - billDetails.amount >= 0 ? '#10B981' : '#E60000' }}
+                      style={{ color: (user?.balanceYER || 0) - billDetails.amount >= 0 ? '#10B981' : '#8B1E3A' }}
                     >
                       {((user?.balanceYER || 0) - billDetails.amount).toLocaleString()} {currencySymbols.YER}
                     </span>
@@ -980,7 +980,7 @@ export default function BillsScreen() {
                   <div className="h-px" style={{ background: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)' }} />
                   <div className="flex justify-between">
                     <span className="text-xs" style={{ color: subTextColor }}>المبلغ</span>
-                    <span className="text-sm font-bold" style={{ color: '#E60000' }}>
+                    <span className="text-sm font-bold" style={{ color: '#8B1E3A' }}>
                       {completedPayment.amount.toLocaleString()} {currencySymbols.YER}
                     </span>
                   </div>
@@ -1057,7 +1057,7 @@ export default function BillsScreen() {
                 className="flex items-center gap-2 px-4 py-3 rounded-2xl mb-4"
                 style={{ background: inputBg, border: `1px solid ${borderColor}` }}
               >
-                <BookmarkPlus size={16} strokeWidth={1.5} color="#E60000" />
+                <BookmarkPlus size={16} strokeWidth={1.5} color="#8B1E3A" />
                 <input
                   type="text"
                   placeholder="اسم للحساب (مثل: منزل صنعاء)"
@@ -1082,7 +1082,7 @@ export default function BillsScreen() {
                   onClick={handleSaveAccount}
                   disabled={!saveAccountLabel.trim()}
                   className="flex-1 py-3 rounded-xl font-bold text-white text-sm disabled:opacity-40"
-                  style={{ background: '#E60000' }}
+                  style={{ background: '#8B1E3A' }}
                 >
                   حفظ
                 </button>

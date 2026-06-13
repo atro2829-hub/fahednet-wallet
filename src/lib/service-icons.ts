@@ -3,7 +3,7 @@
  * 
  * Flat minimalist design:
  * - Black outlines (#1a1a1a) with stroke-width 1.5-2
- * - Red accents (#E60000) for key elements
+ * - Red accents (#8B1E3A) for key elements
  * - White rounded square background
  * - 48x48 viewBox
  */
@@ -17,15 +17,15 @@ function svgToDataUrl(svg: string): string {
 const instantPaySvg = `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" fill="none">
   <rect x="2" y="2" width="44" height="44" rx="12" fill="white"/>
   <circle cx="24" cy="24" r="14" stroke="#1a1a1a" stroke-width="1.8" fill="none"/>
-  <path d="M26 12L18 26H23L22 36L30 22H25L26 12Z" fill="#E60000" stroke="#1a1a1a" stroke-width="1.2" stroke-linejoin="round"/>
+  <path d="M26 12L18 26H23L22 36L30 22H25L26 12Z" fill="#8B1E3A" stroke="#1a1a1a" stroke-width="1.2" stroke-linejoin="round"/>
 </svg>`;
 
 const transferSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" fill="none">
   <rect x="2" y="2" width="44" height="44" rx="12" fill="white"/>
   <path d="M14 18C14 18 18 12 28 12C34 12 36 15 36 15" stroke="#1a1a1a" stroke-width="1.8" stroke-linecap="round" fill="none"/>
   <path d="M33 11L37 15.5L32.5 18" stroke="#1a1a1a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-  <path d="M34 30C34 30 30 36 20 36C14 36 12 33 12 33" stroke="#E60000" stroke-width="1.8" stroke-linecap="round" fill="none"/>
-  <path d="M15 37L11 32.5L15.5 30" stroke="#E60000" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <path d="M34 30C34 30 30 36 20 36C14 36 12 33 12 33" stroke="#8B1E3A" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+  <path d="M15 37L11 32.5L15.5 30" stroke="#8B1E3A" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
   <circle cx="24" cy="24" r="3" stroke="#1a1a1a" stroke-width="1.5" fill="none"/>
 </svg>`;
 
@@ -35,9 +35,9 @@ const walletTransferSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="48" he
   <path d="M8 22H36" stroke="#1a1a1a" stroke-width="1.5"/>
   <rect x="28" y="24" width="8" height="6" rx="2" stroke="#1a1a1a" stroke-width="1.5" fill="none"/>
   <circle cx="32" cy="27" r="1.2" fill="#1a1a1a"/>
-  <path d="M33 10L39 16" stroke="#E60000" stroke-width="1.8" stroke-linecap="round"/>
-  <path d="M39 10L33 16" stroke="#E60000" stroke-width="1.8" stroke-linecap="round"/>
-  <path d="M36 8V18" stroke="#E60000" stroke-width="1.5" stroke-linecap="round"/>
+  <path d="M33 10L39 16" stroke="#8B1E3A" stroke-width="1.8" stroke-linecap="round"/>
+  <path d="M39 10L33 16" stroke="#8B1E3A" stroke-width="1.8" stroke-linecap="round"/>
+  <path d="M36 8V18" stroke="#8B1E3A" stroke-width="1.5" stroke-linecap="round"/>
 </svg>`;
 
 const rechargeSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" fill="none">
@@ -45,8 +45,8 @@ const rechargeSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="
   <rect x="16" y="10" width="16" height="28" rx="3" stroke="#1a1a1a" stroke-width="1.8" fill="none"/>
   <line x1="21" y1="12" x2="27" y2="12" stroke="#1a1a1a" stroke-width="1.5" stroke-linecap="round"/>
   <circle cx="24" cy="34" r="1.5" fill="#1a1a1a"/>
-  <path d="M12 16C10 18 9 20 9 22" stroke="#E60000" stroke-width="1.8" stroke-linecap="round" fill="none"/>
-  <path d="M9 12C6 15 5 19 5 22" stroke="#E60000" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+  <path d="M12 16C10 18 9 20 9 22" stroke="#8B1E3A" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+  <path d="M9 12C6 15 5 19 5 22" stroke="#8B1E3A" stroke-width="1.8" stroke-linecap="round" fill="none"/>
 </svg>`;
 
 const appStoreSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" fill="none">
@@ -57,7 +57,7 @@ const appStoreSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="
   <rect x="21.5" y="24" width="5" height="5" rx="1" stroke="#1a1a1a" stroke-width="1.2" fill="none"/>
   <rect x="28" y="24" width="5" height="5" rx="1" stroke="#1a1a1a" stroke-width="1.2" fill="none"/>
   <rect x="15" y="31" width="5" height="5" rx="1" stroke="#1a1a1a" stroke-width="1.2" fill="none"/>
-  <rect x="21.5" y="31" width="5" height="5" rx="1" fill="#E60000" stroke="#E60000" stroke-width="1.2"/>
+  <rect x="21.5" y="31" width="5" height="5" rx="1" fill="#8B1E3A" stroke="#8B1E3A" stroke-width="1.2"/>
   <rect x="28" y="31" width="5" height="5" rx="1" stroke="#1a1a1a" stroke-width="1.2" fill="none"/>
 </svg>`;
 
@@ -65,14 +65,7 @@ const instantChargeSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="48" hei
   <rect x="2" y="2" width="44" height="44" rx="12" fill="white"/>
   <rect x="15" y="8" width="18" height="32" rx="3" stroke="#1a1a1a" stroke-width="1.8" fill="none"/>
   <line x1="21" y1="10" x2="27" y2="10" stroke="#1a1a1a" stroke-width="1.5" stroke-linecap="round"/>
-  <path d="M27 18L22 26H26L21 34" stroke="#E60000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-</svg>`;
-
-const healthSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" fill="none">
-  <rect x="2" y="2" width="44" height="44" rx="12" fill="white"/>
-  <path d="M24 8C18 8 10 13 10 22C10 32 24 40 24 40C24 40 38 32 38 22C38 13 30 8 24 8Z" stroke="#1a1a1a" stroke-width="1.8" fill="none"/>
-  <rect x="20" y="18" width="8" height="3" rx="0.5" fill="#E60000"/>
-  <rect x="22.5" y="15.5" width="3" height="8" rx="0.5" fill="#E60000"/>
+  <path d="M27 18L22 26H26L21 34" stroke="#8B1E3A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
 </svg>`;
 
 const gamesSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" fill="none">
@@ -80,7 +73,7 @@ const gamesSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48"
   <path d="M8 22C8 16 12 14 16 14H32C36 14 40 16 40 22C40 28 38 36 32 36C28 36 26 32 24 32C22 32 20 36 16 36C10 36 8 28 8 22Z" stroke="#1a1a1a" stroke-width="1.8" fill="none"/>
   <line x1="13" y1="22" x2="13" y2="28" stroke="#1a1a1a" stroke-width="1.8" stroke-linecap="round"/>
   <line x1="10" y1="25" x2="16" y2="25" stroke="#1a1a1a" stroke-width="1.8" stroke-linecap="round"/>
-  <circle cx="33" cy="22" r="2" fill="#E60000"/>
+  <circle cx="33" cy="22" r="2" fill="#8B1E3A"/>
   <circle cx="30" cy="26" r="1.5" stroke="#1a1a1a" stroke-width="1.2" fill="none"/>
   <circle cx="36" cy="26" r="1.5" stroke="#1a1a1a" stroke-width="1.2" fill="none"/>
 </svg>`;
@@ -92,9 +85,9 @@ const digitalWalletSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="48" hei
   <circle cx="32" cy="27" r="1.2" fill="#1a1a1a"/>
   <path d="M18 18V14C18 12 20 10 22 10" stroke="#1a1a1a" stroke-width="1.5" stroke-linecap="round" fill="none"/>
   <path d="M24 9C26 9 28 10.5 28 12" stroke="#1a1a1a" stroke-width="1.5" stroke-linecap="round" fill="none"/>
-  <path d="M36 10C37.5 8.5 38 7 37 6" stroke="#E60000" stroke-width="1.8" stroke-linecap="round" fill="none"/>
-  <path d="M39 8C40.5 6.5 41 5 40 4" stroke="#E60000" stroke-width="1.8" stroke-linecap="round" fill="none"/>
-  <path d="M33 12C34.5 10.5 35 9 34 8" stroke="#E60000" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+  <path d="M36 10C37.5 8.5 38 7 37 6" stroke="#8B1E3A" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+  <path d="M39 8C40.5 6.5 41 5 40 4" stroke="#8B1E3A" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+  <path d="M33 12C34.5 10.5 35 9 34 8" stroke="#8B1E3A" stroke-width="1.5" stroke-linecap="round" fill="none"/>
 </svg>`;
 
 // ─── Telecom Companies (5 icons) ────────────────────────────────────
@@ -105,10 +98,10 @@ const yemenMobileSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="48" heigh
   <line x1="20" y1="12" x2="28" y2="12" stroke="#1a1a1a" stroke-width="1.5" stroke-linecap="round"/>
   <circle cx="24" cy="34" r="1.5" fill="#1a1a1a"/>
   <text x="24" y="27" text-anchor="middle" font-family="Arial,sans-serif" font-weight="bold" font-size="8" fill="#1a1a1a">YM</text>
-  <path d="M10 14C8.5 16 8 18 8 20" stroke="#E60000" stroke-width="1.8" stroke-linecap="round" fill="none"/>
-  <path d="M7 11C5 14 4.5 17 4 20" stroke="#E60000" stroke-width="1.8" stroke-linecap="round" fill="none"/>
-  <path d="M38 14C39.5 16 40 18 40 20" stroke="#E60000" stroke-width="1.8" stroke-linecap="round" fill="none"/>
-  <path d="M41 11C43 14 43.5 17 44 20" stroke="#E60000" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+  <path d="M10 14C8.5 16 8 18 8 20" stroke="#8B1E3A" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+  <path d="M7 11C5 14 4.5 17 4 20" stroke="#8B1E3A" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+  <path d="M38 14C39.5 16 40 18 40 20" stroke="#8B1E3A" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+  <path d="M41 11C43 14 43.5 17 44 20" stroke="#8B1E3A" stroke-width="1.8" stroke-linecap="round" fill="none"/>
 </svg>`;
 
 const yoSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" fill="none">
@@ -158,7 +151,7 @@ const payBillSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="4
   <line x1="18" y1="16" x2="30" y2="16" stroke="#1a1a1a" stroke-width="1.2" stroke-linecap="round"/>
   <line x1="18" y1="21" x2="30" y2="21" stroke="#1a1a1a" stroke-width="1.2" stroke-linecap="round"/>
   <line x1="18" y1="26" x2="26" y2="26" stroke="#1a1a1a" stroke-width="1.2" stroke-linecap="round"/>
-  <path d="M26 30L29 33L35 27" stroke="#E60000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <path d="M26 30L29 33L35 27" stroke="#8B1E3A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
 </svg>`;
 
 const transferIntlSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" fill="none">
@@ -167,15 +160,15 @@ const transferIntlSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="48" heig
   <ellipse cx="24" cy="24" rx="6" ry="13" stroke="#1a1a1a" stroke-width="1.2" fill="none"/>
   <line x1="11" y1="20" x2="37" y2="20" stroke="#1a1a1a" stroke-width="1.2"/>
   <line x1="11" y1="28" x2="37" y2="28" stroke="#1a1a1a" stroke-width="1.2"/>
-  <path d="M37 10L41 14L37 18" stroke="#E60000" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-  <path d="M11 30L7 34L11 38" stroke="#E60000" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <path d="M37 10L41 14L37 18" stroke="#8B1E3A" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <path d="M11 30L7 34L11 38" stroke="#8B1E3A" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
 </svg>`;
 
 const printReceiptSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" fill="none">
   <rect x="2" y="2" width="44" height="44" rx="12" fill="white"/>
   <rect x="14" y="6" width="20" height="14" rx="1" stroke="#1a1a1a" stroke-width="1.5" fill="none"/>
   <rect x="8" y="20" width="32" height="14" rx="2" stroke="#1a1a1a" stroke-width="1.8" fill="none"/>
-  <rect x="16" y="30" width="16" height="12" rx="1" stroke="#E60000" stroke-width="1.5" fill="none"/>
+  <rect x="16" y="30" width="16" height="12" rx="1" stroke="#8B1E3A" stroke-width="1.5" fill="none"/>
   <line x1="20" y1="34" x2="28" y2="34" stroke="#1a1a1a" stroke-width="1.2" stroke-linecap="round"/>
   <line x1="20" y1="38" x2="26" y2="38" stroke="#1a1a1a" stroke-width="1.2" stroke-linecap="round"/>
   <rect x="18" y="23" width="4" height="3" rx="0.5" fill="#1a1a1a"/>
@@ -190,15 +183,15 @@ const payBillsSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="
   <line x1="24" y1="15" x2="34" y2="15" stroke="#1a1a1a" stroke-width="1.2" stroke-linecap="round"/>
   <line x1="24" y1="20" x2="34" y2="20" stroke="#1a1a1a" stroke-width="1.2" stroke-linecap="round"/>
   <line x1="24" y1="25" x2="31" y2="25" stroke="#1a1a1a" stroke-width="1.2" stroke-linecap="round"/>
-  <rect x="24" y="29" width="10" height="6" rx="1" fill="#E60000" fill-opacity="0.15" stroke="#E60000" stroke-width="1.2"/>
+  <rect x="24" y="29" width="10" height="6" rx="1" fill="#8B1E3A" fill-opacity="0.15" stroke="#8B1E3A" stroke-width="1.2"/>
 </svg>`;
 
 const transferAccountSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" fill="none">
   <rect x="2" y="2" width="44" height="44" rx="12" fill="white"/>
   <circle cx="20" cy="17" r="6" stroke="#1a1a1a" stroke-width="1.8" fill="none"/>
   <path d="M10 34C10 28 14 24 20 24C26 24 30 28 30 34" stroke="#1a1a1a" stroke-width="1.8" stroke-linecap="round" fill="none"/>
-  <path d="M32 18L38 24L32 30" stroke="#E60000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-  <line x1="28" y1="24" x2="38" y2="24" stroke="#E60000" stroke-width="2" stroke-linecap="round"/>
+  <path d="M32 18L38 24L32 30" stroke="#8B1E3A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <line x1="28" y1="24" x2="38" y2="24" stroke="#8B1E3A" stroke-width="2" stroke-linecap="round"/>
 </svg>`;
 
 // ─── Games & Entertainment (3 icons) ────────────────────────────────
@@ -239,8 +232,8 @@ const supportSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="4
   <rect x="8" y="24" width="6" height="10" rx="2" stroke="#1a1a1a" stroke-width="1.8" fill="none"/>
   <rect x="34" y="24" width="6" height="10" rx="2" stroke="#1a1a1a" stroke-width="1.8" fill="none"/>
   <path d="M36 34V36C36 38 34 40 32 40H28" stroke="#1a1a1a" stroke-width="1.8" stroke-linecap="round" fill="none"/>
-  <circle cx="24" cy="40" r="3" stroke="#E60000" stroke-width="1.8" fill="none"/>
-  <path d="M22.5 39.5L24 41.5L26 38.5" stroke="#E60000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <circle cx="24" cy="40" r="3" stroke="#8B1E3A" stroke-width="1.8" fill="none"/>
+  <path d="M22.5 39.5L24 41.5L26 38.5" stroke="#8B1E3A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
 </svg>`;
 
 const offersSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" fill="none">
@@ -249,8 +242,8 @@ const offersSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48
   <line x1="14" y1="18" x2="34" y2="18" stroke="#1a1a1a" stroke-width="1.2" stroke-linecap="round"/>
   <line x1="14" y1="24" x2="30" y2="24" stroke="#1a1a1a" stroke-width="1.2" stroke-linecap="round"/>
   <line x1="14" y1="30" x2="26" y2="30" stroke="#1a1a1a" stroke-width="1.2" stroke-linecap="round"/>
-  <circle cx="32" cy="30" r="4" fill="#E60000" fill-opacity="0.2" stroke="#E60000" stroke-width="1.5"/>
-  <text x="32" y="32.5" text-anchor="middle" font-family="Arial,sans-serif" font-weight="bold" font-size="6" fill="#E60000">%</text>
+  <circle cx="32" cy="30" r="4" fill="#8B1E3A" fill-opacity="0.2" stroke="#8B1E3A" stroke-width="1.5"/>
+  <text x="32" y="32.5" text-anchor="middle" font-family="Arial,sans-serif" font-weight="bold" font-size="6" fill="#8B1E3A">%</text>
 </svg>`;
 
 const ordersSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" fill="none">
@@ -260,8 +253,8 @@ const ordersSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48
   <line x1="18" y1="18" x2="30" y2="18" stroke="#1a1a1a" stroke-width="1.2" stroke-linecap="round"/>
   <line x1="18" y1="24" x2="30" y2="24" stroke="#1a1a1a" stroke-width="1.2" stroke-linecap="round"/>
   <line x1="18" y1="30" x2="30" y2="30" stroke="#1a1a1a" stroke-width="1.2" stroke-linecap="round"/>
-  <path d="M20 17L22 19L26 15" stroke="#E60000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-  <path d="M20 23L22 25L26 21" stroke="#E60000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <path d="M20 17L22 19L26 15" stroke="#8B1E3A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <path d="M20 23L22 25L26 21" stroke="#8B1E3A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
 </svg>`;
 
 // ─── Additional Service Icons ────────────────────────────────────────
@@ -271,8 +264,8 @@ const depositSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="4
   <rect x="8" y="18" width="28" height="18" rx="3" stroke="#1a1a1a" stroke-width="1.8" fill="none"/>
   <rect x="28" y="24" width="8" height="6" rx="2" stroke="#1a1a1a" stroke-width="1.5" fill="none"/>
   <circle cx="32" cy="27" r="1.2" fill="#1a1a1a"/>
-  <path d="M24 8V16" stroke="#E60000" stroke-width="2" stroke-linecap="round"/>
-  <path d="M20 12L24 8L28 12" stroke="#E60000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <path d="M24 8V16" stroke="#8B1E3A" stroke-width="2" stroke-linecap="round"/>
+  <path d="M20 12L24 8L28 12" stroke="#8B1E3A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
   <path d="M18 16H30" stroke="#1a1a1a" stroke-width="1.5" stroke-linecap="round"/>
 </svg>`;
 
@@ -280,19 +273,32 @@ const exchangeSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="
   <rect x="2" y="2" width="44" height="44" rx="12" fill="white"/>
   <circle cx="24" cy="24" r="12" stroke="#1a1a1a" stroke-width="1.8" fill="none"/>
   <text x="24" y="28" text-anchor="middle" font-family="Arial,sans-serif" font-weight="bold" font-size="10" fill="#1a1a1a">$</text>
-  <path d="M16 14L12 18L16 22" stroke="#E60000" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-  <path d="M12 18H20" stroke="#E60000" stroke-width="1.8" stroke-linecap="round"/>
-  <path d="M32 26L36 30L32 34" stroke="#E60000" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-  <path d="M36 30H28" stroke="#E60000" stroke-width="1.8" stroke-linecap="round"/>
+  <path d="M16 14L12 18L16 22" stroke="#8B1E3A" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <path d="M12 18H20" stroke="#8B1E3A" stroke-width="1.8" stroke-linecap="round"/>
+  <path d="M32 26L36 30L32 34" stroke="#8B1E3A" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <path d="M36 30H28" stroke="#8B1E3A" stroke-width="1.8" stroke-linecap="round"/>
 </svg>`;
 
 const savingsSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" fill="none">
   <rect x="2" y="2" width="44" height="44" rx="12" fill="white"/>
   <path d="M24 10C17 10 12 15 12 20C12 25 16 28 16 28V36C16 37.5 17 38 18 38H30C31 38 32 37.5 32 36V28C32 28 36 25 36 20C36 15 31 10 24 10Z" stroke="#1a1a1a" stroke-width="1.8" fill="none"/>
   <line x1="16" y1="28" x2="32" y2="28" stroke="#1a1a1a" stroke-width="1.5"/>
-  <circle cx="24" cy="20" r="4" stroke="#E60000" stroke-width="1.8" fill="none"/>
-  <text x="24" y="23" text-anchor="middle" font-family="Arial,sans-serif" font-weight="bold" font-size="7" fill="#E60000">$</text>
+  <circle cx="24" cy="20" r="4" stroke="#8B1E3A" stroke-width="1.8" fill="none"/>
+  <text x="24" y="23" text-anchor="middle" font-family="Arial,sans-serif" font-weight="bold" font-size="7" fill="#8B1E3A">$</text>
   <path d="M21 34H27" stroke="#1a1a1a" stroke-width="1.5" stroke-linecap="round"/>
+</svg>`;
+
+// ─── Service Providers & Wallet Services Category Icons ─────────────
+
+const providersSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" fill="none">
+  <rect x="2" y="2" width="44" height="44" rx="12" fill="white"/>
+  <rect x="8" y="12" width="32" height="24" rx="3" stroke="#1a1a1a" stroke-width="1.8" fill="none"/>
+  <circle cx="18" cy="22" r="4" stroke="#1a1a1a" stroke-width="1.5" fill="none"/>
+  <path d="M12 32C12 28 14.5 26 18 26C21.5 26 24 28 24 32" stroke="#1a1a1a" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+  <circle cx="30" cy="22" r="4" stroke="#8B1E3A" stroke-width="1.5" fill="none"/>
+  <path d="M24 32C24 28 26.5 26 30 26C33.5 26 36 28 36 32" stroke="#8B1E3A" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+  <path d="M18 10V14" stroke="#1a1a1a" stroke-width="1.5" stroke-linecap="round"/>
+  <path d="M30 10V14" stroke="#8B1E3A" stroke-width="1.5" stroke-linecap="round"/>
 </svg>`;
 
 // ─── Export all icons ────────────────────────────────────────────────
@@ -305,7 +311,6 @@ export const serviceIcons: Record<string, string> = {
   'recharge': svgToDataUrl(rechargeSvg),
   'app-store': svgToDataUrl(appStoreSvg),
   'instant-charge': svgToDataUrl(instantChargeSvg),
-  'health': svgToDataUrl(healthSvg),
   'games': svgToDataUrl(gamesSvg),
   'digital-wallet': svgToDataUrl(digitalWalletSvg),
 
@@ -338,6 +343,10 @@ export const serviceIcons: Record<string, string> = {
   'exchange': svgToDataUrl(exchangeSvg),
   'currency-exchange': svgToDataUrl(exchangeSvg),
   'savings': svgToDataUrl(savingsSvg),
+
+  // Category Icons
+  'providers': svgToDataUrl(providersSvg),
+  'providers-category': svgToDataUrl(providersSvg),
 };
 
 /**

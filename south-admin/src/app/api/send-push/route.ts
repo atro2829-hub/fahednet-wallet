@@ -98,7 +98,7 @@ export async function POST(request: NextRequest) {
         notification: {
           channelId: channelId,
           icon: '@drawable/ic_notification',
-          color: '#6C3CE1',
+          color: '#8B1E3A',
           sound: soundFile,
           tag: type || 'info',
           defaultSound: false,

@@ -13,7 +13,7 @@ export default function AdminProviders() {
   } = useAdminContext();
 
   const [showAddProvider, setShowAddProvider] = useState(false);
-  const [newProvider, setNewProvider] = useState({ name: '', color: '#E60000', categoryId: 'telecom', inputLabel: '', inputType: 'phone' as 'phone' | 'text', inputPrefix: '+967', icon: '' });
+  const [newProvider, setNewProvider] = useState({ name: '', color: '#8B1E3A', categoryId: 'telecom', inputLabel: '', inputType: 'phone' as 'phone' | 'text', inputPrefix: '+967', icon: '' });
   const [editingProvider, setEditingProvider] = useState<string | null>(null);
   const [editProviderData, setEditProviderData] = useState<ServiceProvider | null>(null);
   const addFileInputRef = useRef<HTMLInputElement>(null);
@@ -22,7 +22,7 @@ export default function AdminProviders() {
   const onAddProvider = () => {
     if (!newProvider.name) return;
     handleAddProvider(newProvider);
-    setNewProvider({ name: '', color: '#E60000', categoryId: 'telecom', inputLabel: '', inputType: 'phone', inputPrefix: '+967', icon: '' });
+    setNewProvider({ name: '', color: '#8B1E3A', categoryId: 'telecom', inputLabel: '', inputType: 'phone', inputPrefix: '+967', icon: '' });
     setShowAddProvider(false);
   };
 
@@ -67,7 +67,7 @@ export default function AdminProviders() {
     <motion.div key="providers" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-3">
       <motion.button whileTap={{ scale: 0.95 }} onClick={() => setShowAddProvider(!showAddProvider)}
         className="w-full py-3.5 rounded-2xl flex items-center justify-center gap-2 text-sm font-medium"
-        style={{ background: 'rgba(230,0,0,0.1)', color: '#E60000', border: '1px solid rgba(230,0,0,0.2)', backdropFilter: 'blur(20px)' }}>
+        style={{ background: 'rgba(139,30,58,0.1)', color: '#8B1E3A', border: '1px solid rgba(139,30,58,0.2)', backdropFilter: 'blur(20px)' }}>
         <Plus size={18} strokeWidth={1.5} /><span>إضافة مزود خدمة</span>
       </motion.button>
 
@@ -95,7 +95,7 @@ export default function AdminProviders() {
                 {newProvider.icon && <img src={newProvider.icon} alt="icon" className="w-8 h-8 rounded-lg object-cover" />}
               </div>
             </div>
-            <motion.button whileTap={{ scale: 0.95 }} onClick={onAddProvider} className="w-full py-3 rounded-xl text-sm font-bold text-white" style={{ background: '#E60000' }}>إضافة المزود</motion.button>
+            <motion.button whileTap={{ scale: 0.95 }} onClick={onAddProvider} className="w-full py-3 rounded-xl text-sm font-bold text-white" style={{ background: '#8B1E3A' }}>إضافة المزود</motion.button>
           </motion.div>
         )}
       </AnimatePresence>
@@ -172,7 +172,7 @@ export default function AdminProviders() {
                 <button onClick={() => handleToggleProvider(provider.id)}>
                   {provider.isActive ? <ToggleRight size={22} color="#10B981" /> : <ToggleLeft size={22} color={isDark ? '#444' : '#CCC'} />}
                 </button>
-                <button onClick={() => handleDeleteProvider(provider.id)}><Trash2 size={14} color="#E60000" /></button>
+                <button onClick={() => handleDeleteProvider(provider.id)}><Trash2 size={14} color="#8B1E3A" /></button>
               </div>
             </div>
           )}

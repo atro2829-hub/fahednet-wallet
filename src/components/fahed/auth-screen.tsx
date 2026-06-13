@@ -1,17 +1,40 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useTheme } from 'next-themes';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Mail, Lock, User, Eye, EyeOff, ArrowLeft, ShieldCheck, Phone, Heart, CreditCard, X, KeyRound, Fingerprint, CheckCircle2, FileText, Shield } from 'lucide-react';
+import { Mail, Lock, User, Eye, EyeOff, ArrowLeft, ShieldCheck, Phone, Heart, CreditCard, X, KeyRound, Fingerprint, CheckCircle2, FileText, Shield, MessageCircle, Facebook, Twitter, Instagram, Send, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useAppStore } from '@/lib/store';
 import { auth, database } from '@/lib/firebase';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
-import { ref, get, update } from 'firebase/database';
-import { generateUserId } from '@/lib/utils';
-import { LOGO_BASE64 } from '@/lib/logo';
+import { ref, get, update, onValue } from 'firebase/database';
+import { generateUserId, generateUniqueUserId } from '@/lib/utils';
+import {
+  isBiometricAvailable,
+  isBiometricLoginEnabled,
+  authenticateWithBiometricDetailed,
+  getBiometricCredentials,
+  checkBiometricAvailability,
+  syncBiometricPreference,
+  setLastLoggedInUser,
+  storeBiometricCredentials,
+} from '@/lib/biometric';
 
 type AuthStep = 'login' | 'register-step1' | 'register-step2' | 'register-step3' | 'password-recovery';
+
+interface AuthBanner {
+  id: string;
+  imageUrl: string;
+  description: string;
+}
+
+interface SocialLinksData {
+  whatsapp: string;
+  facebook: string;
+  twitter: string;
+  instagram: string;
+  telegram: string;
+}
 
 // Yemen flag indicator
 function YemenFlagIndicator() {
@@ -41,11 +64,11 @@ function StepIndicator({ currentStep }: { currentStep: number }) {
               initial={{ scale: 0.8 }}
               animate={{
                 scale: currentStep >= step.num ? 1 : 0.8,
-                backgroundColor: currentStep >= step.num ? '#E60000' : 'transparent',
-                borderColor: currentStep >= step.num ? '#E60000' : '#CCC',
+                backgroundColor: currentStep >= step.num ? '#8B1E3A' : 'transparent',
+                borderColor: currentStep >= step.num ? '#8B1E3A' : '#CCC',
               }}
               className="w-8 h-8 rounded-full flex items-center justify-center border-2 transition-all"
-              style={{ borderColor: currentStep >= step.num ? '#E60000' : '#CCC' }}
+              style={{ borderColor: currentStep >= step.num ? '#8B1E3A' : '#CCC' }}
             >
               {currentStep > step.num ? (
                 <CheckCircle2 size={16} color="#FFF" />
@@ -55,12 +78,12 @@ function StepIndicator({ currentStep }: { currentStep: number }) {
                 </span>
               )}
             </motion.div>
-            <span className="text-[9px] mt-1 font-medium" style={{ color: currentStep >= step.num ? '#E60000' : '#999' }}>
+            <span className="text-[9px] mt-1 font-medium" style={{ color: currentStep >= step.num ? '#8B1E3A' : '#999' }}>
               {step.label}
             </span>
           </div>
           {index < steps.length - 1 && (
-            <div className="w-10 h-0.5 mx-1 mt-[-12px]" style={{ background: currentStep > step.num ? '#E60000' : '#DDD' }} />
+            <div className="w-10 h-0.5 mx-1 mt-[-12px]" style={{ background: currentStep > step.num ? '#8B1E3A' : '#DDD' }} />
           )}
         </div>
       ))}
@@ -68,16 +91,321 @@ function StepIndicator({ currentStep }: { currentStep: number }) {
   );
 }
 
+// Banner Carousel Component
+function BannerCarousel({ isDark }: { isDark: boolean }) {
+  const [banners, setBanners] = useState<AuthBanner[]>([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
+  const autoScrollRef = useRef<NodeJS.Timeout | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Load banners from Firebase
+  useEffect(() => {
+    const bannersRef = ref(database, 'adminSettings/authBanners');
+    const unsubscribe = onValue(bannersRef, (snapshot) => {
+      if (snapshot.exists()) {
+        const data = snapshot.val();
+        const bannerList: AuthBanner[] = Object.entries(data)
+          .map(([id, val]: [string, any]) => ({
+            id,
+            imageUrl: val?.imageUrl ?? '',
+            description: val?.description ?? '',
+          }))
+          .filter((b) => b.imageUrl);
+        setBanners(bannerList);
+        setCurrentIndex(0);
+      } else {
+        setBanners([]);
+      }
+    }, () => {
+      setBanners([]);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  // Auto-scroll every 4 seconds
+  const startAutoScroll = useCallback(() => {
+    if (autoScrollRef.current) clearInterval(autoScrollRef.current);
+    autoScrollRef.current = setInterval(() => {
+      setCurrentIndex((prev) => (banners.length > 0 ? (prev + 1) % banners.length : 0));
+    }, 4000);
+  }, [banners.length]);
+
+  useEffect(() => {
+    if (banners.length > 1) {
+      startAutoScroll();
+    }
+    return () => {
+      if (autoScrollRef.current) clearInterval(autoScrollRef.current);
+    };
+  }, [banners.length, startAutoScroll]);
+
+  // Touch handlers for swipe
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+    if (autoScrollRef.current) clearInterval(autoScrollRef.current);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > 50;
+    const isRightSwipe = distance < -50;
+
+    if (isLeftSwipe && banners.length > 0) {
+      setCurrentIndex((prev) => (prev + 1) % banners.length);
+    }
+    if (isRightSwipe && banners.length > 0) {
+      setCurrentIndex((prev) => (prev - 1 + banners.length) % banners.length);
+    }
+    startAutoScroll();
+  };
+
+  const goTo = (index: number) => {
+    setCurrentIndex(index);
+    startAutoScroll();
+  };
+
+  if (banners.length === 0) {
+    return (
+      <div className="w-full px-4 pt-4">
+        <div
+          className="relative overflow-hidden rounded-2xl"
+          style={{
+            height: '190px',
+            background: isDark
+              ? 'linear-gradient(135deg, rgba(139,30,58,0.12) 0%, rgba(26,26,26,0.6) 100%)'
+              : 'linear-gradient(135deg, rgba(139,30,58,0.06) 0%, rgba(255,255,255,0.8) 100%)',
+          }}
+        >
+          <div className="absolute inset-0 flex flex-col items-center justify-center">
+            <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-2" style={{ background: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(139,30,58,0.08)' }}>
+              <img
+                src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23E60000' stroke-width='1.5'%3E%3Crect x='3' y='3' width='18' height='18' rx='2'/%3E%3Cpath d='M3 9h18'/%3E%3Cpath d='M9 21V9'/%3E%3C/svg%3E"
+                alt=""
+                className="w-6 h-6"
+              />
+            </div>
+            <p className="text-xs font-medium" style={{ color: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.25)' }}>
+              محفظة الجنوب
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="w-full px-4 pt-4">
+      <div
+        ref={containerRef}
+        className="relative overflow-hidden rounded-2xl"
+        style={{
+          height: '190px',
+          background: isDark
+            ? 'linear-gradient(135deg, rgba(139,30,58,0.08) 0%, rgba(26,26,26,0.9) 100%)'
+            : 'linear-gradient(135deg, rgba(139,30,58,0.04) 0%, rgba(255,255,255,0.9) 100%)',
+        }}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+      >
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={currentIndex}
+            initial={{ opacity: 0, x: 40 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -40 }}
+            transition={{ duration: 0.3, ease: 'easeInOut' }}
+            className="absolute inset-0"
+          >
+            <img
+              src={banners[currentIndex]?.imageUrl}
+              alt={banners[currentIndex]?.description || 'Banner'}
+              className="w-full h-full object-cover rounded-2xl"
+            />
+            {banners[currentIndex]?.description && (
+              <div
+                className="absolute bottom-0 left-0 right-0 p-3 rounded-b-2xl"
+                style={{
+                  background: 'linear-gradient(transparent, rgba(0,0,0,0.6))',
+                }}
+              >
+                <p className="text-[11px] text-white/90 font-medium line-clamp-2">
+                  {banners[currentIndex].description}
+                </p>
+              </div>
+            )}
+          </motion.div>
+        </AnimatePresence>
+
+        {/* Navigation arrows (desktop) */}
+        {banners.length > 1 && (
+          <>
+            <button
+              onClick={() => goTo((currentIndex - 1 + banners.length) % banners.length)}
+              className="absolute left-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full flex items-center justify-center transition-opacity opacity-60 hover:opacity-100"
+              style={{ background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(8px)' }}
+            >
+              <ChevronRight size={14} color="#FFF" />
+            </button>
+            <button
+              onClick={() => goTo((currentIndex + 1) % banners.length)}
+              className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full flex items-center justify-center transition-opacity opacity-60 hover:opacity-100"
+              style={{ background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(8px)' }}
+            >
+              <ChevronLeft size={14} color="#FFF" />
+            </button>
+          </>
+        )}
+      </div>
+
+      {/* Dot indicators */}
+      {banners.length > 1 && (
+        <div className="flex items-center justify-center gap-1.5 mt-2">
+          {banners.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => goTo(index)}
+              className="transition-all duration-300 rounded-full"
+              style={{
+                width: currentIndex === index ? '18px' : '6px',
+                height: '6px',
+                background: currentIndex === index
+                  ? '#8B1E3A'
+                  : isDark
+                    ? 'rgba(255,255,255,0.2)'
+                    : 'rgba(0,0,0,0.15)',
+              }}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Social Links Component
+function SocialLinksBar({ isDark }: { isDark: boolean }) {
+  const [socialLinks, setSocialLinks] = useState<SocialLinksData>({
+    whatsapp: '',
+    facebook: '',
+    twitter: '',
+    instagram: '',
+    telegram: '',
+  });
+
+  useEffect(() => {
+    // First try adminSettings/socialLinks
+    const socialLinksRef = ref(database, 'adminSettings/socialLinks');
+    const unsubSocial = onValue(socialLinksRef, (snapshot) => {
+      if (snapshot.exists()) {
+        const data = snapshot.val();
+        setSocialLinks({
+          whatsapp: data.whatsapp || '',
+          facebook: data.facebook || data.facebookLink || '',
+          twitter: data.twitter || data.twitterLink || '',
+          instagram: data.instagram || data.instagramLink || '',
+          telegram: data.telegram || data.telegramLink || '',
+        });
+      } else {
+        // Fallback: read from adminSettings/appSettings
+        const appSettingsRef = ref(database, 'adminSettings/appSettings');
+        get(appSettingsRef).then((appSnapshot) => {
+          if (appSnapshot.exists()) {
+            const data = appSnapshot.val();
+            setSocialLinks({
+              whatsapp: data.supportWhatsApp || '',
+              facebook: data.facebookLink || '',
+              twitter: data.twitterLink || '',
+              instagram: data.instagramLink || '',
+              telegram: data.telegramLink || '',
+            });
+          }
+        });
+      }
+    }, () => {
+      // On error, try appSettings fallback
+      const appSettingsRef = ref(database, 'adminSettings/appSettings');
+      get(appSettingsRef).then((appSnapshot) => {
+        if (appSnapshot.exists()) {
+          const data = appSnapshot.val();
+          setSocialLinks({
+            whatsapp: data.supportWhatsApp || '',
+            facebook: data.facebookLink || '',
+            twitter: data.twitterLink || '',
+            instagram: data.instagramLink || '',
+            telegram: data.telegramLink || '',
+          });
+        }
+      });
+    });
+
+    return () => unsubSocial();
+  }, []);
+
+  const socialItems = [
+    { key: 'whatsapp' as const, icon: MessageCircle, label: 'WhatsApp', url: socialLinks.whatsapp },
+    { key: 'facebook' as const, icon: Facebook, label: 'Facebook', url: socialLinks.facebook },
+    { key: 'twitter' as const, icon: Twitter, label: 'Twitter', url: socialLinks.twitter },
+    { key: 'instagram' as const, icon: Instagram, label: 'Instagram', url: socialLinks.instagram },
+    { key: 'telegram' as const, icon: Send, label: 'Telegram', url: socialLinks.telegram },
+  ].filter(item => item.url && item.url.trim() !== '');
+
+  if (socialItems.length === 0) return null;
+
+  const handleLinkClick = (url: string) => {
+    window.open(url, '_blank', 'noopener,noreferrer');
+  };
+
+  return (
+    <div className="flex items-center justify-center gap-3 py-4 px-6">
+      {socialItems.map((item) => {
+        const Icon = item.icon;
+        return (
+          <button
+            key={item.key}
+            onClick={() => handleLinkClick(item.url)}
+            className="w-9 h-9 rounded-full flex items-center justify-center transition-all active:scale-90 hover:scale-105"
+            style={{
+              background: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)',
+              border: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`,
+            }}
+            title={item.label}
+            aria-label={item.label}
+          >
+            <Icon size={16} strokeWidth={1.5} color={isDark ? '#AAA' : '#888'} />
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 export default function AuthScreen() {
   const { theme } = useTheme();
   const isDark = theme === 'dark';
-  const { setUser } = useAppStore();
+  const { setUser, setBiometricEnabled, featureFlags } = useAppStore();
 
   const [step, setStep] = useState<AuthStep>('login');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [loginMode, setLoginMode] = useState<'login' | 'register'>('login');
+  const [biometricAvailable, setBiometricAvailable] = useState(false);
+  const [biometricLoading, setBiometricLoading] = useState(false);
+
+  // Check biometric availability on mount
+  useEffect(() => {
+    isBiometricAvailable().then(setBiometricAvailable);
+  }, []);
 
   // Login fields
   const [loginEmail, setLoginEmail] = useState('');
@@ -157,8 +485,14 @@ export default function AuthScreen() {
           cardIssuedAt: userData.cardIssuedAt || '', governorate: userData.governorate || '',
           theme: userData.theme || 'light',
         });
+        // Store last logged-in user for biometric persistence
+        setLastLoggedInUser(uid);
+        storeBiometricCredentials(uid, userData.email || loginEmail);
+        // Sync biometric preference from Firebase
+        const bioPref = await syncBiometricPreference(uid);
+        setBiometricEnabled(bioPref);
       } else {
-        const newUserId = generateUserId();
+        const newUserId = await generateUniqueUserId(database);
         const isAdminEmail = loginEmail.toLowerCase().includes('admin');
         const newUserData = { email: loginEmail, phone: '', name: '', firstName: '', secondName: '', thirdName: '', familyName: '', nationalId: '', avatar: '', role: isAdminEmail ? 'admin' as const : 'user' as const, userId: newUserId, kycStatus: 'pending' as const, isBlocked: false, balanceYER: 0, balanceSAR: 0, balanceUSD: 0, cardType: '', cardNumber: '', cardIssuedAt: '', governorate: '', theme: 'light' as const };
         await update(ref(database), {
@@ -223,7 +557,7 @@ export default function AuthScreen() {
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, regEmail, regPassword);
       const uid = userCredential.user.uid;
-      const newUserId = generateUserId();
+      const newUserId = await generateUniqueUserId(database);
       const isAdminEmail = regEmail.toLowerCase().includes('admin');
       const fullName = getFullName();
       const userData = {
@@ -376,75 +710,44 @@ export default function AuthScreen() {
   );
 
   const btnPrimary = {
-    background: 'linear-gradient(135deg, #E60000 0%, #B30000 100%)',
-    boxShadow: '0 4px 16px rgba(230,0,0,0.3)',
+    background: 'linear-gradient(135deg, #8B1E3A 0%, #5C1225 100%)',
+    boxShadow: '0 4px 16px rgba(139,30,58,0.3)',
   };
 
   return (
     <div className="min-h-screen flex flex-col" style={{ background: isDark ? '#0F0F0F' : '#F5F5F5' }}>
-      {/* Logo Area */}
-      <div className="flex flex-col items-center pt-10 pb-4">
-        <motion.div
-          initial={{ scale: 0.5, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ type: 'spring', stiffness: 200, damping: 15 }}
-          className="w-20 h-20 rounded-2xl overflow-hidden mb-4 flex items-center justify-center"
-          style={{ boxShadow: '0 8px 24px rgba(230,0,0,0.3)', background: isDark ? 'rgba(230,0,0,0.1)' : 'rgba(230,0,0,0.06)' }}
-        >
-          <img src={LOGO_BASE64} alt="الجنوب" className="w-full h-full object-cover" />
-        </motion.div>
-        <motion.h1
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.1 }}
-          className="text-2xl font-bold"
-          style={{ color: isDark ? '#FFF' : '#1a1a1a' }}
-        >
-          محفظة الجنوب
-        </motion.h1>
-        <motion.p
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.2 }}
-          className="text-sm mt-1"
-          style={{ color: isDark ? '#888' : '#AAA' }}
-        >
-          محفظتك الرقمية الموثوقة
-        </motion.p>
+      {/* Banner Carousel at the Top */}
+      <BannerCarousel isDark={isDark} />
 
-        {/* Mode Toggle */}
-        {step !== 'password-recovery' && (
-          <motion.div
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.3 }}
-            className="flex items-center gap-3 mt-5"
+      {/* Mode Toggle */}
+      {step !== 'password-recovery' && (
+        <div className="flex items-center justify-center gap-3 pt-3 pb-2 px-6">
+          {featureFlags.registrationEnabled && (
+          <button
+            onClick={() => { setLoginMode('register'); setStep('register-step1'); setError(''); setSuccess(''); }}
+            className="flex items-center gap-2 px-5 py-2.5 rounded-xl transition-all"
+            style={{
+              background: loginMode === 'register' ? 'rgba(139,30,58,0.1)' : 'transparent',
+              border: loginMode === 'register' ? '1px solid rgba(139,30,58,0.3)' : '1px solid transparent',
+            }}
           >
-            <button
-              onClick={() => { setLoginMode('register'); setStep('register-step1'); setError(''); setSuccess(''); }}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl transition-all"
-              style={{
-                background: loginMode === 'register' ? 'rgba(230,0,0,0.1)' : 'transparent',
-                border: loginMode === 'register' ? '1px solid rgba(230,0,0,0.3)' : '1px solid transparent',
-              }}
-            >
-              <Heart size={16} strokeWidth={1.5} color={loginMode === 'register' ? '#E60000' : (isDark ? '#555' : '#AAA')} fill={loginMode === 'register' ? '#E60000' : 'none'} />
-              <span className="text-xs font-medium" style={{ color: loginMode === 'register' ? '#E60000' : (isDark ? '#555' : '#AAA') }}>تسجيل جديد</span>
-            </button>
-            <button
-              onClick={() => { setLoginMode('login'); setStep('login'); setError(''); setSuccess(''); }}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl transition-all"
-              style={{
-                background: loginMode === 'login' ? 'rgba(230,0,0,0.1)' : 'transparent',
-                border: loginMode === 'login' ? '1px solid rgba(230,0,0,0.3)' : '1px solid transparent',
-              }}
-            >
-              <User size={16} strokeWidth={1.5} color={loginMode === 'login' ? '#E60000' : (isDark ? '#555' : '#AAA')} />
-              <span className="text-xs font-medium" style={{ color: loginMode === 'login' ? '#E60000' : (isDark ? '#555' : '#AAA') }}>تسجيل الدخول</span>
-            </button>
-          </motion.div>
-        )}
-      </div>
+            <Heart size={16} strokeWidth={1.5} color={loginMode === 'register' ? '#8B1E3A' : (isDark ? '#555' : '#AAA')} fill={loginMode === 'register' ? '#8B1E3A' : 'none'} />
+            <span className="text-xs font-medium" style={{ color: loginMode === 'register' ? '#8B1E3A' : (isDark ? '#555' : '#AAA') }}>تسجيل جديد</span>
+          </button>
+          )}
+          <button
+            onClick={() => { setLoginMode('login'); setStep('login'); setError(''); setSuccess(''); }}
+            className="flex items-center gap-2 px-5 py-2.5 rounded-xl transition-all"
+            style={{
+              background: loginMode === 'login' ? 'rgba(139,30,58,0.1)' : 'transparent',
+              border: loginMode === 'login' ? '1px solid rgba(139,30,58,0.3)' : '1px solid transparent',
+            }}
+          >
+            <User size={16} strokeWidth={1.5} color={loginMode === 'login' ? '#8B1E3A' : (isDark ? '#555' : '#AAA')} />
+            <span className="text-xs font-medium" style={{ color: loginMode === 'login' ? '#8B1E3A' : (isDark ? '#555' : '#AAA') }}>تسجيل الدخول</span>
+          </button>
+        </div>
+      )}
 
       {/* Form Area */}
       <div className="flex-1 px-6">
@@ -467,45 +770,138 @@ export default function AuthScreen() {
 
                 {/* Email */}
                 <div className="flex items-center gap-2 px-4 py-3.5 rounded-2xl mb-3" style={inputStyle}>
-                  <Mail size={18} strokeWidth={1.5} color="#E60000" />
+                  <Mail size={18} strokeWidth={1.5} color="#8B1E3A" />
                   <input type="email" placeholder="البريد الإلكتروني" value={loginEmail} onChange={(e) => setLoginEmail(e.target.value)} className="flex-1 bg-transparent outline-none text-sm" style={{ color: isDark ? '#FFF' : '#1a1a1a' }} dir="ltr" autoComplete="email" />
                 </div>
 
                 {/* Password */}
                 <div className="flex items-center gap-2 px-4 py-3.5 rounded-2xl mb-3" style={inputStyle}>
-                  <Lock size={18} strokeWidth={1.5} color="#E60000" />
+                  <Lock size={18} strokeWidth={1.5} color="#8B1E3A" />
                   <input type={showPassword ? 'text' : 'password'} placeholder="كلمة المرور" value={loginPassword} onChange={(e) => setLoginPassword(e.target.value)} className="flex-1 bg-transparent outline-none text-sm" style={{ color: isDark ? '#FFF' : '#1a1a1a' }} dir="ltr" autoComplete="current-password" />
                   <button onClick={() => setShowPassword(!showPassword)}>
-                    {showPassword ? <EyeOff size={18} strokeWidth={1.5} color={isDark ? '#888' : '#AAA'} /> : <Eye size={18} strokeWidth={1.5} color="#E60000" />}
+                    {showPassword ? <EyeOff size={18} strokeWidth={1.5} color={isDark ? '#888' : '#AAA'} /> : <Eye size={18} strokeWidth={1.5} color="#8B1E3A" />}
                   </button>
                 </div>
 
-                {error && <motion.p initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} className="text-xs text-center" style={{ color: '#E60000' }}>{error}</motion.p>}
+                {error && <motion.p initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} className="text-xs text-center" style={{ color: '#8B1E3A' }}>{error}</motion.p>}
                 {success && <motion.p initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} className="text-xs text-center" style={{ color: '#10B981' }}>{success}</motion.p>}
 
                 <button onClick={handleLogin} disabled={isLoading} className="w-full py-4 rounded-2xl flex items-center justify-center gap-2 font-bold text-white transition-all active:scale-[0.98] disabled:opacity-50 mt-2" style={btnPrimary}>
                   {isLoading ? <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: 'linear' }} className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full" /> : <span>تسجيل الدخول</span>}
                 </button>
 
-                {/* Biometric button (visual only) */}
-                <button
-                  onClick={() => {
-                    const { useAppStore } = require('@/lib/store');
-                    useAppStore.getState().addNotification({
-                      id: `biometric-${Date.now()}`,
-                      title: 'قريباً',
-                      body: 'ميزة البصمة ستتوفر قريباً',
-                      type: 'info',
-                      isRead: false,
-                      createdAt: new Date().toISOString(),
-                    });
-                  }}
-                  className="w-full py-3 rounded-2xl flex items-center justify-center gap-2 text-sm mt-3"
-                  style={{ background: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)', color: isDark ? '#AAA' : '#888', border: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)'}` }}
-                >
-                  <Fingerprint size={18} strokeWidth={1.5} color={isDark ? '#AAA' : '#888'} />
-                  <span>الدخول بالبصمة</span>
-                </button>
+                {/* Biometric login button */}
+                {biometricAvailable && (
+                  <button
+                    onClick={async () => {
+                      if (biometricLoading) return;
+                      setBiometricLoading(true);
+                      setError('');
+                      try {
+                        // Check if any user has biometric enabled on this device
+                        // Look for stored biometric credentials
+                        const storedCredStr = localStorage.getItem('biometric-cred-find');
+                        let storedCred: { uid: string; email: string } | null = null;
+
+                        // Try to find any stored biometric credential
+                        for (let i = 0; i < localStorage.length; i++) {
+                          const key = localStorage.key(i);
+                          if (key?.startsWith('biometric-cred-')) {
+                            try {
+                              const parsed = JSON.parse(localStorage.getItem(key) || '');
+                              if (parsed.uid && parsed.email) {
+                                storedCred = parsed;
+                                break;
+                              }
+                            } catch { /* ignore */ }
+                          }
+                        }
+
+                        if (!storedCred) {
+                          setError('لم يتم تفعيل البصمة لحسابك. فعّلها من الإعدادات أولاً');
+                          setBiometricLoading(false);
+                          return;
+                        }
+
+                        // Check if biometric is enabled for this user
+                        const enabled = await isBiometricLoginEnabled(storedCred.uid);
+                        if (!enabled) {
+                          setError('البصمة غير مفعّلة لحسابك. فعّلها من الإعدادات');
+                          setBiometricLoading(false);
+                          return;
+                        }
+
+                        // Authenticate with biometric
+                        const result = await authenticateWithBiometricDetailed('يرجى التحقق بالبصمة لتسجيل الدخول');
+                        if (!result.success) {
+                          setError(result.errorMessage || 'فشل التحقق بالبصمة');
+                          setBiometricLoading(false);
+                          return;
+                        }
+
+                        // Biometric succeeded — sign in with stored credentials
+                        // Since we don't store the password, we need to check if Firebase auth is still valid
+                        const { onAuthStateChanged } = await import('firebase/auth');
+                        const currentUser = await new Promise<typeof import('firebase/auth').User>((resolve) => {
+                          const unsubscribe = onAuthStateChanged(auth, (u) => {
+                            unsubscribe();
+                            resolve(u as typeof import('firebase/auth').User);
+                          });
+                        });
+
+                        if (currentUser && currentUser.uid === storedCred.uid) {
+                          // User is already authenticated in Firebase — load user data
+                          const uid = currentUser.uid;
+                          const userRef = ref(database, `users/${uid}`);
+                          const snapshot = await get(userRef);
+                          if (snapshot.exists()) {
+                            const userData = snapshot.val();
+                            const fullName = [userData.firstName, userData.secondName, userData.thirdName, userData.familyName].filter((n: string) => n && n.trim()).join(' ') || userData.name || '';
+                            setUser({
+                              id: uid, email: userData.email || storedCred.email, phone: userData.phone || '',
+                              name: fullName, firstName: userData.firstName || '', secondName: userData.secondName || '',
+                              thirdName: userData.thirdName || '', familyName: userData.familyName || '',
+                              nationalId: userData.nationalId || '', avatar: userData.avatar || '', role: userData.role || 'user',
+                              userId: userData.userId || '', kycStatus: userData.kycStatus || 'pending',
+                              isBlocked: userData.isBlocked || false, balanceYER: userData.balanceYER || 0,
+                              balanceSAR: userData.balanceSAR || 0, balanceUSD: userData.balanceUSD || 0,
+                              cardType: userData.cardType || '', cardNumber: userData.cardNumber || '',
+                              cardIssuedAt: userData.cardIssuedAt || '', governorate: userData.governorate || '',
+                              theme: userData.theme || 'light',
+                            });
+                            // Sync biometric preference
+                            const bioPref = await syncBiometricPreference(uid);
+                            setBiometricEnabled(bioPref);
+                          }
+                        } else {
+                          // Firebase Auth session expired — try to re-authenticate silently
+                          // Check if we have stored credentials for auto-login
+                          try {
+                            const { signInAnonymously } = await import('firebase/auth');
+                            // Cannot re-authenticate without password — inform user
+                            setError('انتهت جلسة الدخول. يرجى تسجيل الدخول بالبريد وكلمة المرور، ثم تفعيل البصمة مرة أخرى من الإعدادات');
+                          } catch {
+                            setError('يرجى تسجيل الدخول بالبريد الإلكتروني وكلمة المرور أولاً');
+                          }
+                        }
+                      } catch {
+                        setError('حدث خطأ في الدخول بالبصمة');
+                      } finally {
+                        setBiometricLoading(false);
+                      }
+                    }}
+                    disabled={biometricLoading}
+                    className="w-full py-3 rounded-2xl flex items-center justify-center gap-2 text-sm mt-3 transition-all active:scale-[0.98] disabled:opacity-50"
+                    style={{ background: isDark ? 'rgba(139,92,246,0.08)' : 'rgba(139,92,246,0.06)', color: '#8B5CF6', border: `1px solid rgba(139,92,246,0.15)` }}
+                  >
+                    {biometricLoading ? (
+                      <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: 'linear' }} className="w-5 h-5 border-2 border-purple-300 border-t-purple-600 rounded-full" />
+                    ) : (
+                      <Fingerprint size={18} strokeWidth={1.5} color="#8B5CF6" />
+                    )}
+                    <span className="font-medium">الدخول بالبصمة</span>
+                  </button>
+                )}
               </div>
 
               <button
@@ -537,8 +933,8 @@ export default function AuthScreen() {
               </div>
 
               <div className="flex flex-col items-center mb-4">
-                <div className="w-14 h-14 rounded-full flex items-center justify-center mb-3" style={{ background: 'rgba(230,0,0,0.1)' }}>
-                  <KeyRound size={28} strokeWidth={1.5} color="#E60000" />
+                <div className="w-14 h-14 rounded-full flex items-center justify-center mb-3" style={{ background: 'rgba(139,30,58,0.1)' }}>
+                  <KeyRound size={28} strokeWidth={1.5} color="#8B1E3A" />
                 </div>
                 <p className="text-xs text-center max-w-[250px]" style={{ color: isDark ? '#888' : '#AAA' }}>
                   أدخل رقم البطاقة الشخصية والبريد الإلكتروني المرتبط بحسابك لاستعادة كلمة المرور
@@ -548,15 +944,15 @@ export default function AuthScreen() {
               {recoveryStep === 'input' ? (
                 <>
                   <div className="flex items-center gap-2 px-4 py-3.5 rounded-2xl" style={inputStyle}>
-                    <CreditCard size={18} strokeWidth={1.5} color="#E60000" />
+                    <CreditCard size={18} strokeWidth={1.5} color="#8B1E3A" />
                     <input type="tel" placeholder="رقم البطاقة الشخصية" value={recoveryNationalId} onChange={(e) => setRecoveryNationalId(e.target.value.replace(/\D/g, '').slice(0, 20))} className="flex-1 bg-transparent outline-none text-sm" style={{ color: isDark ? '#FFF' : '#1a1a1a' }} dir="ltr" />
                   </div>
                   <div className="flex items-center gap-2 px-4 py-3.5 rounded-2xl" style={inputStyle}>
-                    <Mail size={18} strokeWidth={1.5} color="#E60000" />
+                    <Mail size={18} strokeWidth={1.5} color="#8B1E3A" />
                     <input type="email" placeholder="البريد الإلكتروني" value={recoveryEmail} onChange={(e) => setRecoveryEmail(e.target.value)} className="flex-1 bg-transparent outline-none text-sm" style={{ color: isDark ? '#FFF' : '#1a1a1a' }} dir="ltr" autoComplete="email" />
                   </div>
 
-                  {error && <motion.p initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} className="text-xs text-center" style={{ color: '#E60000' }}>{error}</motion.p>}
+                  {error && <motion.p initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} className="text-xs text-center" style={{ color: '#8B1E3A' }}>{error}</motion.p>}
 
                   <button onClick={handleRecoverySearch} disabled={isLoading} className="w-full py-4 rounded-2xl flex items-center justify-center gap-2 font-bold text-white transition-all active:scale-[0.98] disabled:opacity-50" style={btnPrimary}>
                     {isLoading ? <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: 'linear' }} className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full" /> : <span>بحث عن الحساب</span>}
@@ -568,7 +964,7 @@ export default function AuthScreen() {
                     <p className="text-xs text-center" style={{ color: '#10B981' }}>تم العثور على حسابك. سيتم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني.</p>
                   </div>
 
-                  {error && <motion.p initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} className="text-xs text-center" style={{ color: '#E60000' }}>{error}</motion.p>}
+                  {error && <motion.p initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} className="text-xs text-center" style={{ color: '#8B1E3A' }}>{error}</motion.p>}
 
                   <button onClick={handlePasswordReset} disabled={isLoading} className="w-full py-4 rounded-2xl flex items-center justify-center gap-2 font-bold text-white transition-all active:scale-[0.98] disabled:opacity-50" style={btnPrimary}>
                     {isLoading ? <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: 'linear' }} className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full" /> : <span>إرسال رابط إعادة التعيين</span>}
@@ -596,7 +992,7 @@ export default function AuthScreen() {
 
               {/* First Name */}
               <div className="flex items-center gap-2 px-4 py-3.5 rounded-2xl" style={inputStyle}>
-                <User size={18} strokeWidth={1.5} color="#E60000" />
+                <User size={18} strokeWidth={1.5} color="#8B1E3A" />
                 <input type="text" placeholder="الاسم الأول *" value={regFirstName} onChange={(e) => setRegFirstName(e.target.value)} className="flex-1 bg-transparent outline-none text-sm" style={{ color: isDark ? '#FFF' : '#1a1a1a' }} />
               </div>
 
@@ -614,17 +1010,17 @@ export default function AuthScreen() {
 
               {/* Family Name */}
               <div className="flex items-center gap-2 px-4 py-3.5 rounded-2xl" style={inputStyle}>
-                <User size={18} strokeWidth={1.5} color="#E60000" />
+                <User size={18} strokeWidth={1.5} color="#8B1E3A" />
                 <input type="text" placeholder="اسم العائلة *" value={regFamilyName} onChange={(e) => setRegFamilyName(e.target.value)} className="flex-1 bg-transparent outline-none text-sm" style={{ color: isDark ? '#FFF' : '#1a1a1a' }} />
               </div>
 
               {/* National ID */}
               <div className="flex items-center gap-2 px-4 py-3.5 rounded-2xl" style={inputStyle}>
-                <CreditCard size={18} strokeWidth={1.5} color="#E60000" />
+                <CreditCard size={18} strokeWidth={1.5} color="#8B1E3A" />
                 <input type="tel" placeholder="رقم البطاقة الشخصية *" value={regNationalId} onChange={(e) => handleNationalIdChange(e.target.value)} className="flex-1 bg-transparent outline-none text-sm" style={{ color: isDark ? '#FFF' : '#1a1a1a' }} dir="ltr" />
               </div>
 
-              {error && <motion.p initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} className="text-xs text-center" style={{ color: '#E60000' }}>{error}</motion.p>}
+              {error && <motion.p initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} className="text-xs text-center" style={{ color: '#8B1E3A' }}>{error}</motion.p>}
 
               <button onClick={handleRegisterStep1} className="w-full py-4 rounded-2xl flex items-center justify-center gap-2 font-bold text-white transition-all active:scale-[0.98]" style={btnPrimary}>
                 <span>التالي</span>
@@ -647,23 +1043,23 @@ export default function AuthScreen() {
 
               {/* Email */}
               <div className="flex items-center gap-2 px-4 py-3.5 rounded-2xl" style={inputStyle}>
-                <Mail size={18} strokeWidth={1.5} color="#E60000" />
+                <Mail size={18} strokeWidth={1.5} color="#8B1E3A" />
                 <input type="email" placeholder="البريد الإلكتروني *" value={regEmail} onChange={(e) => setRegEmail(e.target.value)} className="flex-1 bg-transparent outline-none text-sm" style={{ color: isDark ? '#FFF' : '#1a1a1a' }} dir="ltr" autoComplete="email" />
               </div>
 
               {/* Password */}
               <div className="flex items-center gap-2 px-4 py-3.5 rounded-2xl" style={inputStyle}>
-                <Lock size={18} strokeWidth={1.5} color="#E60000" />
+                <Lock size={18} strokeWidth={1.5} color="#8B1E3A" />
                 <input type="password" placeholder="كلمة المرور (6 أحرف على الأقل) *" value={regPassword} onChange={(e) => setRegPassword(e.target.value)} className="flex-1 bg-transparent outline-none text-sm" style={{ color: isDark ? '#FFF' : '#1a1a1a' }} dir="ltr" autoComplete="new-password" />
               </div>
 
               {/* Confirm Password */}
               <div className="flex items-center gap-2 px-4 py-3.5 rounded-2xl" style={inputStyle}>
-                <ShieldCheck size={18} strokeWidth={1.5} color="#E60000" />
+                <ShieldCheck size={18} strokeWidth={1.5} color="#8B1E3A" />
                 <input type="password" placeholder="تأكيد كلمة المرور *" value={regPasswordConfirm} onChange={(e) => setRegPasswordConfirm(e.target.value)} className="flex-1 bg-transparent outline-none text-sm" style={{ color: isDark ? '#FFF' : '#1a1a1a' }} dir="ltr" autoComplete="new-password" />
               </div>
 
-              {error && <motion.p initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} className="text-xs text-center" style={{ color: '#E60000' }}>{error}</motion.p>}
+              {error && <motion.p initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} className="text-xs text-center" style={{ color: '#8B1E3A' }}>{error}</motion.p>}
 
               <div className="flex gap-3">
                 <button onClick={() => { setStep('register-step1'); setError(''); }} className="flex-1 py-4 rounded-2xl flex items-center justify-center gap-2 font-bold transition-all active:scale-[0.98]" style={{ background: isDark ? '#1A1A1A' : '#F0F0F0', color: isDark ? '#FFF' : '#1a1a1a', border: `1px solid ${isDark ? '#333' : '#EEE'}` }}>
@@ -690,8 +1086,8 @@ export default function AuthScreen() {
               <StepIndicator currentStep={3} />
 
               <div className="flex flex-col items-center mb-4">
-                <div className="w-14 h-14 rounded-full flex items-center justify-center mb-3" style={{ background: 'rgba(230,0,0,0.1)' }}>
-                  <Phone size={28} strokeWidth={1.5} color="#E60000" />
+                <div className="w-14 h-14 rounded-full flex items-center justify-center mb-3" style={{ background: 'rgba(139,30,58,0.1)' }}>
+                  <Phone size={28} strokeWidth={1.5} color="#8B1E3A" />
                 </div>
                 <p className="text-xs text-center max-w-[250px]" style={{ color: isDark ? '#888' : '#AAA' }}>
                   يمكنك إضافة رقم هاتفك لاستقبال التحويلات عبر الهاتف
@@ -709,14 +1105,14 @@ export default function AuthScreen() {
               <button
                 onClick={() => setAgreeTerms(!agreeTerms)}
                 className="w-full flex items-start gap-3 p-3 rounded-2xl text-right"
-                style={{ background: agreeTerms ? 'rgba(230,0,0,0.06)' : isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)', border: agreeTerms ? '1px solid rgba(230,0,0,0.2)' : `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}` }}
+                style={{ background: agreeTerms ? 'rgba(139,30,58,0.06)' : isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)', border: agreeTerms ? '1px solid rgba(139,30,58,0.2)' : `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}` }}
               >
-                <div className="w-5 h-5 rounded-md flex items-center justify-center shrink-0 mt-0.5" style={{ background: agreeTerms ? '#E60000' : 'transparent', border: agreeTerms ? 'none' : `1px solid ${isDark ? '#555' : '#CCC'}` }}>
+                <div className="w-5 h-5 rounded-md flex items-center justify-center shrink-0 mt-0.5" style={{ background: agreeTerms ? '#8B1E3A' : 'transparent', border: agreeTerms ? 'none' : `1px solid ${isDark ? '#555' : '#CCC'}` }}>
                   {agreeTerms && <CheckCircle2 size={12} color="#FFF" />}
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center gap-1.5">
-                    <FileText size={14} color="#E60000" />
+                    <FileText size={14} color="#8B1E3A" />
                     <span className="text-xs font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>أوافق على الشروط والأحكام</span>
                   </div>
                   <p className="text-[10px] mt-0.5" style={{ color: isDark ? '#888' : '#AAA' }}>الموافقة على شروط استخدام محفظة الجنوب</p>
@@ -727,21 +1123,21 @@ export default function AuthScreen() {
               <button
                 onClick={() => setAgreePrivacy(!agreePrivacy)}
                 className="w-full flex items-start gap-3 p-3 rounded-2xl text-right"
-                style={{ background: agreePrivacy ? 'rgba(230,0,0,0.06)' : isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)', border: agreePrivacy ? '1px solid rgba(230,0,0,0.2)' : `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}` }}
+                style={{ background: agreePrivacy ? 'rgba(139,30,58,0.06)' : isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)', border: agreePrivacy ? '1px solid rgba(139,30,58,0.2)' : `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}` }}
               >
-                <div className="w-5 h-5 rounded-md flex items-center justify-center shrink-0 mt-0.5" style={{ background: agreePrivacy ? '#E60000' : 'transparent', border: agreePrivacy ? 'none' : `1px solid ${isDark ? '#555' : '#CCC'}` }}>
+                <div className="w-5 h-5 rounded-md flex items-center justify-center shrink-0 mt-0.5" style={{ background: agreePrivacy ? '#8B1E3A' : 'transparent', border: agreePrivacy ? 'none' : `1px solid ${isDark ? '#555' : '#CCC'}` }}>
                   {agreePrivacy && <CheckCircle2 size={12} color="#FFF" />}
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center gap-1.5">
-                    <Shield size={14} color="#E60000" />
+                    <Shield size={14} color="#8B1E3A" />
                     <span className="text-xs font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>أوافق على سياسة الخصوصية</span>
                   </div>
                   <p className="text-[10px] mt-0.5" style={{ color: isDark ? '#888' : '#AAA' }}>الموافقة على سياسة حماية البيانات الشخصية</p>
                 </div>
               </button>
 
-              {error && <motion.p initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} className="text-xs text-center" style={{ color: '#E60000' }}>{error}</motion.p>}
+              {error && <motion.p initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} className="text-xs text-center" style={{ color: '#8B1E3A' }}>{error}</motion.p>}
 
               <div className="flex gap-3">
                 <button onClick={() => { setStep('register-step2'); setError(''); }} className="flex-1 py-4 rounded-2xl flex items-center justify-center gap-2 font-bold transition-all active:scale-[0.98]" style={{ background: isDark ? '#1A1A1A' : '#F0F0F0', color: isDark ? '#FFF' : '#1a1a1a', border: `1px solid ${isDark ? '#333' : '#EEE'}` }}>
@@ -759,6 +1155,11 @@ export default function AuthScreen() {
           )}
         </AnimatePresence>
       </div>
+
+      {/* Social Media Links at the Bottom - only on login page */}
+      {step === 'login' && (
+        <SocialLinksBar isDark={isDark} />
+      )}
     </div>
   );
 }

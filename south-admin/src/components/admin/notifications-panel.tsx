@@ -138,8 +138,8 @@ export default function NotificationsPanel() {
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
             <Card className="admin-card border-0 shadow-none">
               <CardContent className="p-6 space-y-4">
-                <div className="flex items-center gap-3 p-3 rounded-xl bg-purple-500/10">
-                  <Bell className="w-6 h-6 text-purple-500" />
+                <div className="flex items-center gap-3 p-3 rounded-xl bg-[#8B1E3A]/10">
+                  <Bell className="w-6 h-6 text-[#8B1E3A]" />
                   <div>
                     <p className="font-medium text-sm">إرسال إشعار جديد</p>
                     <p className="text-xs text-muted-foreground">إرسال إشعار فوري للمستخدمين</p>
@@ -182,7 +182,7 @@ export default function NotificationsPanel() {
                   <Textarea value={body} onChange={(e) => setBody(e.target.value)} placeholder="محتوى الإشعار..." className="min-h-[120px]" />
                 </div>
 
-                <Button onClick={handleSend} disabled={sending || !title || !body} className="w-full bg-purple-600 hover:bg-purple-700">
+                <Button onClick={handleSend} disabled={sending || !title || !body} className="w-full bg-[#7B1A30] hover:bg-[#5C1225]">
                   {sending ? <Loader2 className="w-4 h-4 ml-2 animate-spin" /> : <Send className="w-4 h-4 ml-2" />}
                   إرسال الإشعار
                 </Button>
@@ -204,14 +204,14 @@ export default function NotificationsPanel() {
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-lg bg-purple-500/10 flex items-center justify-center">
-                          <Bell className="w-5 h-5 text-purple-500" />
+                        <div className="w-10 h-10 rounded-lg bg-[#8B1E3A]/10 flex items-center justify-center">
+                          <Bell className="w-5 h-5 text-[#8B1E3A]" />
                         </div>
                         <div>
                           <p className="font-medium text-sm">{notif.title}</p>
                           <p className="text-xs text-muted-foreground">{notif.body?.substring(0, 80)}{notif.body?.length > 80 ? '...' : ''}</p>
                           <div className="flex items-center gap-2 mt-1">
-                            <Badge className="bg-purple-500/20 text-purple-600 dark:text-purple-400 text-xs">
+                            <Badge className="bg-[#8B1E3A]/20 text-[#8B1E3A] dark:text-[#A82850] text-xs">
                               {notif.targetType === 'all' ? 'للجميع' : 'لمستخدم محدد'}
                             </Badge>
                             {notif.recipientCount && (

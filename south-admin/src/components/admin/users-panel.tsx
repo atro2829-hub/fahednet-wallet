@@ -208,6 +208,18 @@ export default function UsersPanel() {
     if (!selectedUser || !newRole) return;
     try {
       await update(ref(database, `users/${selectedUser.uid}`), { role: newRole });
+
+      // Notify user about role change
+      try {
+        const { sendNotificationToUser } = await import('@/lib/notifications');
+        await sendNotificationToUser(selectedUser.uid, {
+          title: 'تحديث الصلاحيات',
+          body: `تم تحديث صلاحيات حسابك إلى: ${newRole}`,
+          type: 'security',
+          data: { action: 'role_change', role: newRole },
+        });
+      } catch (e) { console.warn('Role change notification failed:', e); }
+
       showToast('تم تغيير الصلاحية', 'success');
       setRoleDialog(false);
       setNewRole('');
@@ -275,6 +287,18 @@ export default function UsersPanel() {
         pin: null,
         pinResetAt: new Date().toISOString(),
       });
+
+      // Notify user about PIN reset
+      try {
+        const { sendNotificationToUser } = await import('@/lib/notifications');
+        await sendNotificationToUser(selectedUser.uid, {
+          title: 'تم إعادة تعيين الرقم السري',
+          body: 'تم إعادة تعيين الرقم السري لحسابك. يرجى تسجيل الدخول وإعداد رقم سري جديد.',
+          type: 'security',
+          data: { action: 'pin_reset' },
+        });
+      } catch (e) { console.warn('PIN reset notification failed:', e); }
+
       showToast('تم إعادة تعيين رمز PIN', 'success');
       setPinDialog(false);
     } catch (e) {
@@ -327,7 +351,7 @@ export default function UsersPanel() {
   };
 
   if (loading) {
-    return <div className="flex items-center justify-center min-h-[400px]"><div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" /></div>;
+    return <div className="flex items-center justify-center min-h-[400px]"><div className="w-8 h-8 border-2 border-[#8B1E3A] border-t-transparent rounded-full animate-spin" /></div>;
   }
 
   return (
@@ -379,7 +403,7 @@ export default function UsersPanel() {
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-purple-500/10 flex items-center justify-center text-purple-600 font-bold text-sm">
+                    <div className="w-10 h-10 rounded-full bg-[#8B1E3A]/10 flex items-center justify-center text-[#8B1E3A] font-bold text-sm">
                       {(user.name || user.firstName || '?')[0]}
                     </div>
                     <div>
@@ -389,7 +413,7 @@ export default function UsersPanel() {
                   </div>
                   <div className="flex items-center gap-2">
                     {user.isBlocked && <Badge className="bg-red-500/20 text-red-500 text-xs">محظور</Badge>}
-                    {user.role === 'owner' && <Badge className="bg-purple-500/20 text-purple-500 text-xs">مالك</Badge>}
+                    {user.role === 'owner' && <Badge className="bg-[#8B1E3A]/20 text-[#8B1E3A] text-xs">مالك</Badge>}
                     {user.role === 'admin' && <Badge className="bg-blue-500/20 text-blue-500 text-xs">مدير</Badge>}
                     {user.kycStatus === 'verified' && <Badge className="bg-green-500/20 text-green-500 text-xs">موثق</Badge>}
                   </div>
@@ -508,7 +532,7 @@ export default function UsersPanel() {
                           <div className="flex items-center gap-2">
                             {tx.type === 'deposit' ? <ArrowDownCircle className="w-4 h-4 text-green-500" /> :
                              tx.type === 'withdraw' ? <ArrowUpCircle className="w-4 h-4 text-red-500" /> :
-                             <ShoppingCart className="w-4 h-4 text-purple-500" />}
+                             <ShoppingCart className="w-4 h-4 text-[#8B1E3A]" />}
                             <div>
                               <p className="text-xs font-medium">{tx.description || tx.type}</p>
                               <p className="text-xs text-muted-foreground">{tx.createdAt ? formatDateAr(tx.createdAt) : ''}</p>
@@ -556,7 +580,7 @@ export default function UsersPanel() {
                     <Card key={log.id} className="admin-card border-0 shadow-none mb-2">
                       <CardContent className="p-3">
                         <div className="flex items-center gap-2">
-                          <Activity className="w-4 h-4 text-purple-500" />
+                          <Activity className="w-4 h-4 text-[#8B1E3A]" />
                           <div>
                             <p className="text-xs font-medium">{log.action || log.type}</p>
                             <p className="text-xs text-muted-foreground">{log.details || ''}</p>
@@ -741,7 +765,7 @@ export default function UsersPanel() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setNotifDialog(false)}>إلغاء</Button>
-            <Button onClick={handleSendNotification} className="bg-purple-600 hover:bg-purple-700">إرسال</Button>
+            <Button onClick={handleSendNotification} className="bg-[#7B1A30] hover:bg-[#5C1225]">إرسال</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

@@ -47,7 +47,7 @@ export default function AdminKyc() {
             <motion.button whileTap={{ scale: 0.95 }} onClick={() => handleApproveKyc(u)} className="flex-1 flex items-center justify-center gap-1 py-2.5 rounded-xl text-xs font-bold text-white" style={{ background: '#10B981' }}>
               <BadgeCheck size={14} /> توثيق
             </motion.button>
-            <motion.button whileTap={{ scale: 0.95 }} onClick={() => onRejectKyc(u)} className="flex-1 flex items-center justify-center gap-1 py-2.5 rounded-xl text-xs font-bold" style={{ background: 'rgba(230,0,0,0.1)', color: '#E60000' }}>
+            <motion.button whileTap={{ scale: 0.95 }} onClick={() => onRejectKyc(u)} className="flex-1 flex items-center justify-center gap-1 py-2.5 rounded-xl text-xs font-bold" style={{ background: 'rgba(139,30,58,0.1)', color: '#8B1E3A' }}>
               <UserX size={14} /> رفض
             </motion.button>
           </div>

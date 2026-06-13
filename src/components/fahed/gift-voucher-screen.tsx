@@ -132,6 +132,19 @@ export default function GiftVoucherScreen() {
 
       await update(ref(database), updates);
 
+      // Send FCM push notification for gift code creation
+      try {
+        const { sendNotificationToUser } = await import('@/lib/notifications');
+        await sendNotificationToUser(user.id, {
+          title: 'تم إنشاء قسيمة الهدية',
+          body: `تم إنشاء قسيمة بمبلغ ${amountNum} ${currencySymbols[currency]} وكود ${code}`,
+          type: 'transaction',
+          data: { action: 'gift_code_created', amount: String(amountNum), currency, code },
+        });
+      } catch (notifErr) {
+        console.warn('Gift code creation notification failed:', notifErr);
+      }
+
       setUser({ ...user, [balanceField]: currentBalance - amountNum });
       setCreatedCode(newCode);
       setAmount('');
@@ -196,8 +209,8 @@ export default function GiftVoucherScreen() {
               <h1 className="text-white text-xl font-bold">قسائم الهدية</h1>
               <p className="text-white/40 text-xs">أرسل هدايا لأصدقائك وعائلتك</p>
             </div>
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'rgba(230,0,0,0.2)' }}>
-              <Gift size={20} strokeWidth={1.5} color="#E60000" />
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'rgba(139,30,58,0.2)' }}>
+              <Gift size={20} strokeWidth={1.5} color="#8B1E3A" />
             </div>
           </div>
         </div>
@@ -206,15 +219,15 @@ export default function GiftVoucherScreen() {
       {/* Tab Switcher */}
       <div className="px-5 mt-4">
         <div className="flex gap-1.5 p-1 rounded-2xl" style={{ background: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)' }}>
-          <button onClick={() => setActiveTab('create')} className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl transition-all duration-200" style={{ background: activeTab === 'create' ? '#E60000' : 'transparent', color: activeTab === 'create' ? '#FFF' : (isDark ? '#999' : '#666'), boxShadow: activeTab === 'create' ? '0 4px 12px rgba(230,0,0,0.3)' : 'none' }}>
+          <button onClick={() => setActiveTab('create')} className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl transition-all duration-200" style={{ background: activeTab === 'create' ? '#8B1E3A' : 'transparent', color: activeTab === 'create' ? '#FFF' : (isDark ? '#999' : '#666'), boxShadow: activeTab === 'create' ? '0 4px 12px rgba(139,30,58,0.3)' : 'none' }}>
             <Plus size={14} />
             <span className="text-xs font-bold">إنشاء</span>
           </button>
-          <button onClick={() => setActiveTab('redeem')} className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl transition-all duration-200" style={{ background: activeTab === 'redeem' ? '#E60000' : 'transparent', color: activeTab === 'redeem' ? '#FFF' : (isDark ? '#999' : '#666'), boxShadow: activeTab === 'redeem' ? '0 4px 12px rgba(230,0,0,0.3)' : 'none' }}>
+          <button onClick={() => setActiveTab('redeem')} className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl transition-all duration-200" style={{ background: activeTab === 'redeem' ? '#8B1E3A' : 'transparent', color: activeTab === 'redeem' ? '#FFF' : (isDark ? '#999' : '#666'), boxShadow: activeTab === 'redeem' ? '0 4px 12px rgba(139,30,58,0.3)' : 'none' }}>
             <Hash size={14} />
             <span className="text-xs font-bold">استرداد</span>
           </button>
-          <button onClick={() => setActiveTab('my-codes')} className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl transition-all duration-200" style={{ background: activeTab === 'my-codes' ? '#E60000' : 'transparent', color: activeTab === 'my-codes' ? '#FFF' : (isDark ? '#999' : '#666'), boxShadow: activeTab === 'my-codes' ? '0 4px 12px rgba(230,0,0,0.3)' : 'none' }}>
+          <button onClick={() => setActiveTab('my-codes')} className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl transition-all duration-200" style={{ background: activeTab === 'my-codes' ? '#8B1E3A' : 'transparent', color: activeTab === 'my-codes' ? '#FFF' : (isDark ? '#999' : '#666'), boxShadow: activeTab === 'my-codes' ? '0 4px 12px rgba(139,30,58,0.3)' : 'none' }}>
             <Tag size={14} />
             <span className="text-xs font-bold">قسائمي</span>
           </button>
@@ -247,9 +260,9 @@ export default function GiftVoucherScreen() {
                       <Phone size={16} color="#25D366" />
                       <span className="text-xs font-medium" style={{ color: '#25D366' }}>واتساب</span>
                     </button>
-                    <button onClick={() => handleShareCode(createdCode)} className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl" style={{ background: 'rgba(230,0,0,0.1)' }}>
-                      <Share2 size={16} color="#E60000" />
-                      <span className="text-xs font-medium" style={{ color: '#E60000' }}>مشاركة</span>
+                    <button onClick={() => handleShareCode(createdCode)} className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl" style={{ background: 'rgba(139,30,58,0.1)' }}>
+                      <Share2 size={16} color="#8B1E3A" />
+                      <span className="text-xs font-medium" style={{ color: '#8B1E3A' }}>مشاركة</span>
                     </button>
                   </div>
                   <button onClick={() => setCreatedCode(null)} className="w-full py-2 mt-2 text-xs" style={{ color: isDark ? '#888' : '#AAA' }}>
@@ -263,7 +276,7 @@ export default function GiftVoucherScreen() {
                   <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
                     className="rounded-2xl p-4" style={{ background: cardBg, border: `1px solid ${borderColor}` }}>
                     <div className="flex items-center gap-2 mb-4">
-                      <Gift size={16} color="#E60000" />
+                      <Gift size={16} color="#8B1E3A" />
                       <h3 className="text-sm font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>إنشاء قسيمة هدية</h3>
                     </div>
 
@@ -271,14 +284,14 @@ export default function GiftVoucherScreen() {
                     <div className="mb-3">
                       <span className="text-[11px] font-medium block mb-1.5" style={{ color: isDark ? '#888' : '#999' }}>المبلغ</span>
                       <div className="flex items-center gap-2 p-3 rounded-xl" style={{ background: innerBg }}>
-                        <Wallet size={16} color="#E60000" />
+                        <Wallet size={16} color="#8B1E3A" />
                         <input type="number" value={amount} onChange={e => setAmount(e.target.value)} placeholder="0" dir="ltr"
                           className="flex-1 bg-transparent outline-none text-lg font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }} />
-                        <span className="text-sm font-bold" style={{ color: '#E60000' }}>{currencySymbols[currency]}</span>
+                        <span className="text-sm font-bold" style={{ color: '#8B1E3A' }}>{currencySymbols[currency]}</span>
                       </div>
                       <div className="flex items-center gap-2 mt-1.5">
                         <span className="text-[10px]" style={{ color: isDark ? '#666' : '#AAA' }}>رصيدك:</span>
-                        <span className="text-[10px] font-bold" style={{ color: '#E60000' }}>
+                        <span className="text-[10px] font-bold" style={{ color: '#8B1E3A' }}>
                           {currency === 'YER' ? (user?.balanceYER || 0).toLocaleString() : currency === 'SAR' ? (user?.balanceSAR || 0).toLocaleString() : (user?.balanceUSD || 0).toLocaleString()} {currencySymbols[currency]}
                         </span>
                       </div>
@@ -315,15 +328,15 @@ export default function GiftVoucherScreen() {
 
                     <motion.button whileTap={{ scale: 0.95 }} onClick={handleCreateCode} disabled={isCreating || !amount}
                       className="w-full py-3.5 rounded-xl text-sm font-bold text-white flex items-center justify-center gap-2"
-                      style={{ background: isCreating || !amount ? '#555' : 'linear-gradient(135deg, #E60000 0%, #B30000 100%)', boxShadow: !isCreating && amount ? '0 4px 12px rgba(230,0,0,0.3)' : 'none' }}>
+                      style={{ background: isCreating || !amount ? '#555' : 'linear-gradient(135deg, #8B1E3A 0%, #5C1225 100%)', boxShadow: !isCreating && amount ? '0 4px 12px rgba(139,30,58,0.3)' : 'none' }}>
                       {isCreating ? 'جارٍ الإنشاء...' : <><Plus size={16} /> إنشاء قسيمة الهدية</>}
                     </motion.button>
                   </motion.div>
 
                   <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
-                    className="rounded-2xl p-4" style={{ background: 'rgba(230,0,0,0.06)', border: '1px solid rgba(230,0,0,0.1)' }}>
+                    className="rounded-2xl p-4" style={{ background: 'rgba(139,30,58,0.06)', border: '1px solid rgba(139,30,58,0.1)' }}>
                     <div className="flex items-start gap-2">
-                      <AlertCircle size={14} color="#E60000" className="mt-0.5 shrink-0" />
+                      <AlertCircle size={14} color="#8B1E3A" className="mt-0.5 shrink-0" />
                       <p className="text-[10px] leading-relaxed" style={{ color: isDark ? '#AAA' : '#666' }}>
                         سيتم خصم المبلغ من رصيدك فوراً. يمكنك مشاركة الكود مع أي شخص وسيتم إضافة المبلغ إلى رصيده عند الاسترداد.
                       </p>
@@ -337,14 +350,14 @@ export default function GiftVoucherScreen() {
               <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
                 className="rounded-2xl p-4" style={{ background: cardBg, border: `1px solid ${borderColor}` }}>
                 <div className="flex items-center gap-2 mb-4">
-                  <Hash size={16} color="#E60000" />
+                  <Hash size={16} color="#8B1E3A" />
                   <h3 className="text-sm font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>استرداد قسيمة هدية</h3>
                 </div>
 
                 <div className="mb-4">
                   <span className="text-[11px] font-medium block mb-1.5" style={{ color: isDark ? '#888' : '#999' }}>كود القسيمة</span>
                   <div className="flex items-center gap-2 p-3 rounded-xl" style={{ background: innerBg }}>
-                    <Gift size={16} color="#E60000" />
+                    <Gift size={16} color="#8B1E3A" />
                     <input type="text" value={redeemCode} onChange={e => setRedeemCode(e.target.value.toUpperCase())} placeholder="أدخل كود القسيمة" maxLength={8} dir="ltr"
                       className="flex-1 bg-transparent outline-none text-lg font-mono font-bold tracking-wider" style={{ color: isDark ? '#FFF' : '#1a1a1a' }} />
                   </div>
@@ -408,6 +421,27 @@ export default function GiftVoucherScreen() {
                     };
                     await update(ref(database), updates);
                     setUser({ ...user, [balanceField]: currentBalance + foundCode.amount });
+
+                    // Send FCM push notification to redeemer
+                    try {
+                      const { sendNotificationToUser } = await import('@/lib/notifications');
+                      await sendNotificationToUser(user.id, {
+                        title: 'تم استرداد القسيمة!',
+                        body: `تم إضافة ${foundCode.amount} ${currencySymbols[codeCurrency]} إلى رصيدك`,
+                        type: 'transaction',
+                        data: { action: 'gift_code_redeemed', amount: String(foundCode.amount), currency: codeCurrency },
+                      });
+                      // Notify the creator that their gift code was redeemed
+                      await sendNotificationToUser(foundCode.creatorUid, {
+                        title: 'تم استرداد قسيمة الهدية',
+                        body: `تم استرداد قسيمتك بمبلغ ${foundCode.amount} ${currencySymbols[codeCurrency]} بواسطة ${user.name || 'مستخدم'}`,
+                        type: 'transaction',
+                        data: { action: 'gift_code_used', amount: String(foundCode.amount), currency: codeCurrency },
+                      });
+                    } catch (notifErr) {
+                      console.warn('Gift code redeem notification failed:', notifErr);
+                    }
+
                     addNotification({
                       id: `gift-redeem-${Date.now()}`, title: 'تم استرداد القسيمة!',
                       body: `تم إضافة ${foundCode.amount} ${currencySymbols[codeCurrency]} إلى رصيدك`,
@@ -423,15 +457,15 @@ export default function GiftVoucherScreen() {
                   }
                 }} disabled={isRedeeming || !redeemCode.trim()}
                   className="w-full py-3.5 rounded-xl text-sm font-bold text-white flex items-center justify-center gap-2"
-                  style={{ background: isRedeeming || !redeemCode.trim() ? '#555' : 'linear-gradient(135deg, #E60000 0%, #B30000 100%)', boxShadow: !isRedeeming && redeemCode.trim() ? '0 4px 12px rgba(230,0,0,0.3)' : 'none' }}>
+                  style={{ background: isRedeeming || !redeemCode.trim() ? '#555' : 'linear-gradient(135deg, #8B1E3A 0%, #5C1225 100%)', boxShadow: !isRedeeming && redeemCode.trim() ? '0 4px 12px rgba(139,30,58,0.3)' : 'none' }}>
                   {isRedeeming ? 'جارٍ الاسترداد...' : <><Gift size={16} /> استرداد القسيمة</>}
                 </motion.button>
               </motion.div>
 
               <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
-                className="rounded-2xl p-4" style={{ background: 'rgba(230,0,0,0.06)', border: '1px solid rgba(230,0,0,0.1)' }}>
+                className="rounded-2xl p-4" style={{ background: 'rgba(139,30,58,0.06)', border: '1px solid rgba(139,30,58,0.1)' }}>
                 <div className="flex items-start gap-2">
-                  <AlertCircle size={14} color="#E60000" className="mt-0.5 shrink-0" />
+                  <AlertCircle size={14} color="#8B1E3A" className="mt-0.5 shrink-0" />
                   <p className="text-[10px] leading-relaxed" style={{ color: isDark ? '#AAA' : '#666' }}>
                     أدخل كود القسيمة المكون من 8 أحرف/أرقام. سيتم إضافة المبلغ إلى رصيدك فوراً بعد الاسترداد.
                   </p>
@@ -486,9 +520,9 @@ export default function GiftVoucherScreen() {
                                 <Phone size={12} color="#25D366" />
                                 <span className="text-[10px] font-medium" style={{ color: '#25D366' }}>واتساب</span>
                               </button>
-                              <button onClick={() => handleShareCode(code)} className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg" style={{ background: 'rgba(230,0,0,0.08)' }}>
-                                <Share2 size={12} color="#E60000" />
-                                <span className="text-[10px] font-medium" style={{ color: '#E60000' }}>مشاركة</span>
+                              <button onClick={() => handleShareCode(code)} className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg" style={{ background: 'rgba(139,30,58,0.08)' }}>
+                                <Share2 size={12} color="#8B1E3A" />
+                                <span className="text-[10px] font-medium" style={{ color: '#8B1E3A' }}>مشاركة</span>
                               </button>
                             </div>
                           </div>

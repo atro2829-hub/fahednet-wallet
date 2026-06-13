@@ -45,7 +45,7 @@ export default function AdminRechargeProviders() {
 
   // Provider add state
   const [showAddProvider, setShowAddProvider] = useState<string | null>(null); // sub-section id
-  const [newProvider, setNewProvider] = useState({ name: '', color: '#E60000', categoryId: 'telecom', inputLabel: '', inputType: 'phone' as 'phone' | 'text', inputPrefix: '+967', icon: '' });
+  const [newProvider, setNewProvider] = useState({ name: '', color: '#8B1E3A', categoryId: 'telecom', inputLabel: '', inputType: 'phone' as 'phone' | 'text', inputPrefix: '+967', icon: '' });
   const addProviderIconRef = useRef<HTMLInputElement>(null);
 
   // Product add state
@@ -139,7 +139,7 @@ export default function AdminRechargeProviders() {
       setNewProvider(prev => ({ ...prev, categoryId: sub.categoryIds[0] }));
     }
     handleAddProvider(newProvider);
-    setNewProvider({ name: '', color: '#E60000', categoryId: 'telecom', inputLabel: '', inputType: 'phone', inputPrefix: '+967', icon: '' });
+    setNewProvider({ name: '', color: '#8B1E3A', categoryId: 'telecom', inputLabel: '', inputType: 'phone', inputPrefix: '+967', icon: '' });
     setShowAddProvider(null);
   };
 
@@ -262,8 +262,8 @@ export default function AdminRechargeProviders() {
                 <p className="text-[10px]" style={{ color: isDark ? '#888' : '#AAA' }}>{subProviders.length} مزود</p>
               </div>
               <div className="flex items-center gap-2">
-                <button onClick={(e) => { e.stopPropagation(); handleDeleteSubSection(sub); }} className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: 'rgba(230,0,0,0.08)' }}>
-                  <Trash2 size={12} color="#E60000" />
+                <button onClick={(e) => { e.stopPropagation(); handleDeleteSubSection(sub); }} className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: 'rgba(139,30,58,0.08)' }}>
+                  <Trash2 size={12} color="#8B1E3A" />
                 </button>
                 {isExpanded ? <ChevronUp size={16} color={isDark ? '#888' : '#AAA'} /> : <ChevronDown size={16} color={isDark ? '#888' : '#AAA'} />}
               </div>
@@ -281,7 +281,7 @@ export default function AdminRechargeProviders() {
                       setNewProvider(prev => ({ ...prev, categoryId: firstCategory, inputLabel: firstCategory === 'telecom' ? 'رقم الهاتف' : 'رقم الحساب', inputType: firstCategory === 'telecom' ? 'phone' : 'text', inputPrefix: firstCategory === 'telecom' ? '+967' : '' }));
                     }}
                       className="w-full py-2.5 rounded-xl flex items-center justify-center gap-2 text-xs font-medium"
-                      style={{ background: 'rgba(230,0,0,0.08)', color: '#E60000', border: '1px solid rgba(230,0,0,0.15)' }}>
+                      style={{ background: 'rgba(139,30,58,0.08)', color: '#8B1E3A', border: '1px solid rgba(139,30,58,0.15)' }}>
                       <Plus size={14} /><span>إضافة مزود</span>
                     </motion.button>
 
@@ -313,7 +313,7 @@ export default function AdminRechargeProviders() {
                             </div>
                           </div>
                           <div className="flex gap-2">
-                            <motion.button whileTap={{ scale: 0.95 }} onClick={() => onAddProvider(sub.id)} className="flex-1 py-2 rounded-lg text-[10px] font-bold text-white" style={{ background: '#E60000' }}>إضافة</motion.button>
+                            <motion.button whileTap={{ scale: 0.95 }} onClick={() => onAddProvider(sub.id)} className="flex-1 py-2 rounded-lg text-[10px] font-bold text-white" style={{ background: '#8B1E3A' }}>إضافة</motion.button>
                             <motion.button whileTap={{ scale: 0.95 }} onClick={() => setShowAddProvider(null)} className="flex-1 py-2 rounded-lg text-[10px] font-medium" style={{ background: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)', color: isDark ? '#CCC' : '#666' }}>إلغاء</motion.button>
                           </div>
                         </motion.div>
@@ -377,8 +377,8 @@ export default function AdminRechargeProviders() {
                                   <button onClick={() => handleToggleProvider(provider.id)}>
                                     {provider.isActive ? <ToggleRight size={18} color="#10B981" /> : <ToggleLeft size={18} color={isDark ? '#444' : '#CCC'} />}
                                   </button>
-                                  <button onClick={() => handleDeleteProvider(provider.id)} className="w-6 h-6 rounded flex items-center justify-center" style={{ background: 'rgba(230,0,0,0.08)' }}>
-                                    <Trash2 size={10} color="#E60000" />
+                                  <button onClick={() => handleDeleteProvider(provider.id)} className="w-6 h-6 rounded flex items-center justify-center" style={{ background: 'rgba(139,30,58,0.08)' }}>
+                                    <Trash2 size={10} color="#8B1E3A" />
                                   </button>
                                 </div>
                               </>
@@ -401,7 +401,7 @@ export default function AdminRechargeProviders() {
                                     <option value="manual">تنفيذ يدوي</option><option value="auto">تنفيذ تلقائي</option>
                                   </select>
                                   <div className="flex gap-2">
-                                    <motion.button whileTap={{ scale: 0.95 }} onClick={onAddProduct} className="flex-1 py-1.5 rounded-lg text-[10px] font-bold text-white" style={{ background: '#E60000' }}>إضافة منتج</motion.button>
+                                    <motion.button whileTap={{ scale: 0.95 }} onClick={onAddProduct} className="flex-1 py-1.5 rounded-lg text-[10px] font-bold text-white" style={{ background: '#8B1E3A' }}>إضافة منتج</motion.button>
                                     <motion.button whileTap={{ scale: 0.95 }} onClick={() => setShowAddProduct(null)} className="flex-1 py-1.5 rounded-lg text-[10px] font-medium" style={{ background: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)', color: isDark ? '#CCC' : '#666' }}>إلغاء</motion.button>
                                   </div>
                                 </div>
@@ -422,14 +422,14 @@ export default function AdminRechargeProviders() {
                                       <input type="text" value={editProductData.name} onChange={e => setEditProductData({ ...editProductData, name: e.target.value })} className="px-2 py-1 rounded text-[10px] outline-none flex-1" style={inputStyle} />
                                       <input type="number" value={editProductData.price} onChange={e => setEditProductData({ ...editProductData, price: parseFloat(e.target.value) || 0 })} className="px-2 py-1 rounded text-[10px] outline-none w-16" style={inputStyle} dir="ltr" />
                                       <button onClick={() => { updatePackage(product.id, { name: editProductData.name, price: editProductData.price }); try { update(ref(database, `packages/${product.id}`), { name: editProductData.name, price: editProductData.price }); } catch {} setEditingProduct(null); }}><Save size={10} color="#10B981" /></button>
-                                      <button onClick={() => setEditingProduct(null)}><X size={10} color="#E60000" /></button>
+                                      <button onClick={() => setEditingProduct(null)}><X size={10} color="#8B1E3A" /></button>
                                     </div>
                                   ) : (
                                     <>
                                       <div>
                                         <p className="text-[11px] font-medium" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>{product.name}</p>
                                         <div className="flex items-center gap-1.5 mt-0.5">
-                                          <span className="text-[10px] font-bold" style={{ color: '#E60000' }}>{product.price.toLocaleString()} {currencySymbols[product.currency]}</span>
+                                          <span className="text-[10px] font-bold" style={{ color: '#8B1E3A' }}>{product.price.toLocaleString()} {currencySymbols[product.currency]}</span>
                                           <span className="text-[8px] px-1 py-0.5 rounded" style={{ background: product.executionType === 'manual' ? 'rgba(245,158,11,0.15)' : 'rgba(16,185,129,0.15)', color: product.executionType === 'manual' ? '#F59E0B' : '#10B981' }}>
                                             {product.executionType === 'manual' ? 'يدوي' : 'تلقائي'}
                                           </span>
@@ -440,7 +440,7 @@ export default function AdminRechargeProviders() {
                                         <button onClick={() => handleToggleProduct(product.id)}>
                                           {product.isActive ? <ToggleRight size={16} color="#10B981" /> : <ToggleLeft size={16} color={isDark ? '#444' : '#CCC'} />}
                                         </button>
-                                        <button onClick={() => handleDeleteProduct(product.id)}><Trash2 size={10} color="#E60000" /></button>
+                                        <button onClick={() => handleDeleteProduct(product.id)}><Trash2 size={10} color="#8B1E3A" /></button>
                                       </div>
                                     </>
                                   )}

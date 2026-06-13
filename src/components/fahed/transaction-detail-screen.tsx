@@ -63,7 +63,7 @@ export default function TransactionDetailScreen() {
         <button
           onClick={() => setActiveScreen('main')}
           className="mt-4 px-6 py-2.5 rounded-xl text-sm font-medium text-white"
-          style={{ background: '#E60000' }}
+          style={{ background: '#8B1E3A' }}
         >
           العودة
         </button>
@@ -72,7 +72,7 @@ export default function TransactionDetailScreen() {
   }
 
   const isIncoming = tx.toUserId === user.id;
-  const txColor = transactionTypeColors[tx.type] || '#E60000';
+  const txColor = transactionTypeColors[tx.type] || '#8B1E3A';
   const txLabel = transactionTypeLabels[tx.type] || 'معاملة';
 
   // Get associated order if this is an order-type transaction
@@ -85,7 +85,7 @@ export default function TransactionDetailScreen() {
     switch (status) {
       case 'completed': return { label: 'مكتملة', color: '#10B981', icon: CheckCircle2, bg: 'rgba(16,185,129,0.1)' };
       case 'pending': return { label: 'قيد الانتظار', color: '#F59E0B', icon: Clock, bg: 'rgba(245,158,11,0.1)' };
-      case 'failed': return { label: 'فشلت', color: '#E60000', icon: XCircle, bg: 'rgba(230,0,0,0.1)' };
+      case 'failed': return { label: 'فشلت', color: '#8B1E3A', icon: XCircle, bg: 'rgba(139,30,58,0.1)' };
       case 'refunded': return { label: 'مستردة', color: '#6366F1', icon: RefreshCw, bg: 'rgba(99,102,241,0.1)' };
       default: return { label: status, color: '#666', icon: Clock, bg: 'rgba(102,102,102,0.1)' };
     }
@@ -118,30 +118,84 @@ export default function TransactionDetailScreen() {
   };
 
   const handleShareReceipt = () => {
-    const receiptText = `
-إيصال معاملة - محفظة الجنوب
-═══════════════════════
-النوع: ${txLabel}
-المبلغ: ${tx.amount.toLocaleString()} ${currencySymbols[tx.currency]}
-الحالة: ${statusConfig.label}
-التاريخ: ${new Date(tx.createdAt).toLocaleDateString('ar-SA', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
-رقم المرجع: ${tx.id}
-الوصف: ${tx.description || '-'}
-═══════════════════════
-    `.trim();
+    const receiptHtml = `
+      <html dir="rtl">
+      <head><meta charset="utf-8"><title>إيصال معاملة</title>
+      <style>
+        body { font-family: 'Segoe UI', Tahoma, Arial, sans-serif; direction: rtl; padding: 20px; background: #f5f5f5; }
+        .receipt { max-width: 400px; margin: 0 auto; background: #fff; border: 2px solid #8B1E3A; border-radius: 16px; padding: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+        .header { text-align: center; margin-bottom: 20px; border-bottom: 2px dashed #8B1E3A; padding-bottom: 16px; }
+        .header h2 { color: #8B1E3A; margin: 0 0 4px; font-size: 20px; }
+        .header p { color: #666; margin: 0; font-size: 13px; }
+        .amount { text-align: center; font-size: 32px; font-weight: bold; margin: 20px 0; padding: 16px; background: ${isIncoming ? 'rgba(16,185,129,0.08)' : 'rgba(139,30,58,0.08)'}; border-radius: 12px; }
+        .row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px dashed #eee; }
+        .label { color: #666; font-size: 13px; }
+        .value { font-weight: bold; font-size: 13px; color: #1a1a1a; }
+        .status-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; }
+        .footer { text-align: center; margin-top: 24px; color: #999; font-size: 11px; border-top: 2px dashed #8B1E3A; padding-top: 16px; }
+        .dev-credit { color: #bbb; font-size: 10px; margin-top: 8px; }
+      </style></head>
+      <body>
+        <div class="receipt">
+          <div class="header">
+            <h2>محفظة الجنوب</h2>
+            <p>إيصال معاملة مالية</p>
+          </div>
+          <div class="amount" style="color: ${isIncoming ? '#10B981' : '#8B1E3A'}">
+            ${isIncoming ? '+' : '-'}${tx.amount.toLocaleString()} ${currencySymbols[tx.currency]}
+          </div>
+          <div style="text-align:center; margin-bottom:16px;">
+            <span class="status-badge" style="background:${statusConfig.bg}; color:${statusConfig.color}">${statusConfig.label}</span>
+          </div>
+          <div class="row"><span class="label">النوع</span><span class="value">${txLabel}</span></div>
+          <div class="row"><span class="label">التاريخ</span><span class="value">${new Date(tx.createdAt).toLocaleDateString('ar-SA', { year: 'numeric', month: 'long', day: 'numeric' })}</span></div>
+          <div class="row"><span class="label">الوقت</span><span class="value">${new Date(tx.createdAt).toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' })}</span></div>
+          <div class="row"><span class="label">رقم المرجع</span><span class="value" style="font-family:monospace; direction:ltr">${tx.id}</span></div>
+          ${tx.description ? `<div class="row"><span class="label">الوصف</span><span class="value">${tx.description}</span></div>` : ''}
+          <div class="row"><span class="label">الحساب</span><span class="value" style="direction:ltr">${user?.userId || '-'}</span></div>
+          <div class="footer">
+            <p>تم إنشاء هذا الإيصال بتاريخ ${new Date().toLocaleDateString('ar-SA')}</p>
+            <p class="dev-credit">تم التطوير بواسطة: مؤسسة QTBM DEV</p>
+          </div>
+        </div>
+      </body></html>
+    `;
 
-    if (navigator.share) {
-      navigator.share({ title: 'إيصال معاملة', text: receiptText });
-    } else {
-      navigator.clipboard.writeText(receiptText);
+    // Try to download as HTML file that can be opened and printed
+    try {
+      const blob = new Blob([receiptHtml], { type: 'text/html;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `إيصال-${tx.id}.html`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
       addNotification({
-        id: `share-${Date.now()}`,
-        title: 'تم نسخ الإيصال',
-        body: 'تم نسخ نص الإيصال إلى الحافظة',
+        id: `receipt-${Date.now()}`,
+        title: 'تم تنزيل الإيصال',
+        body: 'تم حفظ الإيصال في مجلد التنزيلات',
         type: 'info',
         isRead: false,
         createdAt: new Date().toISOString(),
       });
+    } catch {
+      // Fallback: share or copy
+      if (navigator.share) {
+        navigator.share({ title: 'إيصال معاملة', text: `إيصال ${txLabel} - ${tx.amount} ${currencySymbols[tx.currency]}` });
+      } else {
+        navigator.clipboard?.writeText(`إيصال ${txLabel} - ${tx.amount} ${currencySymbols[tx.currency]} - مرجع: ${tx.id}`);
+        addNotification({
+          id: `receipt-copy-${Date.now()}`,
+          title: 'تم نسخ الإيصال',
+          body: 'تم نسخ نص الإيصال إلى الحافظة',
+          type: 'info',
+          isRead: false,
+          createdAt: new Date().toISOString(),
+        });
+      }
     }
   };
 
@@ -223,7 +277,7 @@ export default function TransactionDetailScreen() {
 
             {/* Amount */}
             <div className="flex items-center gap-1.5 mb-2">
-              <span className="text-3xl font-bold" style={{ color: isIncoming ? '#10B981' : '#E60000' }}>
+              <span className="text-3xl font-bold" style={{ color: isIncoming ? '#10B981' : '#8B1E3A' }}>
                 {isIncoming ? '+' : '-'}{tx.amount.toLocaleString()}
               </span>
               <span className="text-sm px-2 py-1 rounded-lg font-bold text-white" style={{ background: currencyBadgeColors[tx.currency] || '#666' }}>
@@ -256,13 +310,13 @@ export default function TransactionDetailScreen() {
                 <span className="text-xs" style={{ color: isDark ? '#888' : '#AAA' }}>رقم المرجع</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <span className="text-xs font-mono font-bold" style={{ color: '#E60000' }} dir="ltr">{tx.id}</span>
+                <span className="text-xs font-mono font-bold" style={{ color: '#8B1E3A' }} dir="ltr">{tx.id}</span>
                 <button
                   onClick={handleCopyRef}
                   className="w-6 h-6 rounded-lg flex items-center justify-center"
-                  style={{ background: 'rgba(230,0,0,0.1)' }}
+                  style={{ background: 'rgba(139,30,58,0.1)' }}
                 >
-                  {copiedRef ? <Check size={10} color="#10B981" /> : <Copy size={10} color="#E60000" />}
+                  {copiedRef ? <Check size={10} color="#10B981" /> : <Copy size={10} color="#8B1E3A" />}
                 </button>
               </div>
             </div>
@@ -375,7 +429,7 @@ export default function TransactionDetailScreen() {
               {/* Order Timeline Visualization */}
               <div className="mt-3">
                 <div className="flex items-center gap-1 mb-2">
-                  <Clock size={12} color="#E60000" />
+                  <Clock size={12} color="#8B1E3A" />
                   <span className="text-[10px] font-bold" style={{ color: isDark ? '#AAA' : '#888' }}>حالة الطلب</span>
                 </div>
                 <div className="flex items-center gap-1">
@@ -385,7 +439,7 @@ export default function TransactionDetailScreen() {
                                      (step === 'completed' && associatedOrder.status === 'completed') ||
                                      (step === 'cancelled' && associatedOrder.status === 'cancelled');
                     const stepLabels: Record<string, string> = { pending: 'قيد الانتظار', completed: 'مكتمل', cancelled: 'ملغي' };
-                    const stepColors: Record<string, string> = { pending: '#F59E0B', completed: '#10B981', cancelled: '#E60000' };
+                    const stepColors: Record<string, string> = { pending: '#F59E0B', completed: '#10B981', cancelled: '#8B1E3A' };
                     return (
                       <div key={step} className="flex-1 flex flex-col items-center">
                         <div
@@ -455,8 +509,8 @@ export default function TransactionDetailScreen() {
             className="w-full flex items-center gap-3 p-4 rounded-2xl transition-all active:scale-[0.98]"
             style={{ background: cardBg, border: `1px solid ${borderColor}` }}
           >
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'rgba(230,0,0,0.1)' }}>
-              <RefreshCw size={18} strokeWidth={1.5} color="#E60000" />
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'rgba(139,30,58,0.1)' }}>
+              <RefreshCw size={18} strokeWidth={1.5} color="#8B1E3A" />
             </div>
             <div className="flex-1 text-right">
               <p className="text-sm font-medium" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>تكرار المعاملة</p>
@@ -472,7 +526,7 @@ export default function TransactionDetailScreen() {
                 useAppStore.getState().setActiveScreen('order-tracking');
               }}
               className="w-full py-3.5 rounded-2xl text-sm font-bold text-white"
-              style={{ background: 'linear-gradient(135deg, #E60000 0%, #B30000 100%)' }}
+              style={{ background: 'linear-gradient(135deg, #8B1E3A 0%, #5C1225 100%)' }}
             >
               إلغاء الطلب
             </button>
@@ -513,7 +567,7 @@ export default function TransactionDetailScreen() {
                     <h3 className="text-base font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>الإبلاغ عن مشكلة</h3>
                   </div>
                   <p className="text-xs mb-4" style={{ color: isDark ? '#888' : '#AAA' }}>
-                    هل تريد الإبلاغ عن مشكلة في المعاملة رقم <span className="font-mono font-bold" style={{ color: '#E60000' }} dir="ltr">{tx.id}</span>؟
+                    هل تريد الإبلاغ عن مشكلة في المعاملة رقم <span className="font-mono font-bold" style={{ color: '#8B1E3A' }} dir="ltr">{tx.id}</span>؟
                   </p>
                   <div className="flex gap-2">
                     <button

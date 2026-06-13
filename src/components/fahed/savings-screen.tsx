@@ -25,7 +25,7 @@ import { database } from '@/lib/firebase';
 import { ref, set, remove } from 'firebase/database';
 
 const iconOptions = [
-  { id: 'house', label: 'منزل', icon: Home, color: '#E60000' },
+  { id: 'house', label: 'منزل', icon: Home, color: '#8B1E3A' },
   { id: 'car', label: 'سيارة', icon: Car, color: '#3B82F6' },
   { id: 'travel', label: 'سفر', icon: Plane, color: '#10B981' },
   { id: 'education', label: 'تعليم', icon: GraduationCap, color: '#8B5CF6' },
@@ -166,8 +166,8 @@ export default function SavingsScreen() {
             onClick={() => setShowAddModal(true)}
             className="w-10 h-10 rounded-2xl flex items-center justify-center"
             style={{
-              background: '#E60000',
-              boxShadow: '0 2px 8px rgba(230,0,0,0.25)',
+              background: '#8B1E3A',
+              boxShadow: '0 2px 8px rgba(139,30,58,0.25)',
             }}
           >
             <Plus size={18} strokeWidth={2} color="#FFF" />
@@ -196,7 +196,7 @@ export default function SavingsScreen() {
             <button
               onClick={() => setShowAddModal(true)}
               className="mt-4 px-6 py-2.5 rounded-xl text-xs font-medium flex items-center gap-1.5"
-              style={{ background: '#E60000', color: '#FFF' }}
+              style={{ background: '#8B1E3A', color: '#FFF' }}
             >
               <Plus size={14} strokeWidth={2} />
               إضافة هدف جديد
@@ -248,7 +248,7 @@ export default function SavingsScreen() {
                           >
                             {goal.currency}
                           </span>
-                          <span className="text-[10px] font-bold" style={{ color: isComplete ? '#10B981' : '#E60000' }}>
+                          <span className="text-[10px] font-bold" style={{ color: isComplete ? '#10B981' : '#8B1E3A' }}>
                             {Math.round(progress)}%
                           </span>
                           {isComplete && <CheckCircle2 size={10} color="#10B981" />}
@@ -257,9 +257,9 @@ export default function SavingsScreen() {
                       <button
                         onClick={() => handleDeleteGoal(goal.id)}
                         className="w-8 h-8 rounded-lg flex items-center justify-center"
-                        style={{ background: 'rgba(230,0,0,0.08)' }}
+                        style={{ background: 'rgba(139,30,58,0.08)' }}
                       >
-                        <Trash2 size={14} strokeWidth={1.5} color="#E60000" />
+                        <Trash2 size={14} strokeWidth={1.5} color="#8B1E3A" />
                       </button>
                     </div>
 
@@ -297,9 +297,9 @@ export default function SavingsScreen() {
                         }}
                         className="w-full mt-3 py-2.5 rounded-xl text-xs font-medium flex items-center justify-center gap-1.5 transition-all card-press"
                         style={{
-                          background: 'rgba(230,0,0,0.08)',
-                          color: '#E60000',
-                          border: '1px solid rgba(230,0,0,0.15)',
+                          background: 'rgba(139,30,58,0.08)',
+                          color: '#8B1E3A',
+                          border: '1px solid rgba(139,30,58,0.15)',
                         }}
                       >
                         <Plus size={12} strokeWidth={2} />
@@ -426,9 +426,9 @@ export default function SavingsScreen() {
                 disabled={!goalName.trim() || !goalTarget}
                 className="w-full py-4 rounded-2xl text-sm font-bold flex items-center justify-center gap-2"
                 style={{
-                  background: goalName.trim() && goalTarget ? '#E60000' : (isDark ? '#222' : '#EEE'),
+                  background: goalName.trim() && goalTarget ? '#8B1E3A' : (isDark ? '#222' : '#EEE'),
                   color: goalName.trim() && goalTarget ? '#FFF' : (isDark ? '#444' : '#AAA'),
-                  boxShadow: goalName.trim() && goalTarget ? '0 4px 16px rgba(230,0,0,0.3)' : 'none',
+                  boxShadow: goalName.trim() && goalTarget ? '0 4px 16px rgba(139,30,58,0.3)' : 'none',
                 }}
               >
                 <Target size={16} strokeWidth={2} />
@@ -492,12 +492,12 @@ export default function SavingsScreen() {
                     <div
                       className="rounded-xl p-3 mb-4 flex items-center justify-between"
                       style={{
-                        background: 'rgba(230,0,0,0.06)',
-                        border: '1px solid rgba(230,0,0,0.1)',
+                        background: 'rgba(139,30,58,0.06)',
+                        border: '1px solid rgba(139,30,58,0.1)',
                       }}
                     >
-                      <span className="text-xs" style={{ color: '#E60000' }}>المتبقي للهدف</span>
-                      <span className="text-sm font-bold" style={{ color: '#E60000' }}>
+                      <span className="text-xs" style={{ color: '#8B1E3A' }}>المتبقي للهدف</span>
+                      <span className="text-sm font-bold" style={{ color: '#8B1E3A' }}>
                         {formatNumber(remaining)} {currencySymbols[goal.currency]}
                       </span>
                     </div>
@@ -544,13 +544,13 @@ export default function SavingsScreen() {
                       className="w-full py-4 rounded-2xl text-sm font-bold flex items-center justify-center gap-2"
                       style={{
                         background: quickAddAmount && parseFloat(quickAddAmount) > 0 && parseFloat(quickAddAmount) <= availableBalance
-                          ? '#E60000'
+                          ? '#8B1E3A'
                           : (isDark ? '#222' : '#EEE'),
                         color: quickAddAmount && parseFloat(quickAddAmount) > 0 && parseFloat(quickAddAmount) <= availableBalance
                           ? '#FFF'
                           : (isDark ? '#444' : '#AAA'),
                         boxShadow: quickAddAmount && parseFloat(quickAddAmount) > 0 && parseFloat(quickAddAmount) <= availableBalance
-                          ? '0 4px 16px rgba(230,0,0,0.3)'
+                          ? '0 4px 16px rgba(139,30,58,0.3)'
                           : 'none',
                       }}
                     >

@@ -30,7 +30,7 @@ const notifIcons: Record<string, typeof Info> = {
 
 const notifColors: Record<string, string> = {
   info: '#2563EB',
-  transaction: '#E60000',
+  transaction: '#8B1E3A',
   security: '#F59E0B',
   promo: '#8B5CF6',
 };
@@ -150,7 +150,7 @@ export default function NotificationsScreen() {
             <div>
               <h1 className="text-xl font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>الإشعارات</h1>
               {unreadCount > 0 && (
-                <p className="text-[11px]" style={{ color: '#E60000' }}>
+                <p className="text-[11px]" style={{ color: '#8B1E3A' }}>
                   {unreadCount} إشعار غير مقروء
                 </p>
               )}
@@ -184,10 +184,10 @@ export default function NotificationsScreen() {
               <button
                 onClick={handleMarkAllRead}
                 className="flex items-center gap-1 px-3 py-2 rounded-xl"
-                style={{ background: 'rgba(230,0,0,0.08)' }}
+                style={{ background: 'rgba(139,30,58,0.08)' }}
               >
-                <CheckCheck size={14} strokeWidth={1.5} color="#E60000" />
-                <span className="text-[11px] font-medium" style={{ color: '#E60000' }}>قراءة الكل</span>
+                <CheckCheck size={14} strokeWidth={1.5} color="#8B1E3A" />
+                <span className="text-[11px] font-medium" style={{ color: '#8B1E3A' }}>قراءة الكل</span>
               </button>
             )}
             {/* Clear All */}
@@ -195,10 +195,10 @@ export default function NotificationsScreen() {
               <button
                 onClick={clearNotifications}
                 className="flex items-center gap-1 px-3 py-2 rounded-xl"
-                style={{ background: isDark ? 'rgba(230,0,0,0.08)' : 'rgba(230,0,0,0.05)' }}
+                style={{ background: isDark ? 'rgba(139,30,58,0.08)' : 'rgba(139,30,58,0.05)' }}
               >
-                <Trash2 size={14} strokeWidth={1.5} color="#E60000" />
-                <span className="text-[11px] font-medium" style={{ color: '#E60000' }}>حذف الكل</span>
+                <Trash2 size={14} strokeWidth={1.5} color="#8B1E3A" />
+                <span className="text-[11px] font-medium" style={{ color: '#8B1E3A' }}>حذف الكل</span>
               </button>
             )}
           </div>
@@ -342,11 +342,11 @@ function SwipeToDismiss({
       {/* Background delete indicator */}
       <div
         className="absolute inset-0 flex items-center justify-end pr-4 rounded-2xl"
-        style={{ background: 'rgba(230,0,0,0.1)' }}
+        style={{ background: 'rgba(139,30,58,0.1)' }}
       >
         <div className="flex items-center gap-1.5">
-          <Trash2 size={16} strokeWidth={1.5} color="#E60000" />
-          <span className="text-xs font-bold" style={{ color: '#E60000' }}>حذف</span>
+          <Trash2 size={16} strokeWidth={1.5} color="#8B1E3A" />
+          <span className="text-xs font-bold" style={{ color: '#8B1E3A' }}>حذف</span>
         </div>
       </div>
       {/* Content */}

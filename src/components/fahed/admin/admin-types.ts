@@ -94,11 +94,11 @@ export interface AdminExchangeRates {
 
 export const defaultAdminExchangeRates: AdminExchangeRates = {
   YERtoSAR: 1/410,
-  YERtoUSD: 1/1550,
+  YERtoUSD: 1/1558,
   SARtoYER: 410,
-  SARtoUSD: 410/1550,
-  USDtoYER: 1550,
-  USDtoSAR: 1550/410,
+  SARtoUSD: 410/1558,
+  USDtoYER: 1558,
+  USDtoSAR: 1558/410,
   commission: 2,
 };
 
@@ -125,10 +125,10 @@ export interface AppSettings {
 
 export const defaultAppSettings: AppSettings = {
   appName: 'محفظة الجنوب',
-  primaryColor: '#E60000',
+  primaryColor: '#8B1E3A',
   maintenanceMode: false,
   supportPhone: '+967700000000',
-  supportEmail: 'support@janoubwallet.com',
+  supportEmail: '',
   supportWhatsApp: '+967700000000',
   facebookLink: '',
   twitterLink: '',

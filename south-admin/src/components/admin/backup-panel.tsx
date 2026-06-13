@@ -110,7 +110,7 @@ export default function BackupPanel() {
     return `${(bytes / 1048576).toFixed(1)} MB`;
   };
 
-  if (loading) return <div className="flex items-center justify-center min-h-[400px]"><div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" /></div>;
+  if (loading) return <div className="flex items-center justify-center min-h-[400px]"><div className="w-8 h-8 border-2 border-[#8B1E3A] border-t-transparent rounded-full animate-spin" /></div>;
 
   return (
     <div className="space-y-6">
@@ -123,10 +123,10 @@ export default function BackupPanel() {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
           <Card className="admin-card border-0 shadow-none cursor-pointer card-press" onClick={handleExport}>
             <CardContent className="p-6 text-center">
-              <Download className="w-10 h-10 text-purple-500 mx-auto mb-3" />
+              <Download className="w-10 h-10 text-[#8B1E3A] mx-auto mb-3" />
               <p className="font-semibold">تصدير نسخة احتياطية</p>
               <p className="text-xs text-muted-foreground mt-1">تحميل نسخة كاملة من قاعدة البيانات</p>
-              {exporting && <Loader2 className="w-5 h-5 mx-auto mt-2 animate-spin text-purple-500" />}
+              {exporting && <Loader2 className="w-5 h-5 mx-auto mt-2 animate-spin text-[#8B1E3A]" />}
             </CardContent>
           </Card>
         </motion.div>
@@ -159,7 +159,7 @@ export default function BackupPanel() {
               <Card className="admin-card border-0 shadow-none">
                 <CardContent className="p-3 flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-lg bg-purple-500/10"><Database className="w-4 h-4 text-purple-500" /></div>
+                    <div className="p-2 rounded-lg bg-[#8B1E3A]/10"><Database className="w-4 h-4 text-[#8B1E3A]" /></div>
                     <div>
                       <p className="text-sm font-medium">{b.type === 'import' ? 'استيراد' : 'تصدير'}</p>
                       <p className="text-xs text-muted-foreground">{b.adminName || 'النظام'} - {formatSize(b.size || 0)}</p>

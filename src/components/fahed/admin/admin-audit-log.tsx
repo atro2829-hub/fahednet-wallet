@@ -115,7 +115,7 @@ export default function AdminAuditLog() {
       <div className="rounded-2xl p-4" style={cardStyle}>
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
-            <FileText size={18} color="#E60000" />
+            <FileText size={18} color="#8B1E3A" />
             <h3 className="text-sm font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>سجل المراجعة</h3>
           </div>
           <div className="flex items-center gap-2">
@@ -154,7 +154,7 @@ export default function AdminAuditLog() {
           <button
             onClick={() => setShowFilters(!showFilters)}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-medium"
-            style={{ background: showFilters ? 'rgba(230,0,0,0.1)' : isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)', color: showFilters ? '#E60000' : isDark ? '#AAA' : '#666' }}
+            style={{ background: showFilters ? 'rgba(139,30,58,0.1)' : isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)', color: showFilters ? '#8B1E3A' : isDark ? '#AAA' : '#666' }}
           >
             <Filter size={12} />
             فلاتر
@@ -202,7 +202,7 @@ export default function AdminAuditLog() {
                 <button
                   onClick={() => { setActionFilter('all'); setDateFilter('all'); }}
                   className="mt-2 text-[10px] px-3 py-1.5 rounded-lg"
-                  style={{ background: 'rgba(230,0,0,0.08)', color: '#E60000' }}
+                  style={{ background: 'rgba(139,30,58,0.08)', color: '#8B1E3A' }}
                 >
                   إعادة تعيين الفلاتر
                 </button>

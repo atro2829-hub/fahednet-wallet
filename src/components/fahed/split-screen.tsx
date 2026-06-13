@@ -179,8 +179,8 @@ export default function SplitScreen() {
             onClick={() => setActiveScreen('main')}
             className="mt-6 px-8 py-3 rounded-2xl text-sm font-bold text-white"
             style={{
-              background: 'linear-gradient(135deg, #E60000 0%, #B30000 100%)',
-              boxShadow: '0 4px 16px rgba(230,0,0,0.3)',
+              background: 'linear-gradient(135deg, #8B1E3A 0%, #5C1225 100%)',
+              boxShadow: '0 4px 16px rgba(139,30,58,0.3)',
             }}
           >
             العودة للرئيسية
@@ -237,7 +237,7 @@ export default function SplitScreen() {
                 border: isDark ? '1px solid #333' : '1px solid #EEE',
               }}
             >
-              <DollarSign size={18} strokeWidth={1.5} color="#E60000" />
+              <DollarSign size={18} strokeWidth={1.5} color="#8B1E3A" />
               <input
                 type="number"
                 placeholder="0"
@@ -293,7 +293,7 @@ export default function SplitScreen() {
                 onClick={() => setInputMode('userId')}
                 className="px-3 py-1.5 text-[10px] font-medium transition-all"
                 style={{
-                  background: inputMode === 'userId' ? '#E60000' : 'transparent',
+                  background: inputMode === 'userId' ? '#8B1E3A' : 'transparent',
                   color: inputMode === 'userId' ? '#FFF' : isDark ? '#888' : '#AAA',
                 }}
               >
@@ -304,7 +304,7 @@ export default function SplitScreen() {
                 onClick={() => setInputMode('phone')}
                 className="px-3 py-1.5 text-[10px] font-medium transition-all"
                 style={{
-                  background: inputMode === 'phone' ? '#E60000' : 'transparent',
+                  background: inputMode === 'phone' ? '#8B1E3A' : 'transparent',
                   color: inputMode === 'phone' ? '#FFF' : isDark ? '#888' : '#AAA',
                 }}
               >
@@ -322,9 +322,9 @@ export default function SplitScreen() {
               }}
             >
               {inputMode === 'userId' ? (
-                <Hash size={18} strokeWidth={1.5} color="#E60000" />
+                <Hash size={18} strokeWidth={1.5} color="#8B1E3A" />
               ) : (
-                <Phone size={18} strokeWidth={1.5} color="#E60000" />
+                <Phone size={18} strokeWidth={1.5} color="#8B1E3A" />
               )}
               <input
                 type="tel"
@@ -343,7 +343,7 @@ export default function SplitScreen() {
               onClick={handleAddParticipant}
               disabled={!newParticipantInput.trim()}
               className="w-12 rounded-2xl flex items-center justify-center text-white disabled:opacity-40"
-              style={{ background: '#E60000' }}
+              style={{ background: '#8B1E3A' }}
             >
               <Plus size={20} strokeWidth={1.5} />
             </button>
@@ -363,9 +363,9 @@ export default function SplitScreen() {
               disabled={total <= 0}
               className="w-full py-3 rounded-2xl flex items-center justify-center gap-2 text-sm font-medium disabled:opacity-40"
               style={{
-                background: 'rgba(230,0,0,0.08)',
-                color: '#E60000',
-                border: '1px solid rgba(230,0,0,0.2)',
+                background: 'rgba(139,30,58,0.08)',
+                color: '#8B1E3A',
+                border: '1px solid rgba(139,30,58,0.2)',
               }}
             >
               <Equal size={16} strokeWidth={1.5} />
@@ -429,9 +429,9 @@ export default function SplitScreen() {
                       <button
                         onClick={() => handleRemoveParticipant(participant.id)}
                         className="w-8 h-8 rounded-full flex items-center justify-center"
-                        style={{ background: 'rgba(230,0,0,0.1)' }}
+                        style={{ background: 'rgba(139,30,58,0.1)' }}
                       >
-                        <Minus size={14} strokeWidth={1.5} color="#E60000" />
+                        <Minus size={14} strokeWidth={1.5} color="#8B1E3A" />
                       </button>
                     </div>
                   </div>
@@ -453,7 +453,7 @@ export default function SplitScreen() {
             }}
           >
             <div className="flex items-center gap-2 mb-3">
-              <Split size={16} strokeWidth={1.5} color="#E60000" />
+              <Split size={16} strokeWidth={1.5} color="#8B1E3A" />
               <span className="text-xs font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>
                 ملخص التقسيم
               </span>
@@ -470,7 +470,7 @@ export default function SplitScreen() {
               {participants.length > 0 && (
                 <div className="flex items-center justify-between">
                   <span className="text-xs" style={{ color: isDark ? '#888' : '#AAA' }}>حصة الآخرين</span>
-                  <span className="text-sm font-medium" style={{ color: '#E60000' }}>
+                  <span className="text-sm font-medium" style={{ color: '#8B1E3A' }}>
                     {allocatedTotal.toLocaleString('ar-SA')} {currencySymbols[currency]}
                   </span>
                 </div>
@@ -482,7 +482,7 @@ export default function SplitScreen() {
                 <span className="text-xs font-medium" style={{ color: isDark ? '#AAA' : '#888' }}>حصتك</span>
                 <span
                   className="text-lg font-bold"
-                  style={{ color: participants.length > 0 ? '#10B981' : '#E60000' }}
+                  style={{ color: participants.length > 0 ? '#10B981' : '#8B1E3A' }}
                 >
                   {participants.length > 0
                     ? Math.max(0, remaining).toLocaleString('ar-SA')
@@ -492,7 +492,7 @@ export default function SplitScreen() {
               </div>
 
               {participants.length > 0 && remaining < 0 && (
-                <p className="text-[10px] text-center" style={{ color: '#E60000' }}>
+                <p className="text-[10px] text-center" style={{ color: '#8B1E3A' }}>
                   المبلغ المخصص يتجاوز الإجمالي
                 </p>
               )}
@@ -509,8 +509,8 @@ export default function SplitScreen() {
             disabled={isSending}
             className="w-full py-4 rounded-2xl flex items-center justify-center gap-2 font-bold text-white text-sm transition-all active:scale-[0.98] disabled:opacity-50"
             style={{
-              background: 'linear-gradient(135deg, #E60000 0%, #B30000 100%)',
-              boxShadow: '0 4px 16px rgba(230,0,0,0.3)',
+              background: 'linear-gradient(135deg, #8B1E3A 0%, #5C1225 100%)',
+              boxShadow: '0 4px 16px rgba(139,30,58,0.3)',
             }}
           >
             {isSending ? (

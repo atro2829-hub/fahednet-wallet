@@ -53,7 +53,7 @@ const balanceCards = [
     currencyName: 'الريال اليمني',
     balance: 0,
     gradientFrom: '#C1121F',
-    gradientTo: '#E60000',
+    gradientTo: '#8B1E3A',
     flagEmoji: '🇾🇪',
   },
   {
@@ -210,7 +210,7 @@ export default function HomeScreen() {
           {/* Notification bell with red badge */}
           <button className="relative p-2.5 rounded-full bg-white shadow-[0_2px_8px_rgba(0,0,0,0.08)] active:scale-95 transition-transform">
             <Bell className="w-[20px] h-[20px] text-[#1a1a1a] stroke-[1.5px]" />
-            <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-[#E60000] rounded-full border-2 border-white" />
+            <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-[#8B1E3A] rounded-full border-2 border-white" />
           </button>
           {/* Support / AI Assistant button */}
           <button className="p-2.5 rounded-full bg-white shadow-[0_2px_8px_rgba(0,0,0,0.08)] active:scale-95 transition-transform">
@@ -329,8 +329,8 @@ export default function HomeScreen() {
           {/* Decorative elements */}
           <div className="absolute top-0 left-0 w-28 h-28 bg-white/[0.03] rounded-full -translate-x-1/3 -translate-y-1/3" />
           <div className="absolute bottom-0 right-0 w-20 h-20 bg-white/[0.02] rounded-full translate-x-1/4 translate-y-1/4" />
-          <div className="absolute top-3 right-20 w-2 h-2 bg-[#E60000]/30 rounded-full" />
-          <div className="absolute bottom-4 right-32 w-1.5 h-1.5 bg-[#E60000]/20 rounded-full" />
+          <div className="absolute top-3 right-20 w-2 h-2 bg-[#8B1E3A]/30 rounded-full" />
+          <div className="absolute bottom-4 right-32 w-1.5 h-1.5 bg-[#8B1E3A]/20 rounded-full" />
 
           <div className="relative z-10 flex items-center justify-between">
             <div>
@@ -338,8 +338,8 @@ export default function HomeScreen() {
               <p className="text-white/50 text-[11px]">بطاقات ببجي، فري فاير والمزيد</p>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-11 h-11 bg-[#E60000]/20 rounded-xl flex items-center justify-center">
-                <Gamepad2 className="w-5 h-5 text-[#E60000]" />
+              <div className="w-11 h-11 bg-[#8B1E3A]/20 rounded-xl flex items-center justify-center">
+                <Gamepad2 className="w-5 h-5 text-[#8B1E3A]" />
               </div>
               <button className="bg-white/10 p-1.5 rounded-full active:scale-90 transition-transform">
                 <ChevronLeft className="w-4 h-4 text-white/70" />
@@ -367,7 +367,7 @@ export default function HomeScreen() {
               <div className="relative w-12 h-12 rounded-xl flex items-center justify-center bg-[#F8F8F8]">
                 <service.icon className="w-[22px] h-[22px] text-[#1a1a1a] stroke-[1.5px]" />
                 {/* Small red dot accent on each icon - brand visual link */}
-                <div className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-[#E60000] rounded-full border border-white" />
+                <div className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-[#8B1E3A] rounded-full border border-white" />
               </div>
               <span className="text-[11px] text-[#1a1a1a] text-center leading-tight font-semibold">
                 {service.label}
@@ -381,7 +381,7 @@ export default function HomeScreen() {
       <div className="px-4 pt-4 pb-2">
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-[15px] font-bold text-[#1a1a1a]">العمليات الأخيرة</h2>
-          <button className="text-[#E60000] text-xs font-bold">عرض الكل</button>
+          <button className="text-[#8B1E3A] text-xs font-bold">عرض الكل</button>
         </div>
         <div className="space-y-2.5">
           {transactions.map((tx, index) => {
@@ -403,7 +403,7 @@ export default function HomeScreen() {
                   {tx.amount > 0 ? (
                     <ArrowDownRight className="w-[18px] h-[18px] text-green-500 stroke-[1.5px]" />
                   ) : (
-                    <ArrowUpRight className="w-[18px] h-[18px] text-[#E60000] stroke-[1.5px]" />
+                    <ArrowUpRight className="w-[18px] h-[18px] text-[#8B1E3A] stroke-[1.5px]" />
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
@@ -413,7 +413,7 @@ export default function HomeScreen() {
                 <div className="text-left">
                   <p
                     className={`text-[13px] font-bold ${
-                      tx.amount > 0 ? 'text-green-500' : 'text-[#E60000]'
+                      tx.amount > 0 ? 'text-green-500' : 'text-[#8B1E3A]'
                     }`}
                   >
                     {tx.amount > 0 ? '+' : ''}

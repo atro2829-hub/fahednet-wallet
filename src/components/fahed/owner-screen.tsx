@@ -163,14 +163,14 @@ function SortableSectionItem({ section, isDark, onToggle, onDelete, onIconChange
               <div className="flex items-center gap-2">
                 <input type="text" value={editName} onChange={(e) => setEditName(e.target.value)} className="flex-1 px-2 py-1 rounded text-sm outline-none" style={{ background: inputBg, color: textColor }} />
                 <button onClick={handleSaveName}><Save size={14} color="#8B5CF6" /></button>
-                <button onClick={() => setEditing(false)}><X size={14} color="#E60000" /></button>
+                <button onClick={() => setEditing(false)}><X size={14} color="#8B1E3A" /></button>
               </div>
             ) : (
               <>
                 <p className="text-sm font-bold truncate" style={{ color: textColor }}>{section.name}</p>
                 <div className="flex items-center gap-2 mt-0.5">
                   <span className="text-[10px] px-1.5 py-0.5 rounded" style={{ background: 'rgba(139,92,246,0.12)', color: '#8B5CF6' }}>#{section.order}</span>
-                  <span className="text-[10px]" style={{ color: section.isVisible ? '#10B981' : '#E60000' }}>{section.isVisible ? '\u0638\u0627\u0647\u0631' : '\u0645\u062E\u0641\u064A'}</span>
+                  <span className="text-[10px]" style={{ color: section.isVisible ? '#10B981' : '#8B1E3A' }}>{section.isVisible ? '\u0638\u0627\u0647\u0631' : '\u0645\u062E\u0641\u064A'}</span>
                 </div>
               </>
             )}
@@ -182,7 +182,7 @@ function SortableSectionItem({ section, isDark, onToggle, onDelete, onIconChange
             <button onClick={() => onToggle(section.id)}>
               {section.isVisible ? <ToggleRight size={22} color="#10B981" /> : <ToggleLeft size={22} color={isDark ? '#444' : '#CCC'} />}
             </button>
-            <button onClick={() => onDelete(section.id)}><Trash2 size={14} color="#E60000" /></button>
+            <button onClick={() => onDelete(section.id)}><Trash2 size={14} color="#8B1E3A" /></button>
           </div>
         </div>
       </div>
@@ -227,12 +227,12 @@ function SubSectionItem({ sub, isDark, onToggle, onDelete, onIconChange, onEditN
             <div className="flex items-center gap-2">
               <input type="text" value={editName} onChange={(e) => setEditName(e.target.value)} className="flex-1 px-2 py-1 rounded text-sm outline-none" style={inputStyle} />
               <button onClick={() => { onEditName(sub.id, editName); setEditing(false); }}><Save size={14} color="#8B5CF6" /></button>
-              <button onClick={() => setEditing(false)}><X size={14} color="#E60000" /></button>
+              <button onClick={() => setEditing(false)}><X size={14} color="#8B1E3A" /></button>
             </div>
           ) : (
             <>
               <p className="text-sm font-bold truncate" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>{sub.name}</p>
-              <span className="text-[10px]" style={{ color: sub.isVisible ? '#10B981' : '#E60000' }}>{sub.isVisible ? '\u0638\u0627\u0647\u0631' : '\u0645\u062E\u0641\u064A'}</span>
+              <span className="text-[10px]" style={{ color: sub.isVisible ? '#10B981' : '#8B1E3A' }}>{sub.isVisible ? '\u0638\u0627\u0647\u0631' : '\u0645\u062E\u0641\u064A'}</span>
             </>
           )}
         </div>
@@ -241,7 +241,7 @@ function SubSectionItem({ sub, isDark, onToggle, onDelete, onIconChange, onEditN
           <button onClick={() => onToggle(sub.id)}>
             {sub.isVisible ? <ToggleRight size={22} color="#10B981" /> : <ToggleLeft size={22} color={isDark ? '#444' : '#CCC'} />}
           </button>
-          <button onClick={() => onDelete(sub.id)}><Trash2 size={14} color="#E60000" /></button>
+          <button onClick={() => onDelete(sub.id)}><Trash2 size={14} color="#8B1E3A" /></button>
         </div>
       </div>
     </div>
@@ -323,7 +323,7 @@ export default function OwnerScreen() {
 
   // Entertainment management (enhanced)
   const [showAddOwnerProvider, setShowAddOwnerProvider] = useState(false);
-  const [newOwnerProvider, setNewOwnerProvider] = useState({ name: '', color: '#E60000', categoryId: 'entertainment', inputLabel: '', inputType: 'text' as 'phone' | 'text', inputPrefix: '', icon: '' });
+  const [newOwnerProvider, setNewOwnerProvider] = useState({ name: '', color: '#8B1E3A', categoryId: 'wallet-services', inputLabel: '', inputType: 'text' as 'phone' | 'text', inputPrefix: '', icon: '' });
   const [showAddOwnerPackage, setShowAddOwnerPackage] = useState(false);
   const [newOwnerPackage, setNewOwnerPackage] = useState({ name: '', price: 0, currency: 'YER' as 'YER' | 'SAR' | 'USD', providerId: '', executionType: 'manual' as 'manual' | 'auto' });
   const [editingOwnerProduct, setEditingOwnerProduct] = useState<string | null>(null);
@@ -686,7 +686,7 @@ export default function OwnerScreen() {
           id: key,
           categoryId: val.categoryId || '',
           name: val.name || '',
-          color: val.color || '#E60000',
+          color: val.color || '#8B1E3A',
           icon: val.icon || '',
           isActive: val.isActive !== false,
           inputLabel: val.inputLabel || '',
@@ -1037,7 +1037,7 @@ export default function OwnerScreen() {
                 <div className="grid grid-cols-2 gap-3">
                   {[
                     { label: '\u0625\u062C\u0645\u0627\u0644\u064A \u0627\u0644\u0645\u0633\u062A\u062E\u062F\u0645\u064A\u0646', value: overviewStats.totalUsers, icon: Users, color: '#8B5CF6', bg: 'rgba(139,92,246,0.12)' },
-                    { label: '\u0627\u0644\u0625\u064A\u0631\u0627\u062F\u0627\u062A (\u0631.\u064A)', value: overviewStats.revenueYER, icon: DollarSign, color: '#E60000', bg: 'rgba(230,0,0,0.12)' },
+                    { label: '\u0627\u0644\u0625\u064A\u0631\u0627\u062F\u0627\u062A (\u0631.\u064A)', value: overviewStats.revenueYER, icon: DollarSign, color: '#8B1E3A', bg: 'rgba(139,30,58,0.12)' },
                     { label: '\u0627\u0644\u0645\u0632\u0648\u062F\u0648\u0646 \u0627\u0644\u0646\u0634\u0637\u0648\u0646', value: overviewStats.activeProviders, icon: Server, color: '#10B981', bg: 'rgba(16,185,129,0.12)' },
                     { label: '\u0635\u062D\u0629 \u0627\u0644\u0646\u0638\u0627\u0645', value: overviewStats.systemHealth, icon: Activity, color: '#3B82F6', bg: 'rgba(59,130,246,0.12)' },
                   ].map((stat, i) => {
@@ -1065,7 +1065,7 @@ export default function OwnerScreen() {
                   </div>
                   <div className="space-y-2">
                     {[
-                      { label: '\u0631\u064A\u0627\u0644 \u064A\u0645\u0646\u064A', value: overviewStats.revenueYER, color: '#E60000' },
+                      { label: '\u0631\u064A\u0627\u0644 \u064A\u0645\u0646\u064A', value: overviewStats.revenueYER, color: '#8B1E3A' },
                       { label: '\u0631\u064A\u0627\u0644 \u0633\u0639\u0648\u062F\u064A', value: overviewStats.revenueSAR, color: '#10B981' },
                       { label: '\u062F\u0648\u0644\u0627\u0631 \u0623\u0645\u0631\u064A\u0643\u064A', value: overviewStats.revenueUSD, color: '#3B82F6' },
                     ].map((item) => (
@@ -1096,8 +1096,8 @@ export default function OwnerScreen() {
                       <div key={item.label} className="flex items-center justify-between py-2 px-3 rounded-xl" style={{ background: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)' }}>
                         <span className="text-xs" style={{ color: isDark ? '#AAA' : '#666' }}>{item.label}</span>
                         <div className="flex items-center gap-1.5">
-                          <div className="w-2 h-2 rounded-full" style={{ background: item.status ? '#10B981' : '#E60000' }} />
-                          <span className="text-[10px] font-medium" style={{ color: item.status ? '#10B981' : '#E60000' }}>{item.status ? '\u0639\u0645\u0644' : '\u0645\u0639\u0637\u0644'}</span>
+                          <div className="w-2 h-2 rounded-full" style={{ background: item.status ? '#10B981' : '#8B1E3A' }} />
+                          <span className="text-[10px] font-medium" style={{ color: item.status ? '#10B981' : '#8B1E3A' }}>{item.status ? '\u0639\u0645\u0644' : '\u0645\u0639\u0637\u0644'}</span>
                         </div>
                       </div>
                     ))}
@@ -1307,7 +1307,7 @@ export default function OwnerScreen() {
                   {visibilityTab === 'sections' && (
                     <div className="space-y-2">
                       {[
-                        { key: 'telecom', label: 'الاتصالات', icon: Smartphone, color: '#E60000' },
+                        { key: 'telecom', label: 'الاتصالات', icon: Smartphone, color: '#8B1E3A' },
                         { key: 'internet', label: 'الإنترنت', icon: Wifi, color: '#3B82F6' },
                         { key: 'entertainment', label: 'الخدمات الترفيهية', icon: Gamepad2, color: '#F59E0B' },
                         { key: 'cards', label: 'البطاقات الرقمية', icon: CreditCard, color: '#8B5CF6' },
@@ -1330,7 +1330,7 @@ export default function OwnerScreen() {
                               </div>
                               <div>
                                 <p className="text-sm font-medium" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>{section.label}</p>
-                                <p className="text-[10px]" style={{ color: isVisible ? '#10B981' : '#E60000' }}>{isVisible ? 'ظاهر' : 'مخفي'}</p>
+                                <p className="text-[10px]" style={{ color: isVisible ? '#10B981' : '#8B1E3A' }}>{isVisible ? 'ظاهر' : 'مخفي'}</p>
                               </div>
                             </div>
                             <button onClick={() => {
@@ -1401,7 +1401,7 @@ export default function OwnerScreen() {
                               </div>
                               <div>
                                 <p className="text-sm font-medium" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>{feature.label}</p>
-                                <p className="text-[10px]" style={{ color: isVisible ? '#10B981' : '#E60000' }}>{isVisible ? 'مفعّل' : 'معطّل'}</p>
+                                <p className="text-[10px]" style={{ color: isVisible ? '#10B981' : '#8B1E3A' }}>{isVisible ? 'مفعّل' : 'معطّل'}</p>
                               </div>
                             </div>
                             <button onClick={() => {
@@ -1480,7 +1480,7 @@ export default function OwnerScreen() {
                 {/* Providers Tab */}
                 {ownerEntertainmentTab === 'providers' && (
                   <>
-                    {ownerProviders.filter(p => p.categoryId === 'entertainment' || p.categoryId === 'cards').map((provider) => {
+                    {ownerProviders.filter(p => p.categoryId === 'wallet-services' || p.categoryId === 'entertainment' || p.categoryId === 'cards').map((provider) => {
                       const providerProducts = ownerPackages.filter(p => p.providerId === provider.id);
                       return (
                         <div key={provider.id} className="rounded-2xl overflow-hidden" style={cardStyle}>
@@ -1500,13 +1500,13 @@ export default function OwnerScreen() {
                             <button onClick={async () => {
                               try { await remove(ref(database, `providers/${provider.id}`)); } catch {}
                             }} className="mr-1">
-                              <Trash2 size={16} color="#E60000" />
+                              <Trash2 size={16} color="#8B1E3A" />
                             </button>
                           </div>
                         </div>
                       );
                     })}
-                    {ownerProviders.filter(p => p.categoryId === 'entertainment' || p.categoryId === 'cards').length === 0 && (
+                    {ownerProviders.filter(p => p.categoryId === 'wallet-services' || p.categoryId === 'entertainment' || p.categoryId === 'cards').length === 0 && (
                       <div className="flex flex-col items-center py-8"><Gamepad2 size={40} strokeWidth={1.5} color={isDark ? '#333' : '#DDD'} /><p className="text-sm mt-2" style={{ color: isDark ? '#666' : '#AAA' }}>لا توجد خدمات ترفيهية</p></div>
                     )}
                   </>
@@ -1515,7 +1515,7 @@ export default function OwnerScreen() {
                 {/* Products Tab */}
                 {ownerEntertainmentTab === 'products' && (
                   <>
-                    {ownerProviders.filter(p => p.categoryId === 'entertainment' || p.categoryId === 'cards').map((provider) => {
+                    {ownerProviders.filter(p => p.categoryId === 'wallet-services' || p.categoryId === 'entertainment' || p.categoryId === 'cards').map((provider) => {
                       const providerProducts = ownerPackages.filter(p => p.providerId === provider.id && (!ownerProductSearch || p.name.toLowerCase().includes(ownerProductSearch.toLowerCase())));
                       if (providerProducts.length === 0 && !ownerProductSearch) return null;
                       return (
@@ -1548,7 +1548,7 @@ export default function OwnerScreen() {
                                           setEditingOwnerProduct(null);
                                         } catch {}
                                       }}><CheckCircle2 size={16} color="#10B981" /></button>
-                                      <button onClick={() => setEditingOwnerProduct(null)}><X size={16} color="#E60000" /></button>
+                                      <button onClick={() => setEditingOwnerProduct(null)}><X size={16} color="#8B1E3A" /></button>
                                     </div>
                                   ) : (
                                     <>
@@ -1570,7 +1570,7 @@ export default function OwnerScreen() {
                                     }}><Edit3 size={14} color={isDark ? '#888' : '#AAA'} /></button>
                                     <button onClick={async () => {
                                       try { await remove(ref(database, `packages/${product.id}`)); } catch {}
-                                    }}><Trash2 size={14} color="#E60000" /></button>
+                                    }}><Trash2 size={14} color="#8B1E3A" /></button>
                                     <button onClick={async () => {
                                       try { await update(ref(database, `packages/${product.id}`), { isActive: !product.isActive }); } catch {}
                                     }}>
@@ -1620,7 +1620,7 @@ export default function OwnerScreen() {
                             ...newOwnerProvider,
                             isActive: true,
                           });
-                          setNewOwnerProvider({ name: '', color: '#E60000', categoryId: 'entertainment', inputLabel: '', inputType: 'text', inputPrefix: '', icon: '' });
+                          setNewOwnerProvider({ name: '', color: '#8B1E3A', categoryId: 'wallet-services', inputLabel: '', inputType: 'text', inputPrefix: '', icon: '' });
                           const logId = generateReference();
                           set(ref(database, `ownerSettings/activityLog/${logId}`), {
                             id: logId, type: 'admin', action: `تم إضافة مزود جديد: ${newOwnerProvider.name}`,
@@ -1638,7 +1638,7 @@ export default function OwnerScreen() {
                       </div>
                       <select value={newOwnerPackage.providerId} onChange={(e) => setNewOwnerPackage({ ...newOwnerPackage, providerId: e.target.value })} className="w-full px-3 py-2.5 rounded-xl text-sm outline-none" style={inputStyle}>
                         <option value="">اختر المزود</option>
-                        {ownerProviders.filter(p => p.categoryId === 'entertainment' || p.categoryId === 'cards').map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                        {ownerProviders.filter(p => p.categoryId === 'wallet-services' || p.categoryId === 'entertainment' || p.categoryId === 'cards').map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
                       </select>
                       <input type="text" placeholder="اسم المنتج" value={newOwnerPackage.name} onChange={(e) => setNewOwnerPackage({ ...newOwnerPackage, name: e.target.value })} className="w-full px-3 py-2.5 rounded-xl text-sm outline-none" style={inputStyle} />
                       <div className="flex gap-2">
@@ -1818,7 +1818,7 @@ export default function OwnerScreen() {
                         </button>
                         <button onClick={async () => {
                           try { await remove(ref(database, `promo-codes/${c.id}`)); } catch {}
-                        }}><Trash2 size={16} color="#E60000" /></button>
+                        }}><Trash2 size={16} color="#8B1E3A" /></button>
                       </div>
                     </div>
                     <div className="flex items-center gap-3 mb-2">
@@ -1864,7 +1864,7 @@ export default function OwnerScreen() {
                   const statusStyles: Record<string, { bg: string; color: string; label: string }> = {
                     pending: { bg: 'rgba(245,158,11,0.15)', color: '#F59E0B', label: 'قيد الانتظار' },
                     completed: { bg: 'rgba(16,185,129,0.15)', color: '#10B981', label: 'مكتمل' },
-                    cancelled: { bg: 'rgba(230,0,0,0.15)', color: '#E60000', label: 'ملغى' },
+                    cancelled: { bg: 'rgba(139,30,58,0.15)', color: '#8B1E3A', label: 'ملغى' },
                   };
                   const ss = statusStyles[order.status] || statusStyles.pending;
                   return (
@@ -1908,7 +1908,7 @@ export default function OwnerScreen() {
                                 await update(userRef, { [balanceField]: currentBalance + order.amount });
                               }
                             } catch {}
-                          }} className="flex-1 flex items-center justify-center gap-1 py-2.5 rounded-xl text-xs font-bold" style={{ background: 'rgba(230,0,0,0.1)', color: '#E60000' }}>
+                          }} className="flex-1 flex items-center justify-center gap-1 py-2.5 rounded-xl text-xs font-bold" style={{ background: 'rgba(139,30,58,0.1)', color: '#8B1E3A' }}>
                             <XCircle size={14} /> إلغاء
                           </motion.button>
                         </div>
@@ -1963,7 +1963,7 @@ export default function OwnerScreen() {
                         try {
                           await update(ref(database, `users/${u.id}`), { kycStatus: 'rejected' });
                         } catch {}
-                      }} className="flex-1 flex items-center justify-center gap-1 py-2.5 rounded-xl text-xs font-bold" style={{ background: 'rgba(230,0,0,0.1)', color: '#E60000' }}>
+                      }} className="flex-1 flex items-center justify-center gap-1 py-2.5 rounded-xl text-xs font-bold" style={{ background: 'rgba(139,30,58,0.1)', color: '#8B1E3A' }}>
                         <UserX size={14} /> رفض
                       </motion.button>
                     </div>
@@ -2167,17 +2167,17 @@ export default function OwnerScreen() {
                 {filteredAdminUsers.map((adminUser) => (
                   <div key={adminUser.id} className="rounded-2xl p-4" style={cardStyle}>
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: adminUser.role === 'owner' ? 'rgba(139,92,246,0.15)' : 'rgba(230,0,0,0.1)' }}>
-                        {adminUser.role === 'owner' ? <Crown size={18} color="#8B5CF6" /> : <ShieldCheck size={18} color="#E60000" />}
+                      <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: adminUser.role === 'owner' ? 'rgba(139,92,246,0.15)' : 'rgba(139,30,58,0.1)' }}>
+                        {adminUser.role === 'owner' ? <Crown size={18} color="#8B5CF6" /> : <ShieldCheck size={18} color="#8B1E3A" />}
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
                           <p className="text-sm font-bold truncate" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>{adminUser.name}</p>
-                          <span className="text-[10px] px-1.5 py-0.5 rounded" style={{ background: adminUser.role === 'owner' ? 'rgba(139,92,246,0.15)' : 'rgba(230,0,0,0.1)', color: adminUser.role === 'owner' ? '#8B5CF6' : '#E60000' }}>
+                          <span className="text-[10px] px-1.5 py-0.5 rounded" style={{ background: adminUser.role === 'owner' ? 'rgba(139,92,246,0.15)' : 'rgba(139,30,58,0.1)', color: adminUser.role === 'owner' ? '#8B5CF6' : '#8B1E3A' }}>
                             {adminUser.role === 'owner' ? '\u0645\u0627\u0644\u0643' : '\u0623\u062F\u0645\u0646'}
                           </span>
                           {adminUser.isBlocked && (
-                            <span className="text-[10px] px-1.5 py-0.5 rounded" style={{ background: 'rgba(230,0,0,0.15)', color: '#E60000' }}>{'\u0645\u062D\u0638\u0648\u0631'}</span>
+                            <span className="text-[10px] px-1.5 py-0.5 rounded" style={{ background: 'rgba(139,30,58,0.15)', color: '#8B1E3A' }}>{'\u0645\u062D\u0638\u0648\u0631'}</span>
                           )}
                         </div>
                         <p className="text-xs" style={{ color: isDark ? '#666' : '#AAA' }} dir="ltr">{adminUser.email}</p>
@@ -2190,7 +2190,7 @@ export default function OwnerScreen() {
                         )}
                         {adminUser.role !== 'owner' && (
                           <button onClick={() => handleToggleBlockAdmin(adminUser)}>
-                            {adminUser.isBlocked ? <Unlock size={16} color="#10B981" /> : <Ban size={16} color="#E60000" />}
+                            {adminUser.isBlocked ? <Unlock size={16} color="#10B981" /> : <Ban size={16} color="#8B1E3A" />}
                           </button>
                         )}
                       </div>
@@ -2302,7 +2302,7 @@ export default function OwnerScreen() {
                       {appIcon ? (
                         <img src={appIcon} alt="App Icon" className="w-full h-full object-cover" />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center" style={{ background: '#E60000' }}>
+                        <div className="w-full h-full flex items-center justify-center" style={{ background: '#8B1E3A' }}>
                           <span className="text-white text-2xl font-bold">{'\u0627\u0644\u062C\u0646\u0648\u0628'}</span>
                         </div>
                       )}
@@ -2351,7 +2351,7 @@ export default function OwnerScreen() {
                     <div 
                       className="w-full h-48 rounded-2xl overflow-hidden flex items-center justify-center" 
                       style={{ 
-                        background: '#E60000',
+                        background: '#8B1E3A',
                         boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
                       }}
                     >

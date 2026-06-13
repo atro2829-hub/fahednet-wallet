@@ -29,7 +29,7 @@ export default function EmptyState({
   description,
   actionLabel,
   onAction,
-  iconColor = '#E60000',
+  iconColor = '#8B1E3A',
   className = '',
 }: EmptyStateProps) {
   const { theme } = useTheme();

@@ -35,6 +35,9 @@ import {
   Palette,
   Zap,
   Package,
+  Bot,
+  Smartphone,
+  Sparkles,
 } from 'lucide-react';
 import { signOut } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
@@ -61,6 +64,8 @@ const navItems: NavItem[] = [
   { id: 'kyc', label: 'التحقق من الهوية', icon: Shield, roles: ['admin', 'owner'] },
   { id: 'providers', label: 'المزودون والباقات', icon: Server, roles: ['admin', 'owner'] },
   { id: 'instant-recharge', label: 'خدمات الشحن الفوري', icon: Zap, roles: ['admin', 'owner'] },
+  { id: 'network-prefixes', label: 'كشف الشبكة التلقائي', icon: Smartphone, roles: ['admin', 'owner'] },
+  { id: 'bots', label: 'إدارة البوتات', icon: Bot, roles: ['admin', 'owner'] },
   { id: 'packages', label: 'إدارة الباقات', icon: Package, roles: ['admin', 'owner'] },
   { id: 'exchange-rates', label: 'أسعار الصرف', icon: DollarSign, roles: ['admin', 'owner'] },
   { id: 'commissions', label: 'ضبط العمولات', icon: Percent, roles: ['admin', 'owner'] },
@@ -75,6 +80,7 @@ const navItems: NavItem[] = [
   { id: 'legal-content', label: 'المحتوى القانوني', icon: FileText, roles: ['admin', 'owner'] },
   { id: 'notifications', label: 'الإشعارات', icon: Bell, roles: ['admin', 'owner'] },
   { id: 'push-notifications', label: 'إرسال إشعارات', icon: Send, roles: ['admin', 'owner'] },
+  { id: 'advanced-notifications', label: 'الإشعارات المتقدمة', icon: Sparkles, roles: ['admin', 'owner'] },
   { id: 'settings', label: 'الإعدادات', icon: Settings, roles: ['admin', 'owner'] },
   // Owner-only sections - admin CANNOT see these at all
   { id: 'card-colors', label: 'ألوان البطائق', icon: Palette, roles: ['owner'] },

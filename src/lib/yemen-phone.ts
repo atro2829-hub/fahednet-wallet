@@ -15,28 +15,28 @@ export const yemenProviders: PhoneProvider[] = [
     name: 'يمن موبايل',
     nameEn: 'Yemen Mobile',
     color: '#C41E3A',
-    prefixes: ['770', '771', '772', '773', '777', '778'],
+    prefixes: ['770', '771', '772', '773', '777', '778', '780', '781', '782', '783', '784', '785', '786', '787', '788', '789', '730', '731', '732', '733', '734', '735', '736', '737', '738', '739', '700', '701', '702', '703', '704', '705', '706', '707', '708', '709'],
   },
   {
     id: 'yo',
     name: 'يو',
     nameEn: 'YO',
     color: '#FF6B00',
-    prefixes: ['774', '775', '776'],
+    prefixes: ['710', '711', '712', '713', '714', '715', '716', '717', '718', '719', '750', '751', '752', '753', '754', '755', '756', '757', '758', '759'],
   },
   {
     id: 'sabafon',
     name: 'سبأفون',
     nameEn: 'Sabafon',
     color: '#2563EB',
-    prefixes: ['770', '771'], // Some 770/771 are Sabafon
+    prefixes: ['740', '741', '742', '743', '744', '745', '746', '747', '748', '749', '760', '761', '762', '763', '764', '765', '766', '767', '768', '769'],
   },
   {
     id: 'y',
     name: 'واي',
     nameEn: 'Y',
     color: '#059669',
-    prefixes: ['779'],
+    prefixes: ['720', '721', '722', '723', '724', '725', '726', '727', '728', '729', '790', '791', '792', '793', '794', '795', '796', '797', '798', '799'],
   },
 ];
 
@@ -69,9 +69,9 @@ export function isValidYemeniPhone(phone: string): boolean {
   // Must be exactly 9 digits starting with 7
   if (!/^7\d{8}$/.test(localNumber)) return false;
   
-  // Must start with valid prefix (77X)
-  const prefix = localNumber.slice(0, 3);
-  if (!prefix.startsWith('77')) return false;
+  // Must start with valid prefix (7X)
+  const prefix = localNumber.slice(0, 2);
+  if (!['70', '71', '72', '73', '74', '75', '76', '77', '78', '79'].includes(prefix)) return false;
   
   return true;
 }
@@ -122,18 +122,20 @@ export function getProviderFromPhone(phone: string): string {
   
   if (localNumber.length < 3) return '';
   
-  const prefix = localNumber.slice(0, 3);
+  const prefix3 = localNumber.slice(0, 3);
+  const prefix2 = localNumber.slice(0, 2);
   
-  // Check providers in order of specificity
-  // واي (Y) - 779 only
-  if (prefix === '779') return 'y';
+  // واي (Y) - 72X, 79X
+  if (prefix2 === '72' || prefix2 === '79') return 'y';
   
-  // يو (YO) - 774, 775, 776
-  if (['774', '775', '776'].includes(prefix)) return 'yo';
+  // يو (YO) - 71X, 75X
+  if (prefix2 === '71' || prefix2 === '75') return 'yo';
   
-  // يمن موبايل (Yemen Mobile) - 770, 771, 772, 773, 777, 778
-  // Note: 770/771 can also be سبأفون but Yemen Mobile is more common
-  if (['770', '771', '772', '773', '777', '778'].includes(prefix)) return 'yemen-mobile';
+  // سبأفون (Sabafon) - 74X, 76X
+  if (prefix2 === '74' || prefix2 === '76') return 'sabafon';
+  
+  // يمن موبايل (Yemen Mobile) - 77X, 78X, 73X, 70X
+  if (['77', '78', '73', '70'].includes(prefix2)) return 'yemen-mobile';
   
   return '';
 }
@@ -228,8 +230,8 @@ export function getPhoneValidationMessage(phone: string): string {
   if (!local.startsWith('7')) return 'يجب أن يبدأ الرقم بـ 7';
   if (local.length < 3) return '';
   
-  const prefix = local.slice(0, 3);
-  if (!prefix.startsWith('77')) return 'بادئة غير صالحة';
+  const prefix = local.slice(0, 2);
+  if (!['70', '71', '72', '73', '74', '75', '76', '77', '78', '79'].includes(prefix)) return 'بادئة غير صالحة';
   
   if (local.length < 9) return `أدخل ${9 - local.length} أرقام أخرى`;
   if (local.length > 9) return 'الرقم طويل جداً';

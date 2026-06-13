@@ -11,6 +11,10 @@ import {
   type InvestmentPlan,
   type ServiceProvider,
   type ProductPackage,
+  type FeatureFlags,
+  type TransactionLimits,
+  defaultFeatureFlags,
+  defaultTransactionLimits,
 } from '@/lib/store';
 
 // ─── Types for settings NOT yet in the Zustand store ───────────────────────
@@ -57,6 +61,8 @@ const PATHS = {
   visibility: 'adminSettings/visibility',
   investmentPlans: 'adminSettings/investmentPlans',
   exchangeRates: 'adminSettings/exchangeRates',
+  features: 'adminSettings/features',
+  limits: 'adminSettings/limits',
   socialLinks: 'adminSettings/socialLinks',
   banners: 'adminSettings/banners',
   sections: 'ownerSettings/sections',
@@ -141,8 +147,8 @@ export function useAdminSettings() {
     [],
   );
 
-  // ─── Set up all listeners ──────────────────────────────────────────────
-  const setupListeners = useCallback(() => {
+  // ─── Set up listeners that require authentication ──────────────────────
+  const setupAuthenticatedListeners = useCallback(() => {
     const store = useAppStore.getState();
 
     // 1. Card colors
@@ -153,19 +159,7 @@ export function useAdminSettings() {
       }
     });
 
-    // 2. Maintenance mode
-    attachListener('maintenance', PATHS.maintenance, (snapshot) => {
-      const data = snapshot.val();
-      store.setMaintenance(data as MaintenanceMode | null);
-    });
-
-    // 3. Force update
-    attachListener('forceUpdate', PATHS.forceUpdate, (snapshot) => {
-      const data = snapshot.val();
-      store.setForceUpdate(data as ForceUpdate | null);
-    });
-
-    // 4. Visibility settings
+    // 2. Visibility settings
     attachListener('visibility', PATHS.visibility, (snapshot) => {
       const data = snapshot.val();
       if (data) {
@@ -179,12 +173,10 @@ export function useAdminSettings() {
       }
     });
 
-    // 5. Investment plans
+    // 3. Investment plans
     attachListener('investmentPlans', PATHS.investmentPlans, (snapshot) => {
       const data = snapshot.val();
       if (data) {
-        // Firebase stores arrays as objects with numeric keys sometimes;
-        // normalise to a flat array of InvestmentPlan
         const plans: InvestmentPlan[] = Array.isArray(data)
           ? data.filter(Boolean)
           : Object.values(data).filter(Boolean);
@@ -194,7 +186,7 @@ export function useAdminSettings() {
       }
     });
 
-    // 6. Exchange rates
+    // 4. Exchange rates
     attachListener('exchangeRates', PATHS.exchangeRates, (snapshot) => {
       const data = snapshot.val();
       if (data) {
@@ -206,7 +198,7 @@ export function useAdminSettings() {
       }
     });
 
-    // 7. Social links
+    // 5. Social links
     attachListener('socialLinks', PATHS.socialLinks, (snapshot) => {
       const data = snapshot.val();
       if (data) {
@@ -220,30 +212,27 @@ export function useAdminSettings() {
       }
     });
 
-    // 8. Banners
+    // 6. Banners
     attachListener('banners', PATHS.banners, (snapshot) => {
       const data = snapshot.val();
       setBanners(parseBanners(data));
     });
 
-    // 9. Sections / categories (owner settings)
+    // 7. Sections / categories (owner settings)
     attachListener('sections', PATHS.sections, (snapshot) => {
       const data = snapshot.val();
       setSections(parseSections(data));
     });
 
-    // 10. Providers (from Firebase)
-    // IMPORTANT: Use Firebase key as the provider ID (not the stored `id` field)
-    // because the stored `id` may contain Firebase push IDs from south-admin,
-    // while the Firebase key IS the correct human-readable ID (e.g., 'pubg', 'freefire')
+    // 8. Providers (from Firebase)
     attachListener('providers', PATHS.providers, (snapshot) => {
       const data = snapshot.val();
       if (data) {
         const entries = Object.entries(data) as [string, any][];
         const providers: ServiceProvider[] = entries
-          .filter(([key, p]) => p && p.name) // skip ghost/corrupted entries
+          .filter(([key, p]) => p && p.name)
           .map(([key, p]) => ({
-            id: key, // Use Firebase key as the canonical ID
+            id: key,
             categoryId: p.categoryId || 'telecom',
             name: p.name || '',
             color: p.color || '#6C3CE1',
@@ -257,7 +246,7 @@ export function useAdminSettings() {
       }
     });
 
-    // 11. Packages (from Firebase)
+    // 9. Packages (from Firebase)
     attachListener('packages', PATHS.packages, (snapshot) => {
       const data = snapshot.val();
       if (data) {
@@ -276,7 +265,105 @@ export function useAdminSettings() {
         store.setPackages(packages);
       }
     });
+
+    // 10. Feature flags (from admin)
+    attachListener('features', PATHS.features, (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        const flags: Partial<FeatureFlags> = {};
+        // Map Firebase keys to FeatureFlags, defaulting to true for booleans
+        if (data.transfersEnabled !== undefined) flags.transfersEnabled = !!data.transfersEnabled;
+        if (data.depositsEnabled !== undefined) flags.depositsEnabled = !!data.depositsEnabled;
+        if (data.withdrawalsEnabled !== undefined) flags.withdrawalsEnabled = !!data.withdrawalsEnabled;
+        if (data.exchangeEnabled !== undefined) flags.exchangeEnabled = !!data.exchangeEnabled;
+        if (data.servicesEnabled !== undefined) flags.servicesEnabled = !!data.servicesEnabled;
+        if (data.rechargeEnabled !== undefined) flags.rechargeEnabled = !!data.rechargeEnabled;
+        if (data.billsEnabled !== undefined) flags.billsEnabled = !!data.billsEnabled;
+        if (data.investmentEnabled !== undefined) flags.investmentEnabled = !!data.investmentEnabled;
+        if (data.cryptoEnabled !== undefined) flags.cryptoEnabled = !!data.cryptoEnabled;
+        if (data.giftCodesEnabled !== undefined) flags.giftCodesEnabled = !!data.giftCodesEnabled;
+        if (data.qrPaymentsEnabled !== undefined) flags.qrPaymentsEnabled = !!data.qrPaymentsEnabled;
+        if (data.referralEnabled !== undefined) flags.referralEnabled = !!data.referralEnabled;
+        if (data.notificationsEnabled !== undefined) flags.notificationsEnabled = !!data.notificationsEnabled;
+        if (data.biometricEnabled !== undefined) flags.biometricEnabled = !!data.biometricEnabled;
+        if (data.pinEnabled !== undefined) flags.pinEnabled = !!data.pinEnabled;
+        if (data.darkModeEnabled !== undefined) flags.darkModeEnabled = !!data.darkModeEnabled;
+        if (data.maintenanceMode !== undefined) flags.maintenanceMode = !!data.maintenanceMode;
+        if (data.maintenanceMessage !== undefined) flags.maintenanceMessage = String(data.maintenanceMessage || '');
+        if (data.registrationEnabled !== undefined) flags.registrationEnabled = !!data.registrationEnabled;
+        store.setFeatureFlags(flags);
+      } else {
+        // No features data in Firebase — use defaults (all enabled)
+        store.setFeatureFlags(defaultFeatureFlags);
+      }
+    });
+
+    // 11. Transaction limits (from admin)
+    attachListener('limits', PATHS.limits, (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        const limits: Partial<TransactionLimits> = {};
+        if (data.maxSingleTransfer !== undefined) limits.maxSingleTransfer = Number(data.maxSingleTransfer) || defaultTransactionLimits.maxSingleTransfer;
+        if (data.maxDailyTransfer !== undefined) limits.maxDailyTransfer = Number(data.maxDailyTransfer) || defaultTransactionLimits.maxDailyTransfer;
+        if (data.maxMonthlyTransfer !== undefined) limits.maxMonthlyTransfer = Number(data.maxMonthlyTransfer) || defaultTransactionLimits.maxMonthlyTransfer;
+        if (data.maxSingleDeposit !== undefined) limits.maxSingleDeposit = Number(data.maxSingleDeposit) || defaultTransactionLimits.maxSingleDeposit;
+        if (data.maxDailyDeposit !== undefined) limits.maxDailyDeposit = Number(data.maxDailyDeposit) || defaultTransactionLimits.maxDailyDeposit;
+        if (data.maxBalance !== undefined) limits.maxBalance = Number(data.maxBalance) || defaultTransactionLimits.maxBalance;
+        store.setTransactionLimits(limits);
+      } else {
+        // No limits data in Firebase — use defaults
+        store.setTransactionLimits(defaultTransactionLimits);
+      }
+    });
   }, [attachListener, parseBanners, parseSections]);
+
+  // ─── Set up global listeners (always active, even without auth) ────────
+  const setupGlobalListeners = useCallback(() => {
+    const store = useAppStore.getState();
+
+    // Maintenance mode - ALWAYS listen, even when not authenticated
+    attachListener('maintenance', PATHS.maintenance, (snapshot) => {
+      const data = snapshot.val();
+      store.setMaintenance(data as MaintenanceMode | null);
+    });
+
+    // Force update - ALWAYS listen, even when not authenticated
+    attachListener('forceUpdate', PATHS.forceUpdate, (snapshot) => {
+      const data = snapshot.val();
+      store.setForceUpdate(data as ForceUpdate | null);
+    });
+
+    // Feature flags - ALWAYS listen, even when not authenticated
+    // This ensures maintenance mode from feature flags works immediately
+    attachListener('featuresGlobal', PATHS.features, (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        const flags: Partial<FeatureFlags> = {};
+        if (data.transfersEnabled !== undefined) flags.transfersEnabled = !!data.transfersEnabled;
+        if (data.depositsEnabled !== undefined) flags.depositsEnabled = !!data.depositsEnabled;
+        if (data.withdrawalsEnabled !== undefined) flags.withdrawalsEnabled = !!data.withdrawalsEnabled;
+        if (data.exchangeEnabled !== undefined) flags.exchangeEnabled = !!data.exchangeEnabled;
+        if (data.servicesEnabled !== undefined) flags.servicesEnabled = !!data.servicesEnabled;
+        if (data.rechargeEnabled !== undefined) flags.rechargeEnabled = !!data.rechargeEnabled;
+        if (data.billsEnabled !== undefined) flags.billsEnabled = !!data.billsEnabled;
+        if (data.investmentEnabled !== undefined) flags.investmentEnabled = !!data.investmentEnabled;
+        if (data.cryptoEnabled !== undefined) flags.cryptoEnabled = !!data.cryptoEnabled;
+        if (data.giftCodesEnabled !== undefined) flags.giftCodesEnabled = !!data.giftCodesEnabled;
+        if (data.qrPaymentsEnabled !== undefined) flags.qrPaymentsEnabled = !!data.qrPaymentsEnabled;
+        if (data.referralEnabled !== undefined) flags.referralEnabled = !!data.referralEnabled;
+        if (data.notificationsEnabled !== undefined) flags.notificationsEnabled = !!data.notificationsEnabled;
+        if (data.biometricEnabled !== undefined) flags.biometricEnabled = !!data.biometricEnabled;
+        if (data.pinEnabled !== undefined) flags.pinEnabled = !!data.pinEnabled;
+        if (data.darkModeEnabled !== undefined) flags.darkModeEnabled = !!data.darkModeEnabled;
+        if (data.maintenanceMode !== undefined) flags.maintenanceMode = !!data.maintenanceMode;
+        if (data.maintenanceMessage !== undefined) flags.maintenanceMessage = String(data.maintenanceMessage || '');
+        if (data.registrationEnabled !== undefined) flags.registrationEnabled = !!data.registrationEnabled;
+        store.setFeatureFlags(flags);
+      } else {
+        store.setFeatureFlags(defaultFeatureFlags);
+      }
+    });
+  }, [attachListener]);
 
   // ─── Tear down all listeners ───────────────────────────────────────────
   const teardownListeners = useCallback(() => {
@@ -284,27 +371,52 @@ export function useAdminSettings() {
     unsubscribersRef.current.clear();
   }, []);
 
-  // ─── Lifecycle: attach / detach based on auth state ────────────────────
+  // ─── Tear down only authenticated listeners ────────────────────────────
+  const teardownAuthenticatedListeners = useCallback(() => {
+    const authKeys = ['cardColors', 'visibility', 'investmentPlans', 'exchangeRates', 'features', 'limits', 'socialLinks', 'banners', 'sections', 'providers', 'packages'];
+    authKeys.forEach((key) => {
+      const unsub = unsubscribersRef.current.get(key);
+      if (unsub) {
+        unsub();
+        unsubscribersRef.current.delete(key);
+      }
+    });
+  }, []);
+
+  // ─── Lifecycle: global listeners (always on) ───────────────────────────
+  useEffect(() => {
+    setupGlobalListeners();
+
+    return () => {
+      // Only tear down global listeners on unmount
+      const globalKeys = ['maintenance', 'forceUpdate', 'featuresGlobal'];
+      globalKeys.forEach((key) => {
+        const unsub = unsubscribersRef.current.get(key);
+        if (unsub) {
+          unsub();
+          unsubscribersRef.current.delete(key);
+        }
+      });
+    };
+  }, [setupGlobalListeners]);
+
+  // ─── Lifecycle: authenticated listeners (attach/detach on auth) ────────
   useEffect(() => {
     if (isAuthenticated) {
-      setIsLoading(true);
-      setupListeners();
+      setupAuthenticatedListeners();
       // Allow a short grace period for first callbacks to arrive
       const timer = setTimeout(() => setIsLoading(false), 1500);
       return () => {
         clearTimeout(timer);
-        teardownListeners();
+        teardownAuthenticatedListeners();
       };
     } else {
-      teardownListeners();
-      setIsLoading(false);
+      teardownAuthenticatedListeners();
     }
-  }, [isAuthenticated, setupListeners, teardownListeners]);
+  }, [isAuthenticated, setupAuthenticatedListeners, teardownAuthenticatedListeners]);
 
   // ─── Manual refresh (pull-to-refresh) ──────────────────────────────────
   const refreshAll = useCallback(async () => {
-    if (!isAuthenticated) return;
-
     setIsLoading(true);
     const store = useAppStore.getState();
 
@@ -429,11 +541,54 @@ export function useAdminSettings() {
           store.setPackages(packages);
         }
       }),
+
+      // 12. Feature flags
+      get(ref(database, PATHS.features)).then((snap) => {
+        const data = snap.val();
+        if (data) {
+          const flags: Partial<FeatureFlags> = {};
+          if (data.transfersEnabled !== undefined) flags.transfersEnabled = !!data.transfersEnabled;
+          if (data.depositsEnabled !== undefined) flags.depositsEnabled = !!data.depositsEnabled;
+          if (data.withdrawalsEnabled !== undefined) flags.withdrawalsEnabled = !!data.withdrawalsEnabled;
+          if (data.exchangeEnabled !== undefined) flags.exchangeEnabled = !!data.exchangeEnabled;
+          if (data.servicesEnabled !== undefined) flags.servicesEnabled = !!data.servicesEnabled;
+          if (data.rechargeEnabled !== undefined) flags.rechargeEnabled = !!data.rechargeEnabled;
+          if (data.billsEnabled !== undefined) flags.billsEnabled = !!data.billsEnabled;
+          if (data.investmentEnabled !== undefined) flags.investmentEnabled = !!data.investmentEnabled;
+          if (data.cryptoEnabled !== undefined) flags.cryptoEnabled = !!data.cryptoEnabled;
+          if (data.giftCodesEnabled !== undefined) flags.giftCodesEnabled = !!data.giftCodesEnabled;
+          if (data.qrPaymentsEnabled !== undefined) flags.qrPaymentsEnabled = !!data.qrPaymentsEnabled;
+          if (data.referralEnabled !== undefined) flags.referralEnabled = !!data.referralEnabled;
+          if (data.notificationsEnabled !== undefined) flags.notificationsEnabled = !!data.notificationsEnabled;
+          if (data.biometricEnabled !== undefined) flags.biometricEnabled = !!data.biometricEnabled;
+          if (data.pinEnabled !== undefined) flags.pinEnabled = !!data.pinEnabled;
+          if (data.darkModeEnabled !== undefined) flags.darkModeEnabled = !!data.darkModeEnabled;
+          if (data.maintenanceMode !== undefined) flags.maintenanceMode = !!data.maintenanceMode;
+          if (data.maintenanceMessage !== undefined) flags.maintenanceMessage = String(data.maintenanceMessage || '');
+          if (data.registrationEnabled !== undefined) flags.registrationEnabled = !!data.registrationEnabled;
+          store.setFeatureFlags(flags);
+        }
+      }),
+
+      // 13. Transaction limits
+      get(ref(database, PATHS.limits)).then((snap) => {
+        const data = snap.val();
+        if (data) {
+          const limits: Partial<TransactionLimits> = {};
+          if (data.maxSingleTransfer !== undefined) limits.maxSingleTransfer = Number(data.maxSingleTransfer) || defaultTransactionLimits.maxSingleTransfer;
+          if (data.maxDailyTransfer !== undefined) limits.maxDailyTransfer = Number(data.maxDailyTransfer) || defaultTransactionLimits.maxDailyTransfer;
+          if (data.maxMonthlyTransfer !== undefined) limits.maxMonthlyTransfer = Number(data.maxMonthlyTransfer) || defaultTransactionLimits.maxMonthlyTransfer;
+          if (data.maxSingleDeposit !== undefined) limits.maxSingleDeposit = Number(data.maxSingleDeposit) || defaultTransactionLimits.maxSingleDeposit;
+          if (data.maxDailyDeposit !== undefined) limits.maxDailyDeposit = Number(data.maxDailyDeposit) || defaultTransactionLimits.maxDailyDeposit;
+          if (data.maxBalance !== undefined) limits.maxBalance = Number(data.maxBalance) || defaultTransactionLimits.maxBalance;
+          store.setTransactionLimits(limits);
+        }
+      }),
     ];
 
     await Promise.allSettled(fetchPromises);
     setIsLoading(false);
-  }, [isAuthenticated, parseBanners, parseSections]);
+  }, [parseBanners, parseSections]);
 
   // ─── Return value ──────────────────────────────────────────────────────
 
@@ -445,6 +600,8 @@ export function useAdminSettings() {
   const exchangeRates = useAppStore((s) => s.exchangeRates);
   const providers = useAppStore((s) => s.providers);
   const packages = useAppStore((s) => s.packages);
+  const featureFlags = useAppStore((s) => s.featureFlags);
+  const transactionLimits = useAppStore((s) => s.transactionLimits);
 
   return {
     // Zustand-synced values
@@ -455,6 +612,8 @@ export function useAdminSettings() {
     exchangeRates,
     providers,
     packages,
+    featureFlags,
+    transactionLimits,
 
     // Local state (not in store yet)
     visibilitySettings,

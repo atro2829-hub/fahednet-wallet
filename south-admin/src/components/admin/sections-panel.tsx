@@ -17,13 +17,11 @@ import { motion } from 'framer-motion';
 
 const defaultSections = [
   { name: 'الاتصالات', iconKey: 'phone', order: 0, isVisible: true, categoryId: 'telecom' },
-  { name: 'الإنترنت', iconKey: 'wifi', order: 1, isVisible: true, categoryId: 'internet' },
-  { name: 'خدمات ترفيهية', iconKey: 'gamepad', order: 2, isVisible: true, categoryId: 'entertainment' },
-  { name: 'بطاقات رقمية', iconKey: 'credit-card', order: 3, isVisible: true, categoryId: 'cards' },
-  { name: 'الكهرباء والماء', iconKey: 'zap', order: 4, isVisible: true, categoryId: 'electricity' },
-  { name: 'خدمات حكومية', iconKey: 'landmark', order: 5, isVisible: true, categoryId: 'government' },
-  { name: 'الكريبتو', iconKey: 'bitcoin', order: 6, isVisible: true, categoryId: 'crypto' },
-  { name: 'استثمار الكريبتو', iconKey: 'trending-up', order: 7, isVisible: true, categoryId: 'investment' },
+  { name: 'خدمات ترفيهية', iconKey: 'gamepad', order: 1, isVisible: true, categoryId: 'entertainment' },
+  { name: 'بطاقات رقمية', iconKey: 'credit-card', order: 2, isVisible: true, categoryId: 'cards' },
+  { name: 'الكريبتو', iconKey: 'bitcoin', order: 3, isVisible: true, categoryId: 'crypto' },
+  { name: 'استثمار الكريبتو', iconKey: 'trending-up', order: 4, isVisible: true, categoryId: 'investment' },
+  { name: 'مزودين الخدمات', iconKey: 'layers', order: 5, isVisible: true, categoryId: 'service-providers' },
 ];
 
 export default function SectionsPanel() {
@@ -141,7 +139,7 @@ export default function SectionsPanel() {
     catch (e) { showToast('حدث خطأ', 'error'); }
   };
 
-  if (loading) return <div className="flex items-center justify-center min-h-[400px]"><div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" /></div>;
+  if (loading) return <div className="flex items-center justify-center min-h-[400px]"><div className="w-8 h-8 border-2 border-[#8B1E3A] border-t-transparent rounded-full animate-spin" /></div>;
 
   return (
     <div className="space-y-6">
@@ -184,7 +182,7 @@ export default function SectionsPanel() {
                     <button onClick={() => handleMove(s, 'up')} className="text-muted-foreground hover:text-foreground"><ArrowUp className="w-3 h-3" /></button>
                     <button onClick={() => handleMove(s, 'down')} className="text-muted-foreground hover:text-foreground"><ArrowDown className="w-3 h-3" /></button>
                   </div>
-                  <div className="p-2 rounded-lg bg-purple-500/10"><Layers className="w-4 h-4 text-purple-500" /></div>
+                  <div className="p-2 rounded-lg bg-[#8B1E3A]/10"><Layers className="w-4 h-4 text-[#8B1E3A]" /></div>
                   <div>
                     <p className="font-medium text-sm">{s.name}</p>
                     <p className="text-xs text-muted-foreground">ترتيب: {s.order || i} {s.categoryId ? `- ${s.categoryId}` : ''}</p>

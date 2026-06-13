@@ -400,7 +400,7 @@ export default function QRScreen() {
             onClick={() => setActiveTab('scan')}
             className="flex-1 py-3 text-sm font-medium transition-all flex items-center justify-center gap-2"
             style={{
-              background: activeTab === 'scan' ? '#E60000' : 'transparent',
+              background: activeTab === 'scan' ? '#8B1E3A' : 'transparent',
               color: activeTab === 'scan' ? '#FFF' : isDark ? '#AAA' : '#888',
             }}
           >
@@ -411,7 +411,7 @@ export default function QRScreen() {
             onClick={() => setActiveTab('generate')}
             className="flex-1 py-3 text-sm font-medium transition-all flex items-center justify-center gap-2"
             style={{
-              background: activeTab === 'generate' ? '#E60000' : 'transparent',
+              background: activeTab === 'generate' ? '#8B1E3A' : 'transparent',
               color: activeTab === 'generate' ? '#FFF' : isDark ? '#AAA' : '#888',
             }}
           >
@@ -457,8 +457,8 @@ export default function QRScreen() {
                   onClick={() => fileInputRef.current?.click()}
                   className="px-6 py-2.5 rounded-xl text-sm font-medium text-white"
                   style={{
-                    background: 'linear-gradient(135deg, #E60000 0%, #CC0000 100%)',
-                    boxShadow: '0 4px 12px rgba(230,0,0,0.3)',
+                    background: 'linear-gradient(135deg, #8B1E3A 0%, #6B1528 100%)',
+                    boxShadow: '0 4px 12px rgba(139,30,58,0.3)',
                   }}
                 >
                   اضغط للمسح
@@ -542,7 +542,7 @@ export default function QRScreen() {
                     border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'}`,
                   }}
                 >
-                  <Clipboard size={18} strokeWidth={1.5} color="#E60000" />
+                  <Clipboard size={18} strokeWidth={1.5} color="#8B1E3A" />
                   <input
                     type="text"
                     placeholder="الصق بيانات QR هنا"
@@ -560,7 +560,7 @@ export default function QRScreen() {
                     }}
                     disabled={!manualInput.trim()}
                     className="px-3 py-1.5 rounded-xl text-xs font-medium text-white disabled:opacity-40"
-                    style={{ background: '#E60000' }}
+                    style={{ background: '#8B1E3A' }}
                   >
                     قراءة
                   </button>
@@ -580,13 +580,13 @@ export default function QRScreen() {
                       <div
                         className="rounded-2xl p-4"
                         style={{
-                          background: isDark ? 'rgba(230,0,0,0.08)' : 'rgba(230,0,0,0.05)',
-                          border: '1px solid rgba(230,0,0,0.2)',
+                          background: isDark ? 'rgba(139,30,58,0.08)' : 'rgba(139,30,58,0.05)',
+                          border: '1px solid rgba(139,30,58,0.2)',
                         }}
                       >
                         <div className="flex items-center gap-2 mb-2">
-                          <AlertTriangle size={16} color="#E60000" strokeWidth={1.5} />
-                          <span className="text-xs font-bold" style={{ color: '#E60000' }}>
+                          <AlertTriangle size={16} color="#8B1E3A" strokeWidth={1.5} />
+                          <span className="text-xs font-bold" style={{ color: '#8B1E3A' }}>
                             خطأ
                           </span>
                         </div>
@@ -596,7 +596,7 @@ export default function QRScreen() {
                         <button
                           onClick={resetScanState}
                           className="mt-3 px-4 py-2 rounded-xl text-xs font-medium text-white"
-                          style={{ background: '#E60000' }}
+                          style={{ background: '#8B1E3A' }}
                         >
                           محاولة أخرى
                         </button>
@@ -612,7 +612,7 @@ export default function QRScreen() {
                           border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'}`,
                         }}
                       >
-                        <Loader2 size={24} className="animate-spin" color="#E60000" />
+                        <Loader2 size={24} className="animate-spin" color="#8B1E3A" />
                         <p className="text-sm mt-3" style={{ color: isDark ? '#AAA' : '#888' }}>
                           جاري البحث عن المستخدم...
                         </p>
@@ -659,18 +659,18 @@ export default function QRScreen() {
                       <div
                         className="rounded-2xl p-5"
                         style={{
-                          background: isDark ? 'rgba(230,0,0,0.08)' : 'rgba(230,0,0,0.05)',
-                          border: '1px solid rgba(230,0,0,0.2)',
+                          background: isDark ? 'rgba(139,30,58,0.08)' : 'rgba(139,30,58,0.05)',
+                          border: '1px solid rgba(139,30,58,0.2)',
                         }}
                       >
                         <div className="flex flex-col items-center">
                           <div
                             className="w-16 h-16 rounded-full flex items-center justify-center mb-3"
-                            style={{ background: 'rgba(230,0,0,0.15)' }}
+                            style={{ background: 'rgba(139,30,58,0.15)' }}
                           >
-                            <AlertTriangle size={32} color="#E60000" strokeWidth={1.5} />
+                            <AlertTriangle size={32} color="#8B1E3A" strokeWidth={1.5} />
                           </div>
-                          <h3 className="text-lg font-bold mb-1" style={{ color: '#E60000' }}>
+                          <h3 className="text-lg font-bold mb-1" style={{ color: '#8B1E3A' }}>
                             رصيد غير كافٍ
                           </h3>
                           <p className="text-sm" style={{ color: isDark ? '#AAA' : '#888' }}>
@@ -685,7 +685,7 @@ export default function QRScreen() {
                           <button
                             onClick={() => setTransferResult(null)}
                             className="w-full py-3 rounded-2xl font-bold text-white text-sm"
-                            style={{ background: '#E60000' }}
+                            style={{ background: '#8B1E3A' }}
                           >
                             حسناً
                           </button>
@@ -712,13 +712,13 @@ export default function QRScreen() {
                             {parsedQR?.type === 'REQUEST' ? (
                               <ArrowDownLeft size={16} color="#10B981" strokeWidth={1.5} />
                             ) : (
-                              <ArrowUpRight size={16} color="#E60000" strokeWidth={1.5} />
+                              <ArrowUpRight size={16} color="#8B1E3A" strokeWidth={1.5} />
                             )}
-                            <span className="text-xs font-bold" style={{ color: parsedQR?.type === 'REQUEST' ? '#10B981' : '#E60000' }}>
+                            <span className="text-xs font-bold" style={{ color: parsedQR?.type === 'REQUEST' ? '#10B981' : '#8B1E3A' }}>
                               {parsedQR?.type === 'REQUEST' ? 'طلب تحويل' : 'تحويل أموال'}
                             </span>
                           </div>
-                          <span className="text-[10px] font-bold text-white px-2 py-0.5 rounded-full" style={{ background: '#E60000' }}>
+                          <span className="text-[10px] font-bold text-white px-2 py-0.5 rounded-full" style={{ background: '#8B1E3A' }}>
                             الجنوب
                           </span>
                         </div>
@@ -786,7 +786,7 @@ export default function QRScreen() {
                               <div className="flex gap-3">
                                 {scannedUser.balanceYER !== undefined && (
                                   <div className="flex items-center gap-1">
-                                    <span className="text-[9px] px-1.5 py-0.5 rounded font-bold text-white" style={{ background: '#E60000' }}>YER</span>
+                                    <span className="text-[9px] px-1.5 py-0.5 rounded font-bold text-white" style={{ background: '#8B1E3A' }}>YER</span>
                                     <span className="text-[11px] font-bold" style={{ color: isDark ? '#CCC' : '#555' }}>{scannedUser.balanceYER.toLocaleString()}</span>
                                   </div>
                                 )}
@@ -884,7 +884,7 @@ export default function QRScreen() {
                                     style={{
                                       color: getBalance(transferCurrency) - parseFloat(transferAmount) >= 0
                                         ? '#10B981'
-                                        : '#E60000',
+                                        : '#8B1E3A',
                                     }}
                                   >
                                     {(getBalance(transferCurrency) - parseFloat(transferAmount)).toLocaleString()} {currencySymbols[transferCurrency]}
@@ -902,8 +902,8 @@ export default function QRScreen() {
                             disabled={isTransferring || !transferAmount || parseFloat(transferAmount) <= 0}
                             className="w-full py-3.5 rounded-2xl flex items-center justify-center gap-2 font-bold text-white text-sm transition-all active:scale-[0.98] disabled:opacity-40"
                             style={{
-                              background: 'linear-gradient(135deg, #E60000 0%, #CC0000 100%)',
-                              boxShadow: '0 4px 16px rgba(230,0,0,0.3)',
+                              background: 'linear-gradient(135deg, #8B1E3A 0%, #6B1528 100%)',
+                              boxShadow: '0 4px 16px rgba(139,30,58,0.3)',
                             }}
                           >
                             {isTransferring ? (
@@ -924,18 +924,18 @@ export default function QRScreen() {
                       <div
                         className="rounded-2xl p-5"
                         style={{
-                          background: isDark ? 'rgba(230,0,0,0.08)' : 'rgba(230,0,0,0.05)',
-                          border: '1px solid rgba(230,0,0,0.2)',
+                          background: isDark ? 'rgba(139,30,58,0.08)' : 'rgba(139,30,58,0.05)',
+                          border: '1px solid rgba(139,30,58,0.2)',
                         }}
                       >
                         <div className="flex flex-col items-center">
                           <div
                             className="w-16 h-16 rounded-full flex items-center justify-center mb-3"
-                            style={{ background: 'rgba(230,0,0,0.15)' }}
+                            style={{ background: 'rgba(139,30,58,0.15)' }}
                           >
-                            <AlertTriangle size={32} color="#E60000" strokeWidth={1.5} />
+                            <AlertTriangle size={32} color="#8B1E3A" strokeWidth={1.5} />
                           </div>
-                          <h3 className="text-lg font-bold mb-1" style={{ color: '#E60000' }}>
+                          <h3 className="text-lg font-bold mb-1" style={{ color: '#8B1E3A' }}>
                             فشل التحويل
                           </h3>
                           <p className="text-sm" style={{ color: isDark ? '#AAA' : '#888' }}>
@@ -944,7 +944,7 @@ export default function QRScreen() {
                           <button
                             onClick={() => { setTransferResult(null); }}
                             className="mt-4 w-full py-3 rounded-2xl font-bold text-white text-sm"
-                            style={{ background: '#E60000' }}
+                            style={{ background: '#8B1E3A' }}
                           >
                             محاولة أخرى
                           </button>
@@ -976,25 +976,25 @@ export default function QRScreen() {
                     className="flex-1 py-3 rounded-2xl flex flex-col items-center gap-1.5 transition-all"
                     style={{
                       background: generateType === key
-                        ? 'rgba(230,0,0,0.1)'
+                        ? 'rgba(139,30,58,0.1)'
                         : isDark
                           ? 'rgba(255,255,255,0.04)'
                           : 'rgba(0,0,0,0.02)',
                       backdropFilter: 'blur(20px)',
                       WebkitBackdropFilter: 'blur(20px)',
                       border: generateType === key
-                        ? '2px solid #E60000'
+                        ? '2px solid #8B1E3A'
                         : `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'}`,
                     }}
                   >
                     <Icon
                       size={20}
                       strokeWidth={1.5}
-                      color={generateType === key ? '#E60000' : isDark ? '#888' : '#AAA'}
+                      color={generateType === key ? '#8B1E3A' : isDark ? '#888' : '#AAA'}
                     />
                     <span
                       className="text-[10px] font-medium"
-                      style={{ color: generateType === key ? '#E60000' : isDark ? '#888' : '#AAA' }}
+                      style={{ color: generateType === key ? '#8B1E3A' : isDark ? '#888' : '#AAA' }}
                     >
                       {label}
                     </span>

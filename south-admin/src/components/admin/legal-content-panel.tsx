@@ -48,7 +48,7 @@ export default function LegalContentPanel() {
     finally { setSaving(false); }
   };
 
-  if (loading) return <div className="flex items-center justify-center min-h-[400px]"><div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" /></div>;
+  if (loading) return <div className="flex items-center justify-center min-h-[400px]"><div className="w-8 h-8 border-2 border-[#8B1E3A] border-t-transparent rounded-full animate-spin" /></div>;
 
   const tabs = [
     { key: 'faq', label: 'الأسئلة الشائعة' },
@@ -84,7 +84,7 @@ export default function LegalContentPanel() {
               ))}
             </Tabs>
 
-            <Button onClick={handleSave} disabled={saving} className="w-full mt-4 bg-purple-600 hover:bg-purple-700">
+            <Button onClick={handleSave} disabled={saving} className="w-full mt-4 bg-[#7B1A30] hover:bg-[#5C1225]">
               {saving ? <Loader2 className="w-4 h-4 ml-2 animate-spin" /> : <Save className="w-4 h-4 ml-2" />}
               حفظ المحتوى
             </Button>

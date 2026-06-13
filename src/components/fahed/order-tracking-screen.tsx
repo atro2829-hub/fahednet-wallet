@@ -34,7 +34,7 @@ const timelineSteps = [
   { key: 'completed', label: 'مكتمل', description: 'تم تنفيذ الطلب بنجاح', icon: CheckCircle2, color: '#10B981' },
 ];
 
-const cancelledStep = { key: 'cancelled', label: 'ملغي', description: 'تم إلغاء الطلب', icon: XCircle, color: '#E60000' };
+const cancelledStep = { key: 'cancelled', label: 'ملغي', description: 'تم إلغاء الطلب', icon: XCircle, color: '#8B1E3A' };
 
 export default function OrderTrackingScreen() {
   const { theme } = useTheme();
@@ -223,10 +223,10 @@ export default function OrderTrackingScreen() {
             <h1 className="text-xl font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>تتبع الطلب</h1>
           </div>
           <div className="px-3 py-1.5 rounded-xl" style={{
-            background: isCancelled ? 'rgba(230,0,0,0.1)' : isCompleted ? 'rgba(16,185,129,0.1)' : 'rgba(245,158,11,0.1)',
+            background: isCancelled ? 'rgba(139,30,58,0.1)' : isCompleted ? 'rgba(16,185,129,0.1)' : 'rgba(245,158,11,0.1)',
           }}>
             <span className="text-xs font-bold" style={{
-              color: isCancelled ? '#E60000' : isCompleted ? '#10B981' : '#F59E0B',
+              color: isCancelled ? '#8B1E3A' : isCompleted ? '#10B981' : '#F59E0B',
             }}>
               {isCancelled ? 'ملغي' : isCompleted ? 'مكتمل' : 'قيد الانتظار'}
             </span>
@@ -245,12 +245,12 @@ export default function OrderTrackingScreen() {
           <div className="flex items-center gap-3 mb-4">
             <div
               className="w-12 h-12 rounded-xl flex items-center justify-center"
-              style={{ background: `${providerInfo?.color || '#E60000'}18` }}
+              style={{ background: `${providerInfo?.color || '#8B1E3A'}18` }}
             >
               {providerInfo?.icon && providerInfo.icon.startsWith('data:') ? (
                 <img src={providerInfo.icon} alt={providerInfo.name} className="w-10 h-10 rounded-lg object-cover" />
               ) : (
-                <span className="font-bold text-lg" style={{ color: providerInfo?.color || '#E60000' }}>
+                <span className="font-bold text-lg" style={{ color: providerInfo?.color || '#8B1E3A' }}>
                   {currentOrder.providerName.charAt(0)}
                 </span>
               )}
@@ -318,10 +318,10 @@ export default function OrderTrackingScreen() {
             {isCancelled ? (
               // Cancelled timeline
               <div className="flex flex-col items-center py-4">
-                <div className="w-14 h-14 rounded-full flex items-center justify-center mb-3" style={{ background: 'rgba(230,0,0,0.15)' }}>
-                  <XCircle size={28} color="#E60000" />
+                <div className="w-14 h-14 rounded-full flex items-center justify-center mb-3" style={{ background: 'rgba(139,30,58,0.15)' }}>
+                  <XCircle size={28} color="#8B1E3A" />
                 </div>
-                <p className="text-sm font-bold" style={{ color: '#E60000' }}>تم إلغاء الطلب</p>
+                <p className="text-sm font-bold" style={{ color: '#8B1E3A' }}>تم إلغاء الطلب</p>
                 <p className="text-[10px] mt-1" style={{ color: isDark ? '#666' : '#AAA' }}>
                   تم استرداد المبلغ إلى رصيدك
                 </p>
@@ -438,8 +438,8 @@ export default function OrderTrackingScreen() {
               onClick={() => setShowCancelDialog(true)}
               className="w-full py-4 rounded-2xl font-bold text-white text-sm"
               style={{
-                background: 'linear-gradient(135deg, #E60000 0%, #B30000 100%)',
-                boxShadow: '0 4px 16px rgba(230,0,0,0.3)',
+                background: 'linear-gradient(135deg, #8B1E3A 0%, #5C1225 100%)',
+                boxShadow: '0 4px 16px rgba(139,30,58,0.3)',
               }}
             >
               إلغاء الطلب
@@ -479,7 +479,7 @@ export default function OrderTrackingScreen() {
               ) : (
                 <>
                   <div className="flex items-center gap-2 mb-4">
-                    <AlertCircle size={20} color="#E60000" />
+                    <AlertCircle size={20} color="#8B1E3A" />
                     <h3 className="text-base font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>إلغاء الطلب</h3>
                   </div>
                   <p className="text-xs mb-2" style={{ color: isDark ? '#888' : '#AAA' }}>
@@ -489,7 +489,7 @@ export default function OrderTrackingScreen() {
                     <p className="text-xs font-medium" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>
                       {currentOrder.packageName} - {currentOrder.providerName}
                     </p>
-                    <p className="text-xs mt-1" style={{ color: '#E60000' }}>
+                    <p className="text-xs mt-1" style={{ color: '#8B1E3A' }}>
                       سيتم استرداد {currentOrder.amount.toLocaleString()} {currencySymbols[currentOrder.currency]}
                     </p>
                   </div>
@@ -506,7 +506,7 @@ export default function OrderTrackingScreen() {
                       onClick={handleCancelOrder}
                       disabled={isCancelling}
                       className="flex-1 py-3 rounded-xl text-sm font-bold text-white flex items-center justify-center gap-2 disabled:opacity-50"
-                      style={{ background: '#E60000' }}
+                      style={{ background: '#8B1E3A' }}
                     >
                       {isCancelling ? (
                         <RefreshCw size={14} className="animate-spin" />
@@ -539,9 +539,9 @@ function CopyableText({ text, isDark }: { text: string; isDark: boolean }) {
 
   return (
     <div className="flex items-center gap-1.5">
-      <span className="text-xs font-mono font-bold" style={{ color: '#E60000' }} dir="ltr">{text}</span>
-      <button onClick={handleCopy} className="w-5 h-5 rounded flex items-center justify-center" style={{ background: 'rgba(230,0,0,0.1)' }}>
-        {copied ? <Check size={8} color="#10B981" /> : <Copy size={8} color="#E60000" />}
+      <span className="text-xs font-mono font-bold" style={{ color: '#8B1E3A' }} dir="ltr">{text}</span>
+      <button onClick={handleCopy} className="w-5 h-5 rounded flex items-center justify-center" style={{ background: 'rgba(139,30,58,0.1)' }}>
+        {copied ? <Check size={8} color="#10B981" /> : <Copy size={8} color="#8B1E3A" />}
       </button>
     </div>
   );

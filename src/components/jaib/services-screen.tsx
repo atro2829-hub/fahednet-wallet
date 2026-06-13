@@ -36,7 +36,7 @@ export default function ServicesScreen() {
     <div className="pb-4">
       {/* Header - Red gradient matching brand identity */}
       <div className="relative px-5 pt-4 pb-6 rounded-b-3xl overflow-hidden"
-        style={{ background: 'linear-gradient(135deg, #C1121F 0%, #E60000 100%)' }}
+        style={{ background: 'linear-gradient(135deg, #C1121F 0%, #8B1E3A 100%)' }}
       >
         {/* Decorative pattern */}
         <div className="absolute top-0 left-0 w-48 h-48 bg-white/5 rounded-full -translate-x-1/2 -translate-y-1/2" />
@@ -68,13 +68,13 @@ export default function ServicesScreen() {
             {/* Line icon with light background + red dot accent */}
             <div className="relative w-11 h-11 bg-[#F8F8F8] rounded-xl flex items-center justify-center shrink-0">
               <service.icon className="w-5 h-5 text-[#1a1a1a] stroke-[1.5px]" />
-              <div className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-[#E60000] rounded-full border border-white" />
+              <div className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-[#8B1E3A] rounded-full border border-white" />
             </div>
             <div className="flex-1 min-w-0 text-right">
               <div className="flex items-center gap-2">
                 <h3 className="text-sm font-bold text-[#1a1a1a]">{service.label}</h3>
                 {service.badge && (
-                  <span className="text-[10px] bg-[#E60000] text-white px-2 py-0.5 rounded-full font-bold">
+                  <span className="text-[10px] bg-[#8B1E3A] text-white px-2 py-0.5 rounded-full font-bold">
                     {service.badge}
                   </span>
                 )}
@@ -101,7 +101,7 @@ export default function ServicesScreen() {
               {/* Line icon with red accent */}
               <div className="relative w-10 h-10 bg-[#F8F8F8] rounded-xl flex items-center justify-center shrink-0">
                 <action.icon className="w-5 h-5 text-[#1a1a1a] stroke-[1.5px]" />
-                <div className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 bg-[#E60000] rounded-full border border-white" />
+                <div className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 bg-[#8B1E3A] rounded-full border border-white" />
               </div>
               <span className="text-sm font-bold text-[#1a1a1a]">{action.label}</span>
             </motion.button>

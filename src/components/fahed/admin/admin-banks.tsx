@@ -14,12 +14,12 @@ export default function AdminBanks() {
 
   const [showAddBank, setShowAddBank] = useState(false);
   const [editingBank, setEditingBank] = useState<string | null>(null);
-  const [newBank, setNewBank] = useState({ bankName: '', accountHolderName: '', accountNumber: '', color: '#E60000' });
+  const [newBank, setNewBank] = useState({ bankName: '', accountHolderName: '', accountNumber: '', color: '#8B1E3A' });
 
   const onAddBank = () => {
     if (!newBank.bankName || !newBank.accountNumber) return;
     handleAddBank(newBank);
-    setNewBank({ bankName: '', accountHolderName: '', accountNumber: '', color: '#E60000' });
+    setNewBank({ bankName: '', accountHolderName: '', accountNumber: '', color: '#8B1E3A' });
     setShowAddBank(false);
   };
 
@@ -31,7 +31,7 @@ export default function AdminBanks() {
     <motion.div key="banks" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-3">
       <motion.button whileTap={{ scale: 0.95 }} onClick={() => { setShowAddBank(!showAddBank); setEditingBank(null); }}
         className="w-full py-3.5 rounded-2xl flex items-center justify-center gap-2 text-sm font-medium"
-        style={{ background: 'rgba(230,0,0,0.1)', color: '#E60000', border: '1px solid rgba(230,0,0,0.2)', backdropFilter: 'blur(20px)' }}>
+        style={{ background: 'rgba(139,30,58,0.1)', color: '#8B1E3A', border: '1px solid rgba(139,30,58,0.2)', backdropFilter: 'blur(20px)' }}>
         <Plus size={18} strokeWidth={1.5} /><span>إضافة بنك جديد</span>
       </motion.button>
 
@@ -45,7 +45,7 @@ export default function AdminBanks() {
               <label className="text-xs" style={{ color: isDark ? '#AAA' : '#888' }}>اللون</label>
               <input type="color" value={newBank.color} onChange={(e) => setNewBank({ ...newBank, color: e.target.value })} className="w-10 h-8 rounded cursor-pointer" style={{ background: 'transparent' }} />
             </div>
-            <motion.button whileTap={{ scale: 0.95 }} onClick={onAddBank} className="w-full py-3 rounded-xl text-sm font-bold text-white" style={{ background: '#E60000' }}>إضافة البنك</motion.button>
+            <motion.button whileTap={{ scale: 0.95 }} onClick={onAddBank} className="w-full py-3 rounded-xl text-sm font-bold text-white" style={{ background: '#8B1E3A' }}>إضافة البنك</motion.button>
           </motion.div>
         )}
       </AnimatePresence>
@@ -72,7 +72,7 @@ export default function AdminBanks() {
                     <p className="text-[10px]" style={{ color: isDark ? '#666' : '#AAA' }}>{bank.accountHolderName}</p>
                   </div>
                 </div>
-                <span className="text-[10px] px-2 py-0.5 rounded-full font-medium" style={{ background: bank.isActive ? 'rgba(16,185,129,0.15)' : 'rgba(230,0,0,0.15)', color: bank.isActive ? '#10B981' : '#E60000' }}>
+                <span className="text-[10px] px-2 py-0.5 rounded-full font-medium" style={{ background: bank.isActive ? 'rgba(16,185,129,0.15)' : 'rgba(139,30,58,0.15)', color: bank.isActive ? '#10B981' : '#8B1E3A' }}>
                   {bank.isActive ? 'مفعّل' : 'معطّل'}
                 </span>
               </div>
@@ -87,11 +87,11 @@ export default function AdminBanks() {
                 <motion.button whileTap={{ scale: 0.95 }} onClick={() => setEditingBank(bank.id)} className="flex items-center gap-1 px-3 py-2 rounded-xl text-xs font-medium" style={{ background: 'rgba(59,130,246,0.15)', color: '#3B82F6' }}>
                   <Edit3 size={12} /> تعديل
                 </motion.button>
-                <motion.button whileTap={{ scale: 0.95 }} onClick={() => handleToggleBank(bank)} className="flex items-center gap-1 px-3 py-2 rounded-xl text-xs font-medium" style={{ background: bank.isActive ? 'rgba(230,0,0,0.1)' : 'rgba(16,185,129,0.15)', color: bank.isActive ? '#E60000' : '#10B981' }}>
+                <motion.button whileTap={{ scale: 0.95 }} onClick={() => handleToggleBank(bank)} className="flex items-center gap-1 px-3 py-2 rounded-xl text-xs font-medium" style={{ background: bank.isActive ? 'rgba(139,30,58,0.1)' : 'rgba(16,185,129,0.15)', color: bank.isActive ? '#8B1E3A' : '#10B981' }}>
                   {bank.isActive ? <ToggleRight size={14} /> : <ToggleLeft size={14} />}
                   <span>{bank.isActive ? 'تعطيل' : 'تفعيل'}</span>
                 </motion.button>
-                <motion.button whileTap={{ scale: 0.95 }} onClick={() => handleDeleteBank(bank)} className="flex items-center gap-1 px-3 py-2 rounded-xl text-xs font-medium" style={{ background: 'rgba(230,0,0,0.1)', color: '#E60000' }}>
+                <motion.button whileTap={{ scale: 0.95 }} onClick={() => handleDeleteBank(bank)} className="flex items-center gap-1 px-3 py-2 rounded-xl text-xs font-medium" style={{ background: 'rgba(139,30,58,0.1)', color: '#8B1E3A' }}>
                   <Trash2 size={12} /> حذف
                 </motion.button>
               </div>
@@ -129,7 +129,7 @@ function BankEditForm({ bank, isDark, inputStyle, onSave, onCancel }: {
         <motion.button whileTap={{ scale: 0.95 }} onClick={() => onSave(editData)} className="flex-1 py-2.5 rounded-xl text-xs font-bold text-white flex items-center justify-center gap-1" style={{ background: '#10B981' }}>
           <Save size={14} /> حفظ
         </motion.button>
-        <motion.button whileTap={{ scale: 0.95 }} onClick={onCancel} className="flex-1 py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1" style={{ background: 'rgba(230,0,0,0.1)', color: '#E60000' }}>
+        <motion.button whileTap={{ scale: 0.95 }} onClick={onCancel} className="flex-1 py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1" style={{ background: 'rgba(139,30,58,0.1)', color: '#8B1E3A' }}>
           <X size={14} /> إلغاء
         </motion.button>
       </div>

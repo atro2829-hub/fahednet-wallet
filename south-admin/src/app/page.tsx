@@ -36,6 +36,9 @@ import InvestmentsPanel from '@/components/admin/investments-panel';
 import UserGiftCodesPanel from '@/components/admin/user-gift-codes-panel';
 import PushNotificationsPanel from '@/components/admin/push-notifications-panel';
 import CardColorsPanel from '@/components/admin/card-colors-panel';
+import BotsPanel from '@/components/admin/bots-panel';
+import NetworkPrefixesPanel from '@/components/admin/network-prefixes-panel';
+import AdvancedNotificationsPanel from '@/components/admin/advanced-notifications-panel';
 import { Menu, ShieldCheck } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { APP_ICON_BASE64 } from '@/lib/app-icon';
@@ -70,6 +73,9 @@ const panelMap: Record<string, React.ComponentType> = {
   'user-gift-codes': UserGiftCodesPanel,
   'push-notifications': PushNotificationsPanel,
   'card-colors': CardColorsPanel,
+  bots: BotsPanel,
+  'network-prefixes': NetworkPrefixesPanel,
+  'advanced-notifications': AdvancedNotificationsPanel,
 };
 
 export default function AdminApp() {

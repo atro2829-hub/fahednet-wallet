@@ -106,7 +106,7 @@ export default function GiftCodesPanel() {
 
   const filtered = codes.filter(c => !search || c.code?.includes(search));
 
-  if (loading) return <div className="flex items-center justify-center min-h-[400px]"><div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" /></div>;
+  if (loading) return <div className="flex items-center justify-center min-h-[400px]"><div className="w-8 h-8 border-2 border-[#8B1E3A] border-t-transparent rounded-full animate-spin" /></div>;
 
   return (
     <div className="space-y-6">
@@ -132,13 +132,13 @@ export default function GiftCodesPanel() {
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-lg bg-purple-500/10"><Gift className="w-5 h-5 text-purple-500" /></div>
+                    <div className="p-2 rounded-lg bg-[#8B1E3A]/10"><Gift className="w-5 h-5 text-[#8B1E3A]" /></div>
                     <div>
                       <p className="font-mono text-sm font-bold" dir="ltr">{c.code}</p>
                       <p className="text-xs text-muted-foreground">{formatNumber(c.amount)} {currencySymbols[c.currency || 'YER']} - {c.usedCount || 0}/{c.maxUses || 1} استخدام</p>
                       <div className="flex items-center gap-2 mt-1">
                         {c.createdBy === 'admin' && (
-                          <Badge className="bg-purple-500/20 text-purple-600 text-xs h-4">إدارة</Badge>
+                          <Badge className="bg-[#8B1E3A]/20 text-[#8B1E3A] text-xs h-4">إدارة</Badge>
                         )}
                         <Badge className={c.visibleToUsers ? 'bg-green-500/20 text-green-600 text-xs h-4' : 'bg-gray-500/20 text-gray-500 text-xs h-4'}>
                           {c.visibleToUsers ? 'ظاهر للمستخدمين' : 'مخفي'}

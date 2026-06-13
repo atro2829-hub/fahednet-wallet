@@ -108,7 +108,7 @@ export default function BannersPanel() {
     }
   };
 
-  if (loading) return <div className="flex items-center justify-center min-h-[400px]"><div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" /></div>;
+  if (loading) return <div className="flex items-center justify-center min-h-[400px]"><div className="w-8 h-8 border-2 border-[#8B1E3A] border-t-transparent rounded-full animate-spin" /></div>;
 
   return (
     <div className="space-y-6">
@@ -129,9 +129,9 @@ export default function BannersPanel() {
                     <p className="text-xs text-muted-foreground">ترتيب: {b.order || 0}</p>
                     {b.url && (
                       <div className="flex items-center gap-1 mt-1">
-                        <ExternalLink className="w-3 h-3 text-purple-500" />
-                        <span className="text-xs text-purple-500 truncate max-w-[150px]" dir="ltr">{b.url}</span>
-                        {b.urlType && <Badge className="bg-purple-500/20 text-purple-600 text-xs h-4">{getUrlTypeLabel(b.urlType)}</Badge>}
+                        <ExternalLink className="w-3 h-3 text-[#8B1E3A]" />
+                        <span className="text-xs text-[#8B1E3A] truncate max-w-[150px]" dir="ltr">{b.url}</span>
+                        {b.urlType && <Badge className="bg-[#8B1E3A]/20 text-[#8B1E3A] text-xs h-4">{getUrlTypeLabel(b.urlType)}</Badge>}
                       </div>
                     )}
                   </div>

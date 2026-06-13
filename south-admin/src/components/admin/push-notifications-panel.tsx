@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { ref, onValue, push, set, get, update } from 'firebase/database';
+import { ref, onValue, set, update } from 'firebase/database';
 import { database } from '@/lib/firebase';
 import { useAdminStore } from '@/lib/store';
 import { formatNumber, formatDateAr, generateId } from '@/lib/utils';
@@ -12,11 +12,9 @@ import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Send, Bell, Loader2, Users, User, Clock, CheckCircle } from 'lucide-react';
+import { Send, Bell, Loader2, Users, User } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { sendNotificationToUser } from '@/lib/notifications';
 import { sendFCMDirect } from '@/lib/fcm-sender';
 
 interface NotificationHistory {
@@ -38,7 +36,7 @@ interface NotificationHistory {
 }
 
 export default function PushNotificationsPanel() {
-  const { adminUser, showToast } = useAdminStore();
+  const { adminUser, showToast, allUsers } = useAdminStore();
   const [title, setTitle] = useState('');
   const [body, setBody] = useState('');
   const [icon, setIcon] = useState('');
@@ -50,36 +48,26 @@ export default function PushNotificationsPanel() {
   const [targetSegment, setTargetSegment] = useState('verified');
   const [sending, setSending] = useState(false);
   const [history, setHistory] = useState<NotificationHistory[]>([]);
-  const [users, setUsers] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
 
+  // Only listen to adminNotifications history here - users come from the store
   useEffect(() => {
     const histRef = ref(database, 'adminNotifications');
-    const unsub1 = onValue(histRef, (snapshot) => {
+    const unsub = onValue(histRef, (snapshot) => {
       const data = snapshot.val() || {};
       const list: NotificationHistory[] = Object.entries(data).map(([id, val]: [string, any]) => ({ id, ...val }));
       list.sort((a, b) => new Date(b.sentAt).getTime() - new Date(a.sentAt).getTime());
       setHistory(list);
-      setLoading(false);
     });
-
-    const usersRef = ref(database, 'users');
-    const unsub2 = onValue(usersRef, (snapshot) => {
-      const data = snapshot.val() || {};
-      const list = Object.entries(data).map(([uid, val]: [string, any]) => ({ uid, ...val }));
-      setUsers(list);
-    });
-
-    return () => { unsub1(); unsub2(); };
+    return () => unsub();
   }, []);
 
   const getSegmentUsers = () => {
     switch (targetSegment) {
-      case 'verified': return users.filter((u) => u.kycStatus === 'verified');
-      case 'active': return users.filter((u) => !u.isBlocked && u.lastLogin);
-      case 'blocked': return users.filter((u) => u.isBlocked);
-      case 'non-kyc': return users.filter((u) => !u.kycStatus || u.kycStatus === 'none');
-      default: return users;
+      case 'verified': return allUsers.filter((u) => u.kycStatus === 'verified');
+      case 'active': return allUsers.filter((u) => !u.isBlocked && u.lastLogin);
+      case 'blocked': return allUsers.filter((u) => u.isBlocked);
+      case 'non-kyc': return allUsers.filter((u) => !u.kycStatus || u.kycStatus === 'none');
+      default: return allUsers;
     }
   };
 
@@ -97,13 +85,13 @@ export default function PushNotificationsPanel() {
 
       if (targetType === 'all') {
         // Save to admin notification history
-        await set(ref(database, `adminNotifications/${notifId}`), { ...notifData, recipientCount: users.length, deliveryCount: 0, status: 'sent' });
+        await set(ref(database, `adminNotifications/${notifId}`), { ...notifData, recipientCount: allUsers.length, deliveryCount: 0, status: 'sent' });
 
         // Save to each user's notifications (direct path, no inbox sub-key)
         let deliveryCount = 0;
         const batchSize = 50;
-        for (let i = 0; i < users.length; i += batchSize) {
-          const batch = users.slice(i, i + batchSize);
+        for (let i = 0; i < allUsers.length; i += batchSize) {
+          const batch = allUsers.slice(i, i + batchSize);
           const updates: Record<string, any> = {};
           batch.forEach((user) => {
             updates[`notifications/${user.uid}/${notifId}`] = {
@@ -118,7 +106,7 @@ export default function PushNotificationsPanel() {
         // Send FCM push notifications to all users with tokens
         try {
           const tokens: string[] = [];
-          users.forEach((user) => {
+          allUsers.forEach((user) => {
             if (user.fcmToken) tokens.push(user.fcmToken);
           });
           if (tokens.length > 0) {
@@ -130,12 +118,12 @@ export default function PushNotificationsPanel() {
 
         // Update delivery count
         await update(ref(database, `adminNotifications/${notifId}`), { deliveryCount });
-        showToast(`تم إرسال الإشعار لجميع المستخدمين (${users.length})`, 'success');
+        showToast(`تم إرسال الإشعار لجميع المستخدمين (${allUsers.length})`, 'success');
 
       } else if (targetType === 'specific') {
         let targetUser = null;
-        if (targetUserId) targetUser = users.find((u) => u.uid === targetUserId || u.userId === targetUserId);
-        else if (targetPhone) targetUser = users.find((u) => u.phone === targetPhone);
+        if (targetUserId) targetUser = allUsers.find((u) => u.uid === targetUserId || u.userId === targetUserId);
+        else if (targetPhone) targetUser = allUsers.find((u) => u.phone === targetPhone);
 
         if (!targetUser) { showToast('لم يتم العثور على المستخدم', 'error'); setSending(false); return; }
 
@@ -195,7 +183,7 @@ export default function PushNotificationsPanel() {
   };
 
   const typeLabels: Record<string, string> = { info: 'معلومات', transaction: 'معاملة', security: 'أمان', promo: 'ترويجي' };
-  const typeColors: Record<string, string> = { info: 'bg-blue-500/20 text-blue-600', transaction: 'bg-green-500/20 text-green-600', security: 'bg-red-500/20 text-red-600', promo: 'bg-purple-500/20 text-purple-600' };
+  const typeColors: Record<string, string> = { info: 'bg-blue-500/20 text-blue-600', transaction: 'bg-green-500/20 text-green-600', security: 'bg-red-500/20 text-red-600', promo: 'bg-[#8B1E3A]/20 text-[#8B1E3A]' };
   const segmentLabels: Record<string, string> = { verified: 'موثقين', active: 'نشطين', blocked: 'محظورين', 'non-kyc': 'غير موثقين' };
 
   return (
@@ -215,8 +203,8 @@ export default function PushNotificationsPanel() {
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
             <Card className="admin-card border-0 shadow-none">
               <CardContent className="p-6 space-y-4">
-                <div className="flex items-center gap-3 p-3 rounded-xl bg-purple-500/10">
-                  <Send className="w-6 h-6 text-purple-500" />
+                <div className="flex items-center gap-3 p-3 rounded-xl bg-[#8B1E3A]/10">
+                  <Send className="w-6 h-6 text-[#8B1E3A]" />
                   <div>
                     <p className="font-medium text-sm">إرسال إشعار جديد</p>
                     <p className="text-xs text-muted-foreground">يتم حفظ الإشعار في صندوق كل مستخدم وفي طابور FCM</p>
@@ -275,7 +263,7 @@ export default function PushNotificationsPanel() {
                 <div><Label>رابط أيقونة (اختياري)</Label><Input value={icon} onChange={(e) => setIcon(e.target.value)} dir="ltr" /></div>
                 <div><Label>رابط البيانات (اختياري)</Label><Input value={dataUrl} onChange={(e) => setDataUrl(e.target.value)} dir="ltr" /></div>
 
-                <Button onClick={handleSend} disabled={sending || !title || !body} className="w-full bg-purple-600 hover:bg-purple-700">
+                <Button onClick={handleSend} disabled={sending || !title || !body} className="w-full bg-[#7B1A30] hover:bg-[#5C1225]">
                   {sending ? <Loader2 className="w-4 h-4 ml-2 animate-spin" /> : <Send className="w-4 h-4 ml-2" />}
                   إرسال الإشعار
                 </Button>
@@ -292,8 +280,8 @@ export default function PushNotificationsPanel() {
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-lg bg-purple-500/10 flex items-center justify-center">
-                          <Bell className="w-5 h-5 text-purple-500" />
+                        <div className="w-10 h-10 rounded-lg bg-[#8B1E3A]/10 flex items-center justify-center">
+                          <Bell className="w-5 h-5 text-[#8B1E3A]" />
                         </div>
                         <div>
                           <p className="font-medium text-sm">{notif.title}</p>

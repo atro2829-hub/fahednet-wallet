@@ -186,7 +186,7 @@ for (const provider of providers) {
   await push(ref(database, 'adminSettings/instantRecharge'), provider);
 }`;
 
-  if (loading) return <div className="flex items-center justify-center min-h-[400px]"><div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" /></div>;
+  if (loading) return <div className="flex items-center justify-center min-h-[400px]"><div className="w-8 h-8 border-2 border-[#8B1E3A] border-t-transparent rounded-full animate-spin" /></div>;
 
   return (
     <div className="space-y-6">
@@ -277,7 +277,7 @@ for (const provider of providers) {
           <Card className="admin-card border-0 shadow-none">
             <CardHeader>
               <CardTitle className="text-base flex items-center gap-2">
-                <BookOpen className="w-5 h-5 text-purple-500" /> تعليمات إضافة API للشحن الفوري
+                <BookOpen className="w-5 h-5 text-[#8B1E3A]" /> تعليمات إضافة API للشحن الفوري
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -312,7 +312,7 @@ for (const provider of providers) {
           <Card className="admin-card border-0 shadow-none">
             <CardHeader>
               <CardTitle className="text-base flex items-center gap-2">
-                <Code className="w-5 h-5 text-purple-500" /> سكربت إضافة جماعية
+                <Code className="w-5 h-5 text-[#8B1E3A]" /> سكربت إضافة جماعية
               </CardTitle>
             </CardHeader>
             <CardContent>

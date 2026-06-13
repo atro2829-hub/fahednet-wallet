@@ -24,7 +24,7 @@ export default function BanksPanel() {
   const [bankName, setBankName] = useState('');
   const [accountHolder, setAccountHolder] = useState('');
   const [accountNumber, setAccountNumber] = useState('');
-  const [color, setColor] = useState('#6C3CE1');
+  const [color, setColor] = useState('#8B1E3A');
   const [isActive, setIsActive] = useState(true);
   const [iconBase64, setIconBase64] = useState('');
 
@@ -59,7 +59,7 @@ export default function BanksPanel() {
         showToast('تم إضافة الحساب', 'success');
       }
       setDialog(false);
-      setBankName(''); setAccountHolder(''); setAccountNumber(''); setColor('#6C3CE1'); setIsActive(true); setIconBase64(''); setEditing(null);
+      setBankName(''); setAccountHolder(''); setAccountNumber(''); setColor('#8B1E3A'); setIsActive(true); setIconBase64(''); setEditing(null);
     } catch (e) { showToast('حدث خطأ', 'error'); }
   };
 
@@ -68,13 +68,13 @@ export default function BanksPanel() {
     catch (e) { showToast('حدث خطأ', 'error'); }
   };
 
-  if (loading) return <div className="flex items-center justify-center min-h-[400px]"><div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" /></div>;
+  if (loading) return <div className="flex items-center justify-center min-h-[400px]"><div className="w-8 h-8 border-2 border-[#8B1E3A] border-t-transparent rounded-full animate-spin" /></div>;
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div><h1 className="text-2xl font-bold">الحسابات البنكية</h1><p className="text-muted-foreground text-sm mt-1">{formatNumber(banks.length)} حساب</p></div>
-        <Button onClick={() => { setEditing(null); setBankName(''); setAccountHolder(''); setAccountNumber(''); setColor('#6C3CE1'); setIsActive(true); setIconBase64(''); setDialog(true); }} size="sm"><Plus className="w-4 h-4 ml-1" /> حساب جديد</Button>
+        <Button onClick={() => { setEditing(null); setBankName(''); setAccountHolder(''); setAccountNumber(''); setColor('#8B1E3A'); setIsActive(true); setIconBase64(''); setDialog(true); }} size="sm"><Plus className="w-4 h-4 ml-1" /> حساب جديد</Button>
       </div>
 
       <div className="space-y-3">
@@ -87,8 +87,8 @@ export default function BanksPanel() {
                     {b.icon ? (
                       <img src={b.icon} alt={b.name} className="w-10 h-10 rounded-lg object-cover" />
                     ) : (
-                      <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: (b.color || '#6C3CE1') + '20' }}>
-                        <Building2 className="w-5 h-5" style={{ color: b.color || '#6C3CE1' }} />
+                      <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ backgroundColor: (b.color || '#8B1E3A') + '20' }}>
+                        <Building2 className="w-5 h-5" style={{ color: b.color || '#8B1E3A' }} />
                       </div>
                     )}
                     <div>
@@ -100,7 +100,7 @@ export default function BanksPanel() {
                     <Badge className={b.isActive ? 'bg-green-500/20 text-green-600 dark:text-green-400' : 'bg-red-500/20 text-red-600 dark:text-red-400'}>{b.isActive ? 'نشط' : 'معطل'}</Badge>
                     <Button variant="ghost" size="sm" onClick={() => {
                       setEditing(b); setBankName(b.name || ''); setAccountHolder(b.accountHolder || '');
-                      setAccountNumber(b.accountNumber || ''); setColor(b.color || '#6C3CE1');
+                      setAccountNumber(b.accountNumber || ''); setColor(b.color || '#8B1E3A');
                       setIsActive(b.isActive !== false); setIconBase64(b.icon || ''); setDialog(true);
                     }}><Edit className="w-4 h-4" /></Button>
                     <Button variant="ghost" size="sm" onClick={() => handleDelete(b.id)}><Trash2 className="w-4 h-4 text-red-500" /></Button>

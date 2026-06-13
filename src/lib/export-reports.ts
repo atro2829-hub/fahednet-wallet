@@ -72,14 +72,14 @@ export function exportToPDF(
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Segoe UI', Tahoma, Arial, sans-serif; padding: 30px; color: #1a1a1a; background: #fff; direction: rtl; }
-    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; border-bottom: 3px solid #E60000; padding-bottom: 20px; }
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; border-bottom: 3px solid #8B1E3A; padding-bottom: 20px; }
     .header h1 { font-size: 22px; color: #1a1a1a; }
-    .header .logo { font-size: 16px; color: #E60000; font-weight: bold; }
+    .header .logo { font-size: 16px; color: #8B1E3A; font-weight: bold; }
     .header .date { font-size: 12px; color: #666; }
     .meta { display: flex; gap: 20px; margin-bottom: 20px; font-size: 13px; color: #555; }
     .meta span { background: #f5f5f5; padding: 4px 12px; border-radius: 6px; }
     table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12px; }
-    th { background: #E60000; color: #fff; padding: 10px 12px; text-align: right; font-weight: 600; white-space: nowrap; }
+    th { background: #8B1E3A; color: #fff; padding: 10px 12px; text-align: right; font-weight: 600; white-space: nowrap; }
     td { padding: 8px 12px; border-bottom: 1px solid #eee; text-align: right; }
     tr:nth-child(even) { background: #fafafa; }
     tr:hover { background: #fff3f3; }
@@ -90,9 +90,9 @@ export function exportToPDF(
     .summary-card .value { font-size: 18px; font-weight: bold; color: #1a1a1a; }
     .status-pending { color: #F59E0B; font-weight: bold; }
     .status-completed { color: #10B981; font-weight: bold; }
-    .status-cancelled { color: #E60000; font-weight: bold; }
+    .status-cancelled { color: #8B1E3A; font-weight: bold; }
     .status-approved { color: #10B981; font-weight: bold; }
-    .status-rejected { color: #E60000; font-weight: bold; }
+    .status-rejected { color: #8B1E3A; font-weight: bold; }
     @media print {
       body { padding: 15px; }
       .no-print { display: none !important; }
@@ -109,7 +109,7 @@ export function exportToPDF(
     </div>
     <div style="text-align: left;">
       <div class="date">${now}</div>
-      <button class="no-print" onclick="window.print()" style="margin-top:8px;padding:8px 20px;background:#E60000;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:13px;">طباعة / حفظ PDF</button>
+      <button class="no-print" onclick="window.print()" style="margin-top:8px;padding:8px 20px;background:#8B1E3A;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:13px;">طباعة / حفظ PDF</button>
     </div>
   </div>
 

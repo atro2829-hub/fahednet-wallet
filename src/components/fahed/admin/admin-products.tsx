@@ -78,7 +78,7 @@ export default function AdminProducts() {
       <div className="flex gap-2">
         <motion.button whileTap={{ scale: 0.95 }} onClick={() => { setShowAddProduct(!showAddProduct); setShowBulkImport(false); }}
           className="flex-1 py-3.5 rounded-2xl flex items-center justify-center gap-2 text-sm font-medium"
-          style={{ background: 'rgba(230,0,0,0.1)', color: '#E60000', border: '1px solid rgba(230,0,0,0.2)', backdropFilter: 'blur(20px)' }}>
+          style={{ background: 'rgba(139,30,58,0.1)', color: '#8B1E3A', border: '1px solid rgba(139,30,58,0.2)', backdropFilter: 'blur(20px)' }}>
           <Plus size={18} strokeWidth={1.5} /><span>إضافة منتج</span>
         </motion.button>
         <motion.button whileTap={{ scale: 0.95 }} onClick={() => { setShowBulkImport(!showBulkImport); setShowAddProduct(false); }}
@@ -106,7 +106,7 @@ export default function AdminProducts() {
             <select value={newProduct.executionType} onChange={(e) => setNewProduct({ ...newProduct, executionType: e.target.value as 'manual' | 'auto' })} className="w-full px-3 py-2.5 rounded-xl text-sm outline-none" style={inputStyle}>
               <option value="manual">تنفيذ يدوي</option><option value="auto">تنفيذ تلقائي</option>
             </select>
-            <motion.button whileTap={{ scale: 0.95 }} onClick={onAddProduct} className="w-full py-3 rounded-xl text-sm font-bold text-white" style={{ background: '#E60000' }}>إضافة المنتج</motion.button>
+            <motion.button whileTap={{ scale: 0.95 }} onClick={onAddProduct} className="w-full py-3 rounded-xl text-sm font-bold text-white" style={{ background: '#8B1E3A' }}>إضافة المنتج</motion.button>
           </motion.div>
         )}
       </AnimatePresence>
@@ -116,7 +116,7 @@ export default function AdminProducts() {
         {showBulkImport && (
           <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="rounded-2xl p-4 space-y-3 overflow-hidden" style={cardStyle}>
             <div className="flex items-center gap-2 mb-1">
-              <Upload size={16} color="#E60000" />
+              <Upload size={16} color="#8B1E3A" />
               <h3 className="text-sm font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>استيراد منتجات</h3>
             </div>
             <select value={bulkProviderId} onChange={(e) => setBulkProviderId(e.target.value)} className="w-full px-3 py-2.5 rounded-xl text-sm outline-none" style={inputStyle}>
@@ -140,7 +140,7 @@ export default function AdminProducts() {
               </motion.button>
               <input ref={bulkFileRef} type="file" accept=".csv,.txt" onChange={handleBulkFileUpload} className="hidden" />
             </div>
-            <motion.button whileTap={{ scale: 0.95 }} onClick={onBulkImport} className="w-full py-3 rounded-xl text-sm font-bold text-white" style={{ background: '#E60000' }}>استيراد المنتجات</motion.button>
+            <motion.button whileTap={{ scale: 0.95 }} onClick={onBulkImport} className="w-full py-3 rounded-xl text-sm font-bold text-white" style={{ background: '#8B1E3A' }}>استيراد المنتجات</motion.button>
           </motion.div>
         )}
       </AnimatePresence>
@@ -165,7 +165,7 @@ export default function AdminProducts() {
                 )}
               </div>
               <span className="text-xs font-medium flex-1" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>{provider.name}</span>
-              <span className="text-xs font-bold" style={{ color: '#E60000' }}>{count}</span>
+              <span className="text-xs font-bold" style={{ color: '#8B1E3A' }}>{count}</span>
               <span className="text-[10px]" style={{ color: isDark ? '#666' : '#AAA' }}>منتج</span>
               <span className="text-[10px] px-1.5 py-0.5 rounded" style={{ background: 'rgba(16,185,129,0.1)', color: '#10B981' }}>{activeCount} نشط</span>
             </div>
@@ -202,13 +202,13 @@ export default function AdminProducts() {
                       <input type="text" value={editProductData.name} onChange={e => setEditProductData({ ...editProductData, name: e.target.value })} className="px-2 py-1 rounded text-xs outline-none w-28" style={inputStyle} />
                       <input type="number" value={editProductData.price} onChange={e => setEditProductData({ ...editProductData, price: parseFloat(e.target.value) || 0 })} className="px-2 py-1 rounded text-xs outline-none w-16" style={inputStyle} dir="ltr" />
                       <button onClick={() => { updatePackage(product.id, { name: editProductData.name, price: editProductData.price }); try { update(ref(database, `packages/${product.id}`), { name: editProductData.name, price: editProductData.price }); } catch {} setEditingProduct(null); }}><Save size={14} color="#10B981" /></button>
-                      <button onClick={() => setEditingProduct(null)}><X size={14} color="#E60000" /></button>
+                      <button onClick={() => setEditingProduct(null)}><X size={14} color="#8B1E3A" /></button>
                     </div>
                   ) : (
                     <>
                       <p className="text-sm font-medium" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>{product.name}</p>
                       <div className="flex items-center gap-2 mt-0.5">
-                        <span className="text-xs font-bold" style={{ color: '#E60000' }}>{product.price.toLocaleString()} {currencySymbols[product.currency]}</span>
+                        <span className="text-xs font-bold" style={{ color: '#8B1E3A' }}>{product.price.toLocaleString()} {currencySymbols[product.currency]}</span>
                         <span className="text-[10px] px-1.5 py-0.5 rounded" style={{ background: product.executionType === 'manual' ? 'rgba(245,158,11,0.15)' : 'rgba(16,185,129,0.15)', color: product.executionType === 'manual' ? '#F59E0B' : '#10B981' }}>
                           {product.executionType === 'manual' ? 'يدوي' : 'تلقائي'}
                         </span>
@@ -222,7 +222,7 @@ export default function AdminProducts() {
                     <button onClick={() => handleToggleProduct(product.id)}>
                       {product.isActive ? <ToggleRight size={22} color="#10B981" /> : <ToggleLeft size={22} color={isDark ? '#444' : '#CCC'} />}
                     </button>
-                    <button onClick={() => handleDeleteProduct(product.id)}><Trash2 size={14} color="#E60000" /></button>
+                    <button onClick={() => handleDeleteProduct(product.id)}><Trash2 size={14} color="#8B1E3A" /></button>
                   </div>
                 )}
               </div>

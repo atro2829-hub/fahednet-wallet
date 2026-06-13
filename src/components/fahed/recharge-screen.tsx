@@ -29,9 +29,10 @@ import { database } from '@/lib/firebase';
 import { useToast } from '@/components/fahed/toast-provider';
 import { serviceIcons } from '@/lib/service-icons';
 import { LOGO_BASE64, RED_LOGO_FILTER } from '@/lib/logo';
+import { getProviderFromPhone } from '@/lib/yemen-phone';
 
 const telecomCompanies = [
-  { id: 'yemen-mobile', name: 'يمن موبايل', nameEn: 'Yemen Mobile', color: '#E60000', letter: 'YM', inputLabel: 'رقم الهاتف', inputType: 'phone' as const, inputPrefix: '+967' },
+  { id: 'yemen-mobile', name: 'يمن موبايل', nameEn: 'Yemen Mobile', color: '#8B1E3A', letter: 'YM', inputLabel: 'رقم الهاتف', inputType: 'phone' as const, inputPrefix: '+967' },
   { id: 'yo', name: 'يو', nameEn: 'YO', color: '#FF6B00', letter: 'YO', inputLabel: 'رقم الهاتف', inputType: 'phone' as const, inputPrefix: '+967' },
   { id: 'sabafon', name: 'سبأفون', nameEn: 'Sabafon', color: '#2563EB', letter: 'S', inputLabel: 'رقم الهاتف', inputType: 'phone' as const, inputPrefix: '+967' },
   { id: 'y', name: 'واي', nameEn: 'Y', color: '#059669', letter: 'Y', inputLabel: 'رقم الهاتف', inputType: 'phone' as const, inputPrefix: '+967' },
@@ -246,16 +247,8 @@ export default function RechargeScreen() {
       }
 
       try {
-        const adminNotifId = generateReference();
-        const adminNotifRef = ref(database, `admin-notifications/${adminNotifId}`);
-        await set(adminNotifRef, {
-          id: adminNotifId,
-          type: 'new_order',
-          orderId: orderId,
-          message: `العميل ${user.name} طلب ${packageName} من ${selectedCompany.name} للرقم ${customerInput.trim()}`,
-          createdAt: new Date().toISOString(),
-          isRead: false,
-        });
+        // Admin notification is sent via notifyOrderCreated() below
+        // No need to write to a separate path — it goes to adminNotifications/
       } catch {
         // Non-critical
       }
@@ -271,6 +264,14 @@ export default function RechargeScreen() {
         isRead: false,
         createdAt: new Date().toISOString(),
       });
+
+      // Send FCM push notification for recharge order
+      try {
+        const { notifyOrderCreated } = await import('@/lib/notifications');
+        await notifyOrderCreated(user.id, packageName, amount, CURRENCY);
+      } catch (notifErr) {
+        console.warn('Recharge notification failed:', notifErr);
+      }
 
       setCompletedOrderId(orderId);
       setOrderResult('success');
@@ -360,53 +361,138 @@ export default function RechargeScreen() {
 
       <div ref={contentRef} className="px-4 space-y-4">
         {/* ==========================================
-            SECTION 1: Company Selection
+            SECTION 1: AdenCash-Style Telecom Selection
+            Phone input with prefix-based carrier detection
             ========================================== */}
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.05 }}
+          className="space-y-3"
         >
-          <h3 className="text-sm font-bold mb-3" style={{ color: isDark ? '#AAA' : '#888' }}>
-            اختر شركة الاتصالات
-          </h3>
-          <div className="grid grid-cols-3 gap-2.5">
-            {telecomCompanies.map((company, index) => (
+          {/* Carrier Logo Tabs - Show all 4, highlight detected one */}
+          <div className="flex items-center justify-center gap-3 py-2">
+            {telecomCompanies.filter(c => c.id !== 'yemen-net').map((company) => (
               <motion.button
                 key={company.id}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.03 * index }}
-                onClick={() => handleCompanySelect(company.id)}
-                whileTap={{ scale: 0.96 }}
-                className="flex flex-col items-center gap-2 p-3 rounded-2xl transition-all"
-                style={{
-                  background: selectedCompanyId === company.id
-                    ? isDark ? '#1A1A1A' : '#FFFFFF'
-                    : isDark ? '#141414' : '#FAFAFA',
-                  border: selectedCompanyId === company.id
-                    ? `2px solid ${company.color}`
-                    : `1px solid ${borderColor}`,
-                  boxShadow: selectedCompanyId === company.id
-                    ? `0 4px 16px ${company.color}25`
-                    : 'none',
+                onClick={() => {
+                  setSelectedCompanyId(company.id);
+                  setCustomerInput('');
+                  setOrderResult(null);
                 }}
+                whileTap={{ scale: 0.92 }}
+                className="relative flex flex-col items-center gap-1.5 transition-all"
               >
                 <div
-                  className="w-11 h-11 rounded-xl overflow-hidden flex items-center justify-center shrink-0"
-                  style={{ background: 'transparent' }}
+                  className="w-14 h-14 rounded-2xl overflow-hidden flex items-center justify-center transition-all"
+                  style={{
+                    background: selectedCompanyId === company.id
+                      ? isDark ? '#1A1A1A' : '#FFFFFF'
+                      : isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)',
+                    border: selectedCompanyId === company.id
+                      ? `2px solid ${company.color}`
+                      : `1px solid ${borderColor}`,
+                    boxShadow: selectedCompanyId === company.id
+                      ? `0 4px 16px ${company.color}30`
+                      : 'none',
+                  }}
                 >
-                  <img src={serviceIcons[company.id]} alt={company.name} className="w-full h-full object-contain" />
+                  <img src={serviceIcons[company.id]} alt={company.name} className="w-10 h-10 object-contain" />
                 </div>
-                <div className="text-center">
-                  <p className="text-xs font-bold leading-tight" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>
-                    {company.name}
-                  </p>
-                  <p className="text-[9px] mt-0.5" style={{ color: subTextColor }}>
-                    {company.nameEn}
-                  </p>
-                </div>
+                <span
+                  className="text-[10px] font-bold transition-all"
+                  style={{
+                    color: selectedCompanyId === company.id ? company.color : (isDark ? '#666' : '#999'),
+                  }}
+                >
+                  {company.name}
+                </span>
+                {selectedCompanyId === company.id && (
+                  <motion.div
+                    layoutId="carrier-indicator"
+                    className="absolute -bottom-1 w-4 h-1 rounded-full"
+                    style={{ background: company.color }}
+                  />
+                )}
               </motion.button>
+            ))}
+          </div>
+
+          {/* Phone Number Input with Prefix Detection */}
+          <div
+            className="rounded-2xl p-1"
+            style={{ background: isDark ? '#141414' : '#F0F0F0' }}
+          >
+            <div
+              className="flex items-center gap-2 px-4 py-3.5 rounded-xl"
+              style={{
+                background: isDark ? '#1A1A1A' : '#FFFFFF',
+                border: `1px solid ${selectedCompanyId && selectedCompany ? selectedCompany.color + '40' : borderColor}`,
+              }}
+            >
+              <Phone size={20} strokeWidth={1.5} color={selectedCompany?.color || '#8B1E3A'} />
+              <span
+                className="text-sm font-bold shrink-0"
+                style={{ color: isDark ? '#AAA' : '#666' }}
+                dir="ltr"
+              >
+                +967
+              </span>
+              <div className="w-px h-5 shrink-0" style={{ background: isDark ? '#333' : '#DDD' }} />
+              <input
+                type="tel"
+                placeholder="أدخل رقم الهاتف"
+                value={customerInput}
+                onChange={(e) => {
+                  const cleaned = e.target.value.replace(/\D/g, '').slice(0, 9);
+                  setCustomerInput(cleaned);
+                  // Auto-detect network from phone prefix
+                  if (cleaned.length >= 2) {
+                    const detectedProvider = getProviderFromPhone(cleaned);
+                    if (detectedProvider && detectedProvider !== selectedCompanyId) {
+                      setSelectedCompanyId(detectedProvider);
+                    }
+                  }
+                }}
+                className="flex-1 bg-transparent outline-none text-sm font-medium"
+                style={{ color: isDark ? '#FFF' : '#1a1a1a' }}
+                dir="ltr"
+              />
+              {/* Detected provider badge */}
+              {customerInput.length >= 2 && selectedCompany && (
+                <div
+                  className="flex items-center gap-1 px-2 py-1 rounded-lg shrink-0"
+                  style={{ background: selectedCompany.color + '15' }}
+                >
+                  <img src={serviceIcons[selectedCompany.id]} alt="" className="w-4 h-4 object-contain" />
+                  <span className="text-[9px] font-bold" style={{ color: selectedCompany.color }}>
+                    {selectedCompany.name}
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Prefix hint */}
+          <div className="flex items-center justify-center gap-1.5 flex-wrap">
+            <span className="text-[10px]" style={{ color: subTextColor }}>البادئات:</span>
+            {[
+              { prefix: '70, 73, 77, 78', name: 'يمن موبايل', color: '#8B1E3A' },
+              { prefix: '71, 75', name: 'يو', color: '#FF6B00' },
+              { prefix: '72, 79', name: 'واي', color: '#059669' },
+              { prefix: '74, 76', name: 'سبأفون', color: '#2563EB' },
+            ].map((item, i) => (
+              <span
+                key={i}
+                className="text-[9px] px-1.5 py-0.5 rounded font-medium"
+                style={{
+                  background: item.color + '10',
+                  color: item.color,
+                  border: `1px solid ${item.color}20`,
+                }}
+              >
+                {item.prefix} {item.name}
+              </span>
             ))}
           </div>
         </motion.div>
@@ -424,30 +510,15 @@ export default function RechargeScreen() {
               transition={{ duration: 0.3 }}
               className="space-y-4"
             >
-              {/* Section 2: Recharge Type Toggle */}
+              {/* Section 2: Recharge Type Toggle - Three options */}
               <div ref={rechargeTypeRef}>
-                <h3 className="text-sm font-bold mb-3" style={{ color: isDark ? '#AAA' : '#888' }}>
-                  نوع الشحن
-                </h3>
                 <div
                   className="flex rounded-2xl p-1"
                   style={{ background: isDark ? '#141414' : '#F0F0F0' }}
                 >
                   <button
-                    onClick={() => { setRechargeMode('packages'); setSelectedPackageId(null); setPromoApplied(false); setPromoDiscount(0); setPromoCode(''); }}
-                    className="flex-1 flex items-center justify-center gap-1.5 py-3 rounded-xl text-xs font-bold transition-all"
-                    style={{
-                      background: rechargeMode === 'packages' ? selectedCompany.color : 'transparent',
-                      color: rechargeMode === 'packages' ? '#FFF' : subTextColor,
-                      boxShadow: rechargeMode === 'packages' ? `0 2px 8px ${selectedCompany.color}30` : 'none',
-                    }}
-                  >
-                    <Package size={14} strokeWidth={2} />
-                    باقات محددة
-                  </button>
-                  <button
                     onClick={() => { setRechargeMode('instant'); setSelectedPackageId(null); setPromoApplied(false); setPromoDiscount(0); setPromoCode(''); }}
-                    className="flex-1 flex items-center justify-center gap-1.5 py-3 rounded-xl text-xs font-bold transition-all"
+                    className="flex-1 flex items-center justify-center gap-1.5 py-3 rounded-xl text-[11px] font-bold transition-all"
                     style={{
                       background: rechargeMode === 'instant' ? selectedCompany.color : 'transparent',
                       color: rechargeMode === 'instant' ? '#FFF' : subTextColor,
@@ -455,7 +526,30 @@ export default function RechargeScreen() {
                     }}
                   >
                     <Zap size={14} strokeWidth={2} />
+                    شحن عادي
+                  </button>
+                  <button
+                    onClick={() => { setRechargeMode('instant'); setSelectedPackageId(null); setPromoApplied(false); setPromoDiscount(0); setPromoCode(''); setCustomAmount(''); }}
+                    className="flex-1 flex items-center justify-center gap-1.5 py-3 rounded-xl text-[11px] font-bold transition-all"
+                    style={{
+                      background: rechargeMode === 'instant' && customAmount ? selectedCompany.color : 'transparent',
+                      color: rechargeMode === 'instant' && customAmount ? '#FFF' : subTextColor,
+                    }}
+                  >
+                    <Zap size={14} strokeWidth={2} />
                     شحن فوري
+                  </button>
+                  <button
+                    onClick={() => { setRechargeMode('packages'); setSelectedPackageId(null); setPromoApplied(false); setPromoDiscount(0); setPromoCode(''); }}
+                    className="flex-1 flex items-center justify-center gap-1.5 py-3 rounded-xl text-[11px] font-bold transition-all"
+                    style={{
+                      background: rechargeMode === 'packages' ? selectedCompany.color : 'transparent',
+                      color: rechargeMode === 'packages' ? '#FFF' : subTextColor,
+                      boxShadow: rechargeMode === 'packages' ? `0 2px 8px ${selectedCompany.color}30` : 'none',
+                    }}
+                  >
+                    <Package size={14} strokeWidth={2} />
+                    شحن باقة
                   </button>
                 </div>
               </div>
@@ -624,61 +718,23 @@ export default function RechargeScreen() {
                 )}
               </AnimatePresence>
 
-              {/* Section 4: Customer Input */}
-              <div>
-                <h3 className="text-sm font-bold mb-3" style={{ color: isDark ? '#AAA' : '#888' }}>
-                  {selectedCompany.inputLabel}
-                </h3>
-                {/* Quick Recharge */}
-                {lastOrder && (
+              {/* Section 4: Quick Recharge (phone input is now at top) */}
+              {lastOrder && (
+                <div>
                   <button
                     onClick={handleQuickRecharge}
-                    className="w-full py-2.5 rounded-2xl flex items-center justify-center gap-2 text-xs font-medium mb-3 active:scale-[0.98] transition-transform"
+                    className="w-full py-2.5 rounded-2xl flex items-center justify-center gap-2 text-xs font-medium active:scale-[0.98] transition-transform"
                     style={{
-                      background: 'rgba(230,0,0,0.06)',
-                      border: '1px solid rgba(230,0,0,0.15)',
-                      color: '#E60000',
+                      background: 'rgba(139,30,58,0.06)',
+                      border: '1px solid rgba(139,30,58,0.15)',
+                      color: '#8B1E3A',
                     }}
                   >
                     <RotateCcw size={14} strokeWidth={1.5} />
                     <span>إعادة آخر طلب ({lastOrder.packageName})</span>
                   </button>
-                )}
-                <div
-                  className="flex items-center gap-2 px-4 py-3.5 rounded-2xl"
-                  style={{ background: inputBg, border: `1px solid ${borderColor}` }}
-                >
-                  <Phone size={18} strokeWidth={1.5} color={selectedCompany.color} />
-                  {selectedCompany.inputPrefix && (
-                    <>
-                      <span
-                        className="text-sm font-medium shrink-0"
-                        style={{ color: subTextColor }}
-                        dir="ltr"
-                      >
-                        {selectedCompany.inputPrefix}
-                      </span>
-                      <div className="w-px h-5 shrink-0" style={{ background: isDark ? '#333' : '#DDD' }} />
-                    </>
-                  )}
-                  <input
-                    type={selectedCompany.inputType === 'phone' ? 'tel' : 'text'}
-                    placeholder={selectedCompany.inputLabel}
-                    value={customerInput}
-                    onChange={(e) => {
-                      if (selectedCompany.inputType === 'phone') {
-                        const cleaned = e.target.value.replace(/\D/g, '').slice(0, 9);
-                        setCustomerInput(cleaned);
-                      } else {
-                        setCustomerInput(e.target.value);
-                      }
-                    }}
-                    className="flex-1 bg-transparent outline-none text-sm"
-                    style={{ color: isDark ? '#FFF' : '#1a1a1a' }}
-                    dir={selectedCompany.inputType === 'phone' ? 'ltr' : 'auto'}
-                  />
                 </div>
-              </div>
+              )}
 
               {/* Promo Code (packages mode only) */}
               {rechargeMode === 'packages' && selectedPackage && (
@@ -694,7 +750,7 @@ export default function RechargeScreen() {
                         border: promoApplied ? '1px solid #10B981' : `1px solid ${borderColor}`,
                       }}
                     >
-                      <Tag size={16} strokeWidth={1.5} color={promoApplied ? '#10B981' : '#E60000'} />
+                      <Tag size={16} strokeWidth={1.5} color={promoApplied ? '#10B981' : '#8B1E3A'} />
                       <input
                         type="text"
                         placeholder="أدخل الكود"
@@ -711,7 +767,7 @@ export default function RechargeScreen() {
                       onClick={handleApplyPromo}
                       disabled={promoApplied || !promoCode.trim()}
                       className="px-4 rounded-2xl text-[10px] font-medium text-white disabled:opacity-40"
-                      style={{ background: promoApplied ? '#10B981' : '#E60000' }}
+                      style={{ background: promoApplied ? '#10B981' : '#8B1E3A' }}
                     >
                       {promoApplied ? 'مطبق' : 'تطبيق'}
                     </button>
@@ -732,7 +788,7 @@ export default function RechargeScreen() {
                     style={{ background: cardBg, border: `1px solid ${borderColor}` }}
                   >
                     <div className="flex items-center gap-2 mb-3">
-                      <Receipt size={16} strokeWidth={1.5} color="#E60000" />
+                      <Receipt size={16} strokeWidth={1.5} color="#8B1E3A" />
                       <span className="text-xs font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>
                         ملخص العملية
                       </span>
@@ -762,7 +818,7 @@ export default function RechargeScreen() {
                       </div>
                       <div className="flex justify-between">
                         <span className="text-xs" style={{ color: subTextColor }}>المبلغ</span>
-                        <span className="text-xs font-bold" style={{ color: '#E60000' }}>
+                        <span className="text-xs font-bold" style={{ color: '#8B1E3A' }}>
                           {effectivePrice.toLocaleString()} {currencySymbols[CURRENCY]}
                         </span>
                       </div>
@@ -786,7 +842,7 @@ export default function RechargeScreen() {
                         <span
                           className="text-sm font-bold"
                           style={{
-                            color: getBalance() - effectivePrice >= 0 ? '#10B981' : '#E60000',
+                            color: getBalance() - effectivePrice >= 0 ? '#10B981' : '#8B1E3A',
                           }}
                         >
                           {(getBalance() - effectivePrice).toLocaleString()} {currencySymbols[CURRENCY]}
@@ -801,7 +857,7 @@ export default function RechargeScreen() {
                       initial={{ opacity: 0, y: -5 }}
                       animate={{ opacity: 1, y: 0 }}
                       className="text-xs text-center mb-3"
-                      style={{ color: '#E60000' }}
+                      style={{ color: '#8B1E3A' }}
                     >
                       {errorMessage}
                     </motion.p>
@@ -947,7 +1003,7 @@ export default function RechargeScreen() {
                   style={{ background: isDark ? 'rgba(255,255,255,0.06)' : '#F5F5F5' }}
                 >
                   <p className="text-[11px] mb-1" style={{ color: subTextColor }}>المبلغ المدفوع</p>
-                  <p className="text-2xl font-bold" style={{ color: '#E60000' }}>
+                  <p className="text-2xl font-bold" style={{ color: '#8B1E3A' }}>
                     {effectivePrice.toLocaleString()}
                     <span className="text-sm font-medium mr-1" style={{ color: subTextColor }}>{currencySymbols[CURRENCY]}</span>
                   </p>
@@ -971,18 +1027,18 @@ export default function RechargeScreen() {
                         </span>
                         {row.isRef ? (
                           <div className="flex items-center gap-1.5">
-                            <span className="text-[12px] font-mono font-bold" style={{ color: '#E60000' }} dir="ltr">{row.value}</span>
+                            <span className="text-[12px] font-mono font-bold" style={{ color: '#8B1E3A' }} dir="ltr">{row.value}</span>
                             <button
                               onClick={async () => {
                                 try { await navigator.clipboard.writeText(row.value); showToast('success', 'تم النسخ', 'تم نسخ رقم المرجع'); } catch {}
                               }}
                               className="active:scale-90 transition-transform"
                             >
-                              <Copy size={12} color="#E60000" />
+                              <Copy size={12} color="#8B1E3A" />
                             </button>
                           </div>
                         ) : row.isAmount ? (
-                          <span className="text-[12px] font-bold" style={{ color: '#E60000' }}>{row.value}</span>
+                          <span className="text-[12px] font-bold" style={{ color: '#8B1E3A' }}>{row.value}</span>
                         ) : row.isStatus ? (
                           <span className="text-[11px] px-2.5 py-0.5 rounded-full font-medium" style={{ background: 'rgba(245,158,11,0.12)', color: '#F59E0B' }}>
                             {row.value}
@@ -1024,8 +1080,8 @@ export default function RechargeScreen() {
                     whileTap={{ scale: 0.96 }}
                     className="flex-1 py-3 rounded-2xl flex items-center justify-center gap-2 text-sm font-bold text-white transition-all"
                     style={{
-                      background: '#E60000',
-                      boxShadow: '0 2px 8px rgba(230,0,0,0.2)',
+                      background: '#8B1E3A',
+                      boxShadow: '0 2px 8px rgba(139,30,58,0.2)',
                     }}
                   >
                     <Download size={16} strokeWidth={1.5} />
@@ -1068,9 +1124,9 @@ export default function RechargeScreen() {
             >
               <div
                 className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"
-                style={{ background: 'rgba(230,0,0,0.15)' }}
+                style={{ background: 'rgba(139,30,58,0.15)' }}
               >
-                <AlertTriangle size={32} strokeWidth={2} color="#E60000" />
+                <AlertTriangle size={32} strokeWidth={2} color="#8B1E3A" />
               </div>
               <h3 className="text-lg font-bold mb-2" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>
                 رصيد غير كافٍ
@@ -1091,7 +1147,7 @@ export default function RechargeScreen() {
                     useAppStore.getState().setActiveScreen(prev || '');
                   }}
                   className="flex-1 py-3.5 rounded-2xl font-bold text-white text-sm"
-                  style={{ background: 'linear-gradient(135deg, #E60000 0%, #B30000 100%)' }}
+                  style={{ background: 'linear-gradient(135deg, #8B1E3A 0%, #5C1225 100%)' }}
                 >
                   حسناً
                 </button>

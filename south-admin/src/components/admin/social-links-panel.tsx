@@ -54,7 +54,7 @@ export default function SocialLinksPanel() {
     finally { setSaving(false); }
   };
 
-  if (loading) return <div className="flex items-center justify-center min-h-[400px]"><div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" /></div>;
+  if (loading) return <div className="flex items-center justify-center min-h-[400px]"><div className="w-8 h-8 border-2 border-[#8B1E3A] border-t-transparent rounded-full animate-spin" /></div>;
 
   const fields = [
     { key: 'whatsapp', label: 'واتساب', icon: 'W' },
@@ -79,7 +79,7 @@ export default function SocialLinksPanel() {
           <CardContent className="p-6 space-y-4">
             {fields.map((f) => (
               <div key={f.key} className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-purple-500/10 flex items-center justify-center text-purple-600 font-bold text-sm shrink-0">
+                <div className="w-10 h-10 rounded-lg bg-[#8B1E3A]/10 flex items-center justify-center text-[#8B1E3A] font-bold text-sm shrink-0">
                   {f.icon}
                 </div>
                 <div className="flex-1">
@@ -94,7 +94,7 @@ export default function SocialLinksPanel() {
               </div>
             ))}
 
-            <Button onClick={handleSave} disabled={saving} className="w-full bg-purple-600 hover:bg-purple-700">
+            <Button onClick={handleSave} disabled={saving} className="w-full bg-[#7B1A30] hover:bg-[#5C1225]">
               {saving ? <Loader2 className="w-4 h-4 ml-2 animate-spin" /> : <Save className="w-4 h-4 ml-2" />}
               حفظ الروابط
             </Button>

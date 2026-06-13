@@ -28,8 +28,8 @@ export default function AdminWithdraw() {
           <p className="text-lg font-bold" style={{ color: '#10B981' }}>{withdrawRequests.filter(w => w.status === 'approved').length}</p>
           <p className="text-[10px]" style={{ color: isDark ? '#888' : '#888' }}>مقبول</p>
         </div>
-        <div className="rounded-xl p-3 text-center" style={{ ...cardStyle, borderRight: '3px solid #E60000' }}>
-          <p className="text-lg font-bold" style={{ color: '#E60000' }}>{withdrawRequests.filter(w => w.status === 'rejected').length}</p>
+        <div className="rounded-xl p-3 text-center" style={{ ...cardStyle, borderRight: '3px solid #8B1E3A' }}>
+          <p className="text-lg font-bold" style={{ color: '#8B1E3A' }}>{withdrawRequests.filter(w => w.status === 'rejected').length}</p>
           <p className="text-[10px]" style={{ color: isDark ? '#888' : '#888' }}>مرفوض</p>
         </div>
       </div>
@@ -37,7 +37,7 @@ export default function AdminWithdraw() {
       <div className="flex gap-2 overflow-x-auto pb-1">
         {(['pending', 'approved', 'rejected', 'all'] as const).map((f) => (
           <button key={f} onClick={() => setWithdrawFilter(f)} className="px-3 py-2 rounded-xl text-xs font-medium whitespace-nowrap"
-            style={{ background: withdrawFilter === f ? 'rgba(230,0,0,0.2)' : isDark ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.8)', color: withdrawFilter === f ? '#FFF' : isDark ? '#BBB' : '#666', border: withdrawFilter === f ? '1px solid rgba(230,0,0,0.3)' : isDark ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(0,0,0,0.06)' }}>
+            style={{ background: withdrawFilter === f ? 'rgba(139,30,58,0.2)' : isDark ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.8)', color: withdrawFilter === f ? '#FFF' : isDark ? '#BBB' : '#666', border: withdrawFilter === f ? '1px solid rgba(139,30,58,0.3)' : isDark ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(0,0,0,0.06)' }}>
             {f === 'pending' ? 'قيد الانتظار' : f === 'approved' ? 'مقبول' : f === 'rejected' ? 'مرفوض' : 'الكل'}
           </button>
         ))}
@@ -58,7 +58,7 @@ export default function AdminWithdraw() {
                 </p>
               </div>
               <div className="text-left">
-                <p className="text-sm font-bold" style={{ color: '#E60000' }}>{w.amount.toLocaleString()} {currencySymbols[w.currency]}</p>
+                <p className="text-sm font-bold" style={{ color: '#8B1E3A' }}>{w.amount.toLocaleString()} {currencySymbols[w.currency]}</p>
                 <span className="text-[10px] px-2 py-0.5 rounded-full" style={{ background: s.bg, color: s.color }}>{s.label}</span>
               </div>
             </div>
@@ -79,7 +79,7 @@ export default function AdminWithdraw() {
                 <motion.button whileTap={{ scale: 0.95 }} onClick={() => handleApproveWithdraw(w)} className="flex-1 flex items-center justify-center gap-1 py-2.5 rounded-xl text-xs font-bold text-white" style={{ background: '#10B981' }}>
                   <CheckCircle2 size={14} /> قبول وتنفيذ
                 </motion.button>
-                <motion.button whileTap={{ scale: 0.95 }} onClick={() => handleRejectWithdraw(w)} className="flex-1 flex items-center justify-center gap-1 py-2.5 rounded-xl text-xs font-bold" style={{ background: 'rgba(230,0,0,0.1)', color: '#E60000' }}>
+                <motion.button whileTap={{ scale: 0.95 }} onClick={() => handleRejectWithdraw(w)} className="flex-1 flex items-center justify-center gap-1 py-2.5 rounded-xl text-xs font-bold" style={{ background: 'rgba(139,30,58,0.1)', color: '#8B1E3A' }}>
                   <XCircle size={14} /> رفض وإعادة
                 </motion.button>
               </div>

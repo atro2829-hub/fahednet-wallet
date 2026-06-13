@@ -24,7 +24,7 @@ const balanceCards = [
     income: 4300,
     expense: 1130,
     gradientFrom: '#C1121F',
-    gradientTo: '#E60000',
+    gradientTo: '#8B1E3A',
     flagEmoji: '🇾🇪',
   },
   {
@@ -299,7 +299,7 @@ export default function WalletScreen() {
               onClick={() => setActiveFilter(tab)}
               className={`px-5 py-2 rounded-xl text-xs font-bold transition-all ${
                 activeFilter === tab
-                  ? 'bg-[#E60000] text-white shadow-[0_2px_8px_rgba(230,0,0,0.25)]'
+                  ? 'bg-[#8B1E3A] text-white shadow-[0_2px_8px_rgba(139,30,58,0.25)]'
                   : 'bg-white text-[#1a1a1a] shadow-[0_2px_8px_rgba(0,0,0,0.04)]'
               }`}
             >
@@ -313,7 +313,7 @@ export default function WalletScreen() {
       <div className="px-4">
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-[15px] font-bold text-[#1a1a1a]">آخر العمليات</h2>
-          <button className="text-[#E60000] text-xs font-bold">عرض الكل</button>
+          <button className="text-[#8B1E3A] text-xs font-bold">عرض الكل</button>
         </div>
         <div className="space-y-2.5 max-h-96 overflow-y-auto">
           {filteredTransactions.map((tx, index) => {
@@ -334,7 +334,7 @@ export default function WalletScreen() {
                   {tx.amount > 0 ? (
                     <ArrowDownRight className="w-[18px] h-[18px] text-green-500 stroke-[1.5px]" />
                   ) : (
-                    <ArrowUpRight className="w-[18px] h-[18px] text-[#E60000] stroke-[1.5px]" />
+                    <ArrowUpRight className="w-[18px] h-[18px] text-[#8B1E3A] stroke-[1.5px]" />
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
@@ -344,7 +344,7 @@ export default function WalletScreen() {
                 <div className="text-left shrink-0">
                   <p
                     className={`text-[13px] font-bold ${
-                      tx.amount > 0 ? 'text-green-500' : 'text-[#E60000]'
+                      tx.amount > 0 ? 'text-green-500' : 'text-[#8B1E3A]'
                     }`}
                   >
                     {tx.amount > 0 ? '+' : ''}

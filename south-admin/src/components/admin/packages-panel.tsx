@@ -161,7 +161,7 @@ export default function PackagesPanel() {
     return matchesSearch && matchesProvider;
   });
 
-  if (loading) return <div className="flex items-center justify-center min-h-[400px]"><div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" /></div>;
+  if (loading) return <div className="flex items-center justify-center min-h-[400px]"><div className="w-8 h-8 border-2 border-[#8B1E3A] border-t-transparent rounded-full animate-spin" /></div>;
 
   return (
     <div className="space-y-6">
@@ -213,8 +213,8 @@ export default function PackagesPanel() {
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-purple-500/10 flex items-center justify-center">
-                      <Package className="w-5 h-5 text-purple-500" />
+                    <div className="w-10 h-10 rounded-lg bg-[#8B1E3A]/10 flex items-center justify-center">
+                      <Package className="w-5 h-5 text-[#8B1E3A]" />
                     </div>
                     <div>
                       <p className="font-medium text-sm">{pkg.name}</p>

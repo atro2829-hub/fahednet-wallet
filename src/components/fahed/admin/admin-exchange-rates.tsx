@@ -52,7 +52,7 @@ export default function AdminExchangeRates() {
       {/* Quick set primary rates */}
       <div className="rounded-2xl p-4" style={cardStyle}>
         <div className="flex items-center gap-2 mb-4">
-          <Zap size={16} color="#E60000" />
+          <Zap size={16} color="#8B1E3A" />
           <h3 className="text-sm font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>الأسعار الأساسية</h3>
           <span className="text-[10px] px-2 py-0.5 rounded-full" style={{ background: 'rgba(245,158,11,0.1)', color: '#F59E0B' }}>تعديل هذين وسيتم حساب الباقي تلقائياً</span>
         </div>
@@ -83,7 +83,7 @@ export default function AdminExchangeRates() {
       {/* All rates (auto-calculated) */}
       <div className="rounded-2xl p-4" style={cardStyle}>
         <div className="flex items-center gap-2 mb-4">
-          <RefreshCw size={16} color="#E60000" />
+          <RefreshCw size={16} color="#8B1E3A" />
           <h3 className="text-sm font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>جميع أسعار الصرف</h3>
           <span className="text-[10px] px-2 py-0.5 rounded-full" style={{ background: 'rgba(16,185,129,0.1)', color: '#10B981' }}>محسوبة تلقائياً</span>
         </div>
@@ -109,7 +109,7 @@ export default function AdminExchangeRates() {
       {/* Commission */}
       <div className="rounded-2xl p-4" style={cardStyle}>
         <div className="flex items-center gap-2 mb-3">
-          <Percent size={16} color="#E60000" />
+          <Percent size={16} color="#8B1E3A" />
           <h3 className="text-sm font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>نسبة العمولة على التحويلات</h3>
         </div>
         <div className="flex items-center gap-3">
@@ -122,14 +122,14 @@ export default function AdminExchangeRates() {
       {/* Save button */}
       <motion.button whileTap={{ scale: 0.95 }} onClick={onSave}
         className="w-full py-3.5 rounded-2xl flex items-center justify-center gap-2 text-sm font-bold text-white"
-        style={{ background: '#E60000' }}>
+        style={{ background: '#8B1E3A' }}>
         {ratesSaved ? <><CheckCircle2 size={18} /> تم الحفظ</> : <><Save size={18} /> حفظ أسعار الصرف والعمولة</>}
       </motion.button>
 
       {/* Live Preview */}
       <div className="rounded-2xl p-4" style={cardStyle}>
         <div className="flex items-center gap-2 mb-3">
-          <Eye size={16} color="#E60000" />
+          <Eye size={16} color="#8B1E3A" />
           <h3 className="text-sm font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>معاينة مباشرة</h3>
         </div>
         <div className="space-y-2">
@@ -147,7 +147,7 @@ export default function AdminExchangeRates() {
                 <div className="flex items-center justify-between mb-1">
                   <span className="text-xs font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>{formatNumber(preview.amount)} {currencySymbols[preview.from as keyof typeof currencySymbols]}</span>
                   <ArrowLeftRight size={12} color={isDark ? '#666' : '#AAA'} />
-                  <span className="text-xs font-bold" style={{ color: '#E60000' }}>{formatNumber(Math.round(afterCommission * 100) / 100)} {currencySymbols[preview.to as keyof typeof currencySymbols]}</span>
+                  <span className="text-xs font-bold" style={{ color: '#8B1E3A' }}>{formatNumber(Math.round(afterCommission * 100) / 100)} {currencySymbols[preview.to as keyof typeof currencySymbols]}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-[9px]" style={{ color: isDark ? '#555' : '#AAA' }}>السعر: {preview.rate}</span>

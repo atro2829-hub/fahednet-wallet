@@ -160,7 +160,7 @@ export default function AdminReports({ allOrders, firebaseUsers, depositRequests
       {/* Header */}
       <div className="rounded-2xl p-4" style={cardStyle}>
         <div className="flex items-center gap-2 mb-2">
-          <Download size={18} color="#E60000" />
+          <Download size={18} color="#8B1E3A" />
           <h3 className="text-sm font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>تصدير التقارير</h3>
         </div>
         <p className="text-xs" style={{ color: isDark ? '#666' : '#AAA' }}>

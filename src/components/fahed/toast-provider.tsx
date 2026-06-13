@@ -28,7 +28,7 @@ export function useToast() {
 
 const toastConfig: Record<ToastType, { icon: typeof CheckCircle2; color: string; bg: string }> = {
   success: { icon: CheckCircle2, color: '#10B981', bg: 'rgba(16,185,129,0.12)' },
-  error: { icon: XCircle, color: '#E60000', bg: 'rgba(230,0,0,0.12)' },
+  error: { icon: XCircle, color: '#8B1E3A', bg: 'rgba(139,30,58,0.12)' },
   warning: { icon: AlertTriangle, color: '#F59E0B', bg: 'rgba(245,158,11,0.12)' },
   info: { icon: Info, color: '#3B82F6', bg: 'rgba(59,130,246,0.12)' },
 };

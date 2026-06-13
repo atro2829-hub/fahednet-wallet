@@ -39,14 +39,14 @@ export default function BottomNav({ activeTab, onTabChange, onFabClick }: Bottom
             {/* FAB Button - Dark color, thumb-reachable, centered */}
             <motion.button
               onClick={onFabClick}
-              className="relative -mt-8 w-14 h-14 rounded-full flex items-center justify-center shadow-[0_4px_20px_rgba(230,0,0,0.3)]"
+              className="relative -mt-8 w-14 h-14 rounded-full flex items-center justify-center shadow-[0_4px_20px_rgba(139,30,58,0.3)]"
               style={{ background: 'linear-gradient(135deg, #1a1a1a 0%, #333 100%)' }}
               whileTap={{ scale: 0.9 }}
               whileHover={{ scale: 1.05 }}
             >
               <ArrowUp className="w-6 h-6 text-white stroke-[2px]" />
               {/* Red accent ring around FAB */}
-              <div className="absolute inset-0 rounded-full border-2 border-[#E60000]/20" />
+              <div className="absolute inset-0 rounded-full border-2 border-[#8B1E3A]/20" />
             </motion.button>
 
             <NavItem
@@ -79,7 +79,7 @@ function NavItem({
     <button
       onClick={onClick}
       className={`flex flex-col items-center gap-0.5 py-1 px-3 transition-colors relative ${
-        isActive ? 'text-[#E60000]' : 'text-gray-400'
+        isActive ? 'text-[#8B1E3A]' : 'text-gray-400'
       }`}
     >
       <tab.icon className={`w-5 h-5 ${isActive ? 'stroke-[2.5px]' : 'stroke-[1.5px]'}`} />
@@ -87,7 +87,7 @@ function NavItem({
       {/* Active indicator dot */}
       {isActive && (
         <motion.div
-          className="absolute -top-1 w-1 h-1 bg-[#E60000] rounded-full"
+          className="absolute -top-1 w-1 h-1 bg-[#8B1E3A] rounded-full"
           layoutId="activeTab"
           transition={{ type: 'spring', stiffness: 300, damping: 25 }}
         />

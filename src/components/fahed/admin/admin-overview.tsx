@@ -14,7 +14,7 @@ export default function AdminOverview() {
   const maxRevenue = Math.max(...revenueChart.map(d => d.amount), 1);
 
   const categoryData = [
-    { name: 'اتصالات', count: allOrders.filter(o => providers.find(p => p.id === o.providerId)?.categoryId === 'telecom').length, color: '#E60000' },
+    { name: 'اتصالات', count: allOrders.filter(o => providers.find(p => p.id === o.providerId)?.categoryId === 'telecom').length, color: '#8B1E3A' },
     { name: 'ألعاب', count: allOrders.filter(o => providers.find(p => p.id === o.providerId)?.categoryId === 'games').length, color: '#F59E0B' },
     { name: 'إنترنت', count: allOrders.filter(o => providers.find(p => p.id === o.providerId)?.categoryId === 'internet').length, color: '#3B82F6' },
   ];
@@ -28,7 +28,7 @@ export default function AdminOverview() {
           { label: 'إجمالي الطلبات', value: statsData.totalOrders, icon: ShoppingBag, color: '#8B5CF6', bg: 'rgba(139,92,246,0.12)' },
           { label: 'قيد الانتظار', value: statsData.pendingOrders, icon: Clock, color: '#F59E0B', bg: 'rgba(245,158,11,0.12)', glow: true },
           { label: 'مكتملة', value: statsData.completedOrders, icon: CheckCircle2, color: '#10B981', bg: 'rgba(16,185,129,0.12)' },
-          { label: 'الإيرادات (ر.ي)', value: statsData.revenueYER, icon: DollarSign, color: '#E60000', bg: 'rgba(230,0,0,0.12)' },
+          { label: 'الإيرادات (ر.ي)', value: statsData.revenueYER, icon: DollarSign, color: '#8B1E3A', bg: 'rgba(139,30,58,0.12)' },
         ].map((stat, i) => {
           const Icon = stat.icon;
           return (
@@ -50,14 +50,14 @@ export default function AdminOverview() {
       {/* Revenue Chart */}
       <div className="rounded-2xl p-4" style={cardStyle}>
         <div className="flex items-center gap-2 mb-4">
-          <Activity size={16} color="#E60000" />
+          <Activity size={16} color="#8B1E3A" />
           <h3 className="text-sm font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>الإيرادات - آخر 7 أيام</h3>
         </div>
         <div className="flex items-end gap-2 h-32">
           {revenueChart.map((d, i) => (
             <div key={i} className="flex-1 flex flex-col items-center gap-1">
               <motion.div initial={{ height: 0 }} animate={{ height: `${Math.max((d.amount / maxRevenue) * 100, 4)}%` }} transition={{ delay: i * 0.05, duration: 0.5 }}
-                className="w-full rounded-t-lg min-h-[4px]" style={{ background: 'linear-gradient(to top, #E60000, #FF4444)' }} />
+                className="w-full rounded-t-lg min-h-[4px]" style={{ background: 'linear-gradient(to top, #8B1E3A, #FF4444)' }} />
               <span className="text-[9px]" style={{ color: isDark ? '#666' : '#AAA' }}>{d.day}</span>
             </div>
           ))}
@@ -67,7 +67,7 @@ export default function AdminOverview() {
       {/* Orders by Category */}
       <div className="rounded-2xl p-4" style={cardStyle}>
         <div className="flex items-center gap-2 mb-3">
-          <PieChart size={16} color="#E60000" />
+          <PieChart size={16} color="#8B1E3A" />
           <h3 className="text-sm font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>الطلبات حسب الفئة</h3>
         </div>
         <div className="space-y-2">
@@ -92,7 +92,7 @@ export default function AdminOverview() {
               <Clock size={14} color="#F59E0B" />
               <h3 className="text-sm font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>طلبات بانتظار التنفيذ</h3>
             </div>
-            <button onClick={() => setActiveTab('orders')} className="text-xs font-medium" style={{ color: '#E60000' }}>عرض الكل</button>
+            <button onClick={() => setActiveTab('orders')} className="text-xs font-medium" style={{ color: '#8B1E3A' }}>عرض الكل</button>
           </div>
           <div className="space-y-2">
             {pendingOrders.slice(0, 5).map((order) => (
@@ -105,8 +105,8 @@ export default function AdminOverview() {
                   <motion.button whileTap={{ scale: 0.85 }} onClick={() => handleCompleteOrder(order)} className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'rgba(16,185,129,0.15)' }}>
                     <CheckCircle2 size={14} color="#10B981" />
                   </motion.button>
-                  <motion.button whileTap={{ scale: 0.85 }} onClick={() => handleCancelOrder(order)} className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'rgba(230,0,0,0.15)' }}>
-                    <XCircle size={14} color="#E60000" />
+                  <motion.button whileTap={{ scale: 0.85 }} onClick={() => handleCancelOrder(order)} className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'rgba(139,30,58,0.15)' }}>
+                    <XCircle size={14} color="#8B1E3A" />
                   </motion.button>
                 </div>
               </div>

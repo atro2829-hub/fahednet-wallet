@@ -372,6 +372,9 @@ export default function TransferModal() {
       setTransferRef(txRef);
       setStep('success');
 
+      // Play transfer success sound
+      try { const { playTransactionSound } = await import('@/lib/transaction-sounds'); playTransactionSound('transfer'); } catch {}
+
       // Update user balance in local store
       const updatedUser = { ...user };
       const userBalanceField = `balance${currency}` as keyof typeof user;
@@ -491,8 +494,8 @@ export default function TransferModal() {
                     <div
                       className="w-16 h-16 rounded-full flex items-center justify-center mb-3"
                       style={{
-                        background: 'linear-gradient(135deg, #E60000 0%, #8B0000 100%)',
-                        boxShadow: '0 4px 16px rgba(230,0,0,0.3)',
+                        background: 'linear-gradient(135deg, #8B1E3A 0%, #4E0A19 100%)',
+                        boxShadow: '0 4px 16px rgba(139,30,58,0.3)',
                       }}
                     >
                       {recipientInfo.avatar ? (
@@ -531,7 +534,7 @@ export default function TransferModal() {
                   >
                     <div className="flex justify-between items-center">
                       <span className="text-xs" style={{ color: isDark ? '#888' : '#AAA' }}>المبلغ</span>
-                      <span className="text-base font-bold" style={{ color: '#E60000' }}>
+                      <span className="text-base font-bold" style={{ color: '#8B1E3A' }}>
                         {parseFloat(amount).toLocaleString('ar-SA')} {currencySymbols[currency]}
                       </span>
                     </div>
@@ -548,7 +551,7 @@ export default function TransferModal() {
                       <span className="text-xs" style={{ color: isDark ? '#888' : '#AAA' }}>رصيدك بعد التحويل</span>
                       <span
                         className="text-sm font-bold"
-                        style={{ color: balanceAfter >= 0 ? '#10B981' : '#E60000' }}
+                        style={{ color: balanceAfter >= 0 ? '#10B981' : '#8B1E3A' }}
                       >
                         {balanceAfter.toLocaleString('ar-SA')} {currencySymbols[currency]}
                       </span>
@@ -592,8 +595,8 @@ export default function TransferModal() {
                     style={{
                       background: isLoading
                         ? '#999'
-                        : 'linear-gradient(135deg, #E60000 0%, #CC0000 100%)',
-                      boxShadow: isLoading ? 'none' : '0 4px 16px rgba(230,0,0,0.3)',
+                        : 'linear-gradient(135deg, #8B1E3A 0%, #6B1528 100%)',
+                      boxShadow: isLoading ? 'none' : '0 4px 16px rgba(139,30,58,0.3)',
                     }}
                   >
                     {isLoading ? (
@@ -632,7 +635,7 @@ export default function TransferModal() {
                   }}
                 >
                   <div className="flex items-center gap-2 mb-4">
-                    <Receipt size={18} strokeWidth={1.5} color="#E60000" />
+                    <Receipt size={18} strokeWidth={1.5} color="#8B1E3A" />
                     <span className="text-sm font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>
                       إيصال التحويل
                     </span>
@@ -644,8 +647,8 @@ export default function TransferModal() {
                         onClick={handleCopyRef}
                         className="flex items-center gap-1"
                       >
-                        <span className="text-xs font-mono font-bold" style={{ color: '#E60000' }} dir="ltr">{transferRef}</span>
-                        <Copy size={10} color="#E60000" />
+                        <span className="text-xs font-mono font-bold" style={{ color: '#8B1E3A' }} dir="ltr">{transferRef}</span>
+                        <Copy size={10} color="#8B1E3A" />
                       </button>
                     </div>
                     <div className="flex justify-between">
@@ -669,7 +672,7 @@ export default function TransferModal() {
                     <div className="h-px" style={{ background: isDark ? '#333' : '#EEE' }} />
                     <div className="flex justify-between">
                       <span className="text-xs font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>المبلغ</span>
-                      <span className="text-sm font-bold" style={{ color: '#E60000' }}>
+                      <span className="text-sm font-bold" style={{ color: '#8B1E3A' }}>
                         {parseFloat(amount).toLocaleString('ar-SA')} {currencySymbols[currency]}
                       </span>
                     </div>
@@ -707,9 +710,9 @@ export default function TransferModal() {
                 animate={{ scale: 1, opacity: 1 }}
                 className="flex flex-col items-center py-4 px-6"
               >
-                <div className="flex items-center gap-2 px-4 py-2 rounded-xl w-full" style={{ background: 'rgba(230,0,0,0.1)' }}>
-                  <AlertCircle size={18} color="#E60000" />
-                  <p className="text-sm" style={{ color: '#E60000' }}>
+                <div className="flex items-center gap-2 px-4 py-2 rounded-xl w-full" style={{ background: 'rgba(139,30,58,0.1)' }}>
+                  <AlertCircle size={18} color="#8B1E3A" />
+                  <p className="text-sm" style={{ color: '#8B1E3A' }}>
                     {errorMsg}
                   </p>
                 </div>
@@ -728,7 +731,7 @@ export default function TransferModal() {
                     onClick={() => setTransferMode('userId')}
                     className="flex-1 py-2.5 text-xs font-medium transition-all flex items-center justify-center gap-1.5"
                     style={{
-                      background: transferMode === 'userId' ? '#E60000' : 'transparent',
+                      background: transferMode === 'userId' ? '#8B1E3A' : 'transparent',
                       color: transferMode === 'userId' ? '#FFF' : isDark ? '#AAA' : '#888',
                     }}
                   >
@@ -739,7 +742,7 @@ export default function TransferModal() {
                     onClick={() => setTransferMode('phone')}
                     className="flex-1 py-2.5 text-xs font-medium transition-all flex items-center justify-center gap-1.5"
                     style={{
-                      background: transferMode === 'phone' ? '#E60000' : 'transparent',
+                      background: transferMode === 'phone' ? '#8B1E3A' : 'transparent',
                       color: transferMode === 'phone' ? '#FFF' : isDark ? '#AAA' : '#888',
                     }}
                   >
@@ -765,7 +768,7 @@ export default function TransferModal() {
                         border: isDark ? '1px solid #333' : '1px solid #EEE',
                       }}
                     >
-                      <Hash size={18} strokeWidth={1.5} color="#E60000" />
+                      <Hash size={18} strokeWidth={1.5} color="#8B1E3A" />
                       <input
                         type="tel"
                         placeholder="رقم الحساب (6 أرقام)"
@@ -825,7 +828,7 @@ export default function TransferModal() {
                       border: isDark ? '1px solid #333' : '1px solid #EEE',
                     }}
                   >
-                    <DollarSign size={18} strokeWidth={1.5} color="#E60000" />
+                    <DollarSign size={18} strokeWidth={1.5} color="#8B1E3A" />
                     <input
                       type="number"
                       placeholder="0"
@@ -856,12 +859,12 @@ export default function TransferModal() {
                         className="flex-1 py-2 rounded-xl text-[11px] font-medium transition-all"
                         style={{
                           background: amount === qa.value.toString()
-                            ? 'rgba(230,0,0,0.1)'
+                            ? 'rgba(139,30,58,0.1)'
                             : isDark ? '#222' : '#F8F8F8',
                           border: amount === qa.value.toString()
-                            ? '1px solid #E60000'
+                            ? '1px solid #8B1E3A'
                             : isDark ? '1px solid #333' : '1px solid #EEE',
-                          color: amount === qa.value.toString() ? '#E60000' : isDark ? '#AAA' : '#888',
+                          color: amount === qa.value.toString() ? '#8B1E3A' : isDark ? '#AAA' : '#888',
                         }}
                       >
                         {qa.label}
@@ -922,7 +925,7 @@ export default function TransferModal() {
                                 setCurrency(c);
                                 setShowCurrencySelect(false);
                               }}
-                              className="w-full flex items-center gap-3 px-4 py-3 hover:bg-[#E60000]/5 transition-colors"
+                              className="w-full flex items-center gap-3 px-4 py-3 hover:bg-[#8B1E3A]/5 transition-colors"
                               style={{
                                 borderBottom: isDark ? '1px solid #333' : '1px solid #F0F0F0',
                               }}
@@ -941,7 +944,7 @@ export default function TransferModal() {
                                 {currencySymbols[c]}
                               </span>
                               {currency === c && (
-                                <CheckCircle2 size={16} color="#E60000" strokeWidth={1.5} />
+                                <CheckCircle2 size={16} color="#8B1E3A" strokeWidth={1.5} />
                               )}
                             </button>
                           ))}
@@ -966,7 +969,7 @@ export default function TransferModal() {
                       border: isDark ? '1px solid #333' : '1px solid #EEE',
                     }}
                   >
-                    <FileText size={18} strokeWidth={1.5} color="#E60000" />
+                    <FileText size={18} strokeWidth={1.5} color="#8B1E3A" />
                     <input
                       type="text"
                       placeholder="أضف وصفاً للتحويل"
@@ -1063,7 +1066,7 @@ export default function TransferModal() {
                     </div>
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-xs" style={{ color: isDark ? '#888' : '#AAA' }}>المبلغ</span>
-                      <span className="text-xs font-bold" style={{ color: '#E60000' }}>
+                      <span className="text-xs font-bold" style={{ color: '#8B1E3A' }}>
                         -{parseFloat(amount).toLocaleString('ar-SA')} {currencySymbols[currency]}
                       </span>
                     </div>
@@ -1072,7 +1075,7 @@ export default function TransferModal() {
                       <span className="text-xs font-medium" style={{ color: isDark ? '#AAA' : '#888' }}>الرصيد بعد التحويل</span>
                       <span
                         className="text-sm font-bold"
-                        style={{ color: balanceAfter >= 0 ? '#10B981' : '#E60000' }}
+                        style={{ color: balanceAfter >= 0 ? '#10B981' : '#8B1E3A' }}
                       >
                         {balanceAfter.toLocaleString('ar-SA')} {currencySymbols[currency]}
                       </span>
@@ -1088,8 +1091,8 @@ export default function TransferModal() {
                   style={{
                     background: (isVerifying || !canSend())
                       ? '#999'
-                      : 'linear-gradient(135deg, #E60000 0%, #CC0000 100%)',
-                    boxShadow: (isVerifying || !canSend()) ? 'none' : '0 4px 16px rgba(230,0,0,0.3)',
+                      : 'linear-gradient(135deg, #8B1E3A 0%, #6B1528 100%)',
+                    boxShadow: (isVerifying || !canSend()) ? 'none' : '0 4px 16px rgba(139,30,58,0.3)',
                   }}
                 >
                   {isVerifying ? (

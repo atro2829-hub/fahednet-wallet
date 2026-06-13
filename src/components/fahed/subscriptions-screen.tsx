@@ -16,7 +16,7 @@ import { useAppStore } from '@/lib/store';
 type SubTab = 'subscriptions' | 'payments' | 'withdraw';
 
 const sampleSubscriptions = [
-  { id: '1', name: 'Netflix', days: 15, price: 11400, currency: 'ر.ي', iconBg: '#000', iconText: 'N', iconColor: '#E60000' },
+  { id: '1', name: 'Netflix', days: 15, price: 11400, currency: 'ر.ي', iconBg: '#000', iconText: 'N', iconColor: '#8B1E3A' },
   { id: '2', name: 'Spotify', days: 30, price: 5500, currency: 'ر.ي', iconBg: '#1DB954', iconText: 'S', iconColor: '#FFF' },
   { id: '3', name: 'YouTube Premium', days: 7, price: 3200, currency: 'ر.ي', iconBg: '#FF0000', iconText: 'Y', iconColor: '#FFF' },
 ];
@@ -63,10 +63,10 @@ export default function SubscriptionsScreen() {
               className="flex-1 py-2.5 rounded-xl text-xs font-bold transition-all"
               style={{
                 background: activeTab === tab.id
-                  ? (isDark ? 'rgba(230,0,0,0.15)' : 'rgba(230,0,0,0.08)')
+                  ? (isDark ? 'rgba(139,30,58,0.15)' : 'rgba(139,30,58,0.08)')
                   : (isDark ? '#1A1A1A' : '#F5F5F5'),
-                color: activeTab === tab.id ? '#E60000' : (isDark ? '#888' : '#AAA'),
-                border: activeTab === tab.id ? '1px solid rgba(230,0,0,0.2)' : `1px solid ${isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.05)'}`,
+                color: activeTab === tab.id ? '#8B1E3A' : (isDark ? '#888' : '#AAA'),
+                border: activeTab === tab.id ? '1px solid rgba(139,30,58,0.2)' : `1px solid ${isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.05)'}`,
               }}
             >
               {tab.label}
@@ -104,7 +104,7 @@ export default function SubscriptionsScreen() {
               </p>
             </div>
             <div className="text-left shrink-0">
-              <p className="text-sm font-bold" style={{ color: '#E60000' }}>
+              <p className="text-sm font-bold" style={{ color: '#8B1E3A' }}>
                 {sub.price.toLocaleString()} {sub.currency}
               </p>
               <button

@@ -165,7 +165,7 @@ export default function AdminDashboard({ onNavigate }: AdminDashboardProps) {
 
   // Alert severity colors
   const severityConfig = {
-    high: { bg: 'rgba(230,0,0,0.12)', border: 'rgba(230,0,0,0.2)', icon: '#E60000' },
+    high: { bg: 'rgba(139,30,58,0.12)', border: 'rgba(139,30,58,0.2)', icon: '#8B1E3A' },
     medium: { bg: 'rgba(245,158,11,0.12)', border: 'rgba(245,158,11,0.2)', icon: '#F59E0B' },
     low: { bg: 'rgba(59,130,246,0.12)', border: 'rgba(59,130,246,0.2)', icon: '#2563EB' },
   };
@@ -181,8 +181,8 @@ export default function AdminDashboard({ onNavigate }: AdminDashboardProps) {
         style={{
           background: isDark
             ? 'linear-gradient(145deg, rgba(139,0,0,0.12) 0%, rgba(26,26,26,0.9) 100%)'
-            : 'linear-gradient(145deg, rgba(230,0,0,0.04) 0%, rgba(255,255,255,0.95) 100%)',
-          border: '1px solid rgba(230,0,0,0.15)',
+            : 'linear-gradient(145deg, rgba(139,30,58,0.04) 0%, rgba(255,255,255,0.95) 100%)',
+          border: '1px solid rgba(139,30,58,0.15)',
         }}
       >
         {/* ─── Compact Header - always visible ─── */}
@@ -193,14 +193,14 @@ export default function AdminDashboard({ onNavigate }: AdminDashboardProps) {
           <div
             className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
             style={{
-              background: 'linear-gradient(135deg, #E60000 0%, #8B0000 100%)',
-              boxShadow: '0 2px 8px rgba(230,0,0,0.3)',
+              background: 'linear-gradient(135deg, #8B1E3A 0%, #4E0A19 100%)',
+              boxShadow: '0 2px 8px rgba(139,30,58,0.3)',
             }}
           >
             <ShieldCheck size={16} color="#FFF" />
           </div>
           <div className="flex-1 text-right">
-            <h3 className="text-xs font-bold" style={{ color: '#E60000' }}>
+            <h3 className="text-xs font-bold" style={{ color: '#8B1E3A' }}>
               {t('admin.dashboardTitle')}
             </h3>
             <div className="flex items-center gap-3 mt-0.5">
@@ -214,7 +214,7 @@ export default function AdminDashboard({ onNavigate }: AdminDashboardProps) {
                 <DollarSign size={10} /> {formatNumber(todayRevenue)}
               </span>
               {(pendingDeposits > 0 || pendingKyc > 0) && (
-                <span className="text-[10px] flex items-center gap-0.5" style={{ color: '#E60000' }}>
+                <span className="text-[10px] flex items-center gap-0.5" style={{ color: '#8B1E3A' }}>
                   <Bell size={9} />
                   <span className="font-bold">{pendingDeposits + pendingKyc}</span>
                 </span>
@@ -222,9 +222,9 @@ export default function AdminDashboard({ onNavigate }: AdminDashboardProps) {
             </div>
           </div>
           {isExpanded ? (
-            <ChevronUp size={16} color="#E60000" />
+            <ChevronUp size={16} color="#8B1E3A" />
           ) : (
-            <ChevronDown size={16} color="#E60000" />
+            <ChevronDown size={16} color="#8B1E3A" />
           )}
         </button>
 
@@ -277,13 +277,13 @@ export default function AdminDashboard({ onNavigate }: AdminDashboardProps) {
                     <span className="text-[10px] font-medium" style={{ color: isDark ? '#888' : '#AAA' }}>
                       {t('admin.revenueChart')} - {t('admin.last7Days')}
                     </span>
-                    <TrendingUp size={12} color="#E60000" />
+                    <TrendingUp size={12} color="#8B1E3A" />
                   </div>
                   <svg width="100%" height={sparklineHeight} viewBox={`0 0 ${sparklineWidth} ${sparklineHeight}`} preserveAspectRatio="none">
                     <defs>
                       <linearGradient id="adminSparkGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#E60000" stopOpacity="0.3" />
-                        <stop offset="100%" stopColor="#E60000" stopOpacity="0" />
+                        <stop offset="0%" stopColor="#8B1E3A" stopOpacity="0.3" />
+                        <stop offset="100%" stopColor="#8B1E3A" stopOpacity="0" />
                       </linearGradient>
                     </defs>
                     {/* Area fill */}
@@ -295,7 +295,7 @@ export default function AdminDashboard({ onNavigate }: AdminDashboardProps) {
                     <polyline
                       points={points}
                       fill="none"
-                      stroke="#E60000"
+                      stroke="#8B1E3A"
                       strokeWidth="2"
                       strokeLinecap="round"
                       strokeLinejoin="round"
@@ -305,7 +305,7 @@ export default function AdminDashboard({ onNavigate }: AdminDashboardProps) {
                       const x = (i / (revenueChart.length - 1 || 1)) * sparklineWidth;
                       const y = sparklineHeight - (d.amount / maxAmount) * sparklineHeight;
                       return (
-                        <circle key={i} cx={x} cy={y} r="3" fill="#E60000" stroke={isDark ? '#1A1A1A' : '#FFFFFF'} strokeWidth="2" />
+                        <circle key={i} cx={x} cy={y} r="3" fill="#8B1E3A" stroke={isDark ? '#1A1A1A' : '#FFFFFF'} strokeWidth="2" />
                       );
                     })}
                   </svg>
@@ -322,7 +322,7 @@ export default function AdminDashboard({ onNavigate }: AdminDashboardProps) {
                 {recentAlerts.length > 0 && (
                   <div className="mb-3">
                     <h4 className="text-[10px] font-bold mb-2 flex items-center gap-1" style={{ color: isDark ? '#888' : '#AAA' }}>
-                      <AlertTriangle size={10} color="#E60000" />
+                      <AlertTriangle size={10} color="#8B1E3A" />
                       {t('admin.recentAlerts')}
                     </h4>
                     <div className="space-y-1.5">
@@ -335,8 +335,8 @@ export default function AdminDashboard({ onNavigate }: AdminDashboardProps) {
                             className="w-full flex items-center gap-2 py-2 px-2.5 rounded-lg text-right transition-all active:scale-[0.98]"
                             style={{ background: sev.bg, border: `1px solid ${sev.border}` }}
                           >
-                            <div className="w-6 h-6 rounded-md flex items-center justify-center shrink-0" style={{ background: alert.type === 'kyc' ? 'rgba(59,130,246,0.15)' : alert.type === 'deposit' ? 'rgba(16,185,129,0.15)' : 'rgba(230,0,0,0.15)' }}>
-                              {alert.type === 'kyc' ? <ShieldCheck size={12} color="#3B82F6" /> : alert.type === 'deposit' ? <ArrowDownCircle size={12} color="#10B981" /> : <Clock size={12} color="#E60000" />}
+                            <div className="w-6 h-6 rounded-md flex items-center justify-center shrink-0" style={{ background: alert.type === 'kyc' ? 'rgba(59,130,246,0.15)' : alert.type === 'deposit' ? 'rgba(16,185,129,0.15)' : 'rgba(139,30,58,0.15)' }}>
+                              {alert.type === 'kyc' ? <ShieldCheck size={12} color="#3B82F6" /> : alert.type === 'deposit' ? <ArrowDownCircle size={12} color="#10B981" /> : <Clock size={12} color="#8B1E3A" />}
                             </div>
                             <span className="flex-1 text-[10px] leading-tight font-medium" style={{ color: isDark ? '#CCC' : '#555' }}>
                               {alert.message}

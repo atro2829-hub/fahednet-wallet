@@ -25,7 +25,7 @@ export interface BalanceCard {
 // ========================================
 
 export const balanceCards: BalanceCard[] = [
-  { currency: 'YER', accentColor: '#E60000', accentColorEnd: '#8B0000', glowColor: 'rgba(230,0,0,0.35)', patternColor: 'rgba(255,255,255,0.06)' },
+  { currency: 'YER', accentColor: '#8B1E3A', accentColorEnd: '#4E0A19', glowColor: 'rgba(139,30,58,0.35)', patternColor: 'rgba(255,255,255,0.06)' },
   { currency: 'SAR', accentColor: '#0D5A1F', accentColorEnd: '#1B7A2B', glowColor: 'rgba(13,90,31,0.35)', patternColor: 'rgba(255,255,255,0.06)' },
   { currency: 'USD', accentColor: '#0D47A1', accentColorEnd: '#1565C0', glowColor: 'rgba(13,71,161,0.35)', patternColor: 'rgba(255,255,255,0.06)' },
 ];

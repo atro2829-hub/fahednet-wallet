@@ -46,16 +46,16 @@ export default function AccountScreen() {
       <div className="flex flex-col items-center pt-6 pb-4 px-4">
         {/* Avatar - Red gradient matching brand */}
         <motion.div
-          className="w-24 h-24 rounded-full flex items-center justify-center mb-3 shadow-[0_4px_20px_rgba(230,0,0,0.2)]"
-          style={{ background: 'linear-gradient(135deg, #C1121F 0%, #E60000 100%)' }}
+          className="w-24 h-24 rounded-full flex items-center justify-center mb-3 shadow-[0_4px_20px_rgba(139,30,58,0.2)]"
+          style={{ background: 'linear-gradient(135deg, #C1121F 0%, #8B1E3A 100%)' }}
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ duration: 0.4 }}
         >
           <div className="w-20 h-20 rounded-full bg-white flex items-center justify-center">
             <svg viewBox="0 0 80 80" className="w-16 h-16">
-              <circle cx="40" cy="30" r="14" fill="#E60000" />
-              <ellipse cx="40" cy="65" rx="22" ry="16" fill="#E60000" />
+              <circle cx="40" cy="30" r="14" fill="#8B1E3A" />
+              <ellipse cx="40" cy="65" rx="22" ry="16" fill="#8B1E3A" />
               <circle cx="34" cy="28" r="2.5" fill="white" />
               <circle cx="46" cy="28" r="2.5" fill="white" />
               <path d="M35 35 Q40 40 45 35" stroke="white" strokeWidth="1.5" fill="none" strokeLinecap="round" />
@@ -81,7 +81,7 @@ export default function AccountScreen() {
         {/* Account Numbers Card - Red gradient matching brand */}
         <motion.div
           className="w-full rounded-2xl p-4 relative overflow-hidden"
-          style={{ background: 'linear-gradient(135deg, #C1121F 0%, #E60000 100%)' }}
+          style={{ background: 'linear-gradient(135deg, #C1121F 0%, #8B1E3A 100%)' }}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: 0.2 }}
@@ -150,7 +150,7 @@ export default function AccountScreen() {
               {/* Line icon with red accent dot */}
               <div className="relative w-10 h-10 bg-[#F8F8F8] rounded-xl flex items-center justify-center shrink-0">
                 <item.icon className="w-5 h-5 text-[#1a1a1a] stroke-[1.5px]" />
-                <div className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-[#E60000] rounded-full border border-white" />
+                <div className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-[#8B1E3A] rounded-full border border-white" />
               </div>
               <span className="flex-1 text-sm font-bold text-[#1a1a1a] text-right">{item.label}</span>
               {item.hasArrow && (

@@ -114,8 +114,8 @@ export default function AdminSettings() {
       {/* Admin info */}
       <div className="rounded-2xl p-5" style={cardStyle}>
         <div className="flex items-center gap-3 mb-4">
-          <div className="w-12 h-12 rounded-xl flex items-center justify-center glow-red" style={{ background: 'rgba(230,0,0,0.15)' }}>
-            <ShieldCheck size={24} strokeWidth={1.5} color="#E60000" />
+          <div className="w-12 h-12 rounded-xl flex items-center justify-center glow-red" style={{ background: 'rgba(139,30,58,0.15)' }}>
+            <ShieldCheck size={24} strokeWidth={1.5} color="#8B1E3A" />
           </div>
           <div>
             <p className="text-sm font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>مدير النظام</p>
@@ -137,7 +137,7 @@ export default function AdminSettings() {
       {/* ===== App Configuration ===== */}
       <div className="rounded-2xl p-5" style={cardStyle}>
         <div className="flex items-center gap-2 mb-4">
-          <Palette size={16} color="#E60000" />
+          <Palette size={16} color="#8B1E3A" />
           <h3 className="text-sm font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>إعدادات التطبيق</h3>
         </div>
         <div className="space-y-3">
@@ -155,18 +155,18 @@ export default function AdminSettings() {
           {/* Maintenance mode */}
           <div className="flex items-center justify-between p-3 rounded-xl" style={{ background: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)' }}>
             <div className="flex items-center gap-2">
-              <Wrench size={14} color={appSettings.maintenanceMode ? '#E60000' : '#10B981'} />
+              <Wrench size={14} color={appSettings.maintenanceMode ? '#8B1E3A' : '#10B981'} />
               <span className="text-xs font-medium" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>وضع الصيانة</span>
             </div>
-            <button onClick={() => setAppSettings({ ...appSettings, maintenanceMode: !appSettings.maintenanceMode })} className="relative w-10 h-6 rounded-full transition-colors" style={{ background: appSettings.maintenanceMode ? '#E60000' : isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)' }}>
+            <button onClick={() => setAppSettings({ ...appSettings, maintenanceMode: !appSettings.maintenanceMode })} className="relative w-10 h-6 rounded-full transition-colors" style={{ background: appSettings.maintenanceMode ? '#8B1E3A' : isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)' }}>
               <div className="absolute top-1 w-4 h-4 rounded-full bg-white transition-all" style={{ left: appSettings.maintenanceMode ? '20px' : '4px' }} />
             </button>
           </div>
           {appSettings.maintenanceMode && (
-            <div className="p-3 rounded-xl" style={{ background: 'rgba(230,0,0,0.08)', border: '1px solid rgba(230,0,0,0.2)' }}>
+            <div className="p-3 rounded-xl" style={{ background: 'rgba(139,30,58,0.08)', border: '1px solid rgba(139,30,58,0.2)' }}>
               <div className="flex items-center gap-2">
-                <AlertTriangle size={14} color="#E60000" />
-                <span className="text-xs font-bold" style={{ color: '#E60000' }}>وضع الصيانة مفعّل - التطبيق غير متاح للمستخدمين</span>
+                <AlertTriangle size={14} color="#8B1E3A" />
+                <span className="text-xs font-bold" style={{ color: '#8B1E3A' }}>وضع الصيانة مفعّل - التطبيق غير متاح للمستخدمين</span>
               </div>
             </div>
           )}
@@ -176,7 +176,7 @@ export default function AdminSettings() {
       {/* ===== Support & Contact ===== */}
       <div className="rounded-2xl p-5" style={cardStyle}>
         <div className="flex items-center gap-2 mb-4">
-          <Phone size={16} color="#E60000" />
+          <Phone size={16} color="#8B1E3A" />
           <h3 className="text-sm font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>معلومات الدعم والتواصل</h3>
         </div>
         <div className="space-y-3">
@@ -198,7 +198,7 @@ export default function AdminSettings() {
       {/* ===== Social Media Links ===== */}
       <div className="rounded-2xl p-5" style={cardStyle}>
         <div className="flex items-center gap-2 mb-4">
-          <ExternalLink size={16} color="#E60000" />
+          <ExternalLink size={16} color="#8B1E3A" />
           <h3 className="text-sm font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>روابط التواصل الاجتماعي</h3>
         </div>
         <div className="space-y-3">
@@ -224,7 +224,7 @@ export default function AdminSettings() {
       {/* ===== Transaction Limits ===== */}
       <div className="rounded-2xl p-5" style={cardStyle}>
         <div className="flex items-center gap-2 mb-4">
-          <Lock size={16} color="#E60000" />
+          <Lock size={16} color="#8B1E3A" />
           <h3 className="text-sm font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>حدود المعاملات</h3>
         </div>
         <div className="space-y-3">
@@ -252,7 +252,7 @@ export default function AdminSettings() {
       {/* ===== Legal Documents ===== */}
       <div className="rounded-2xl p-5" style={cardStyle}>
         <div className="flex items-center gap-2 mb-4">
-          <Scale size={16} color="#E60000" />
+          <Scale size={16} color="#8B1E3A" />
           <h3 className="text-sm font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>الوثائق القانونية</h3>
         </div>
         <div className="space-y-3">
@@ -270,7 +270,7 @@ export default function AdminSettings() {
       {/* ===== Save App Settings ===== */}
       <motion.button whileTap={{ scale: 0.95 }} onClick={handleSaveAppSettings}
         className="w-full py-3.5 rounded-2xl flex items-center justify-center gap-2 text-sm font-bold text-white"
-        style={{ background: '#E60000' }}>
+        style={{ background: '#8B1E3A' }}>
         {settingsSaved ? <><CheckCircle2 size={18} /> تم حفظ الإعدادات</> : <><Save size={18} /> حفظ إعدادات التطبيق</>}
       </motion.button>
 
@@ -279,7 +279,7 @@ export default function AdminSettings() {
         <div className="rounded-2xl p-5" style={cardStyle}>
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
-              <Users size={16} color="#E60000" />
+              <Users size={16} color="#8B1E3A" />
               <h3 className="text-sm font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>إدارة الأدوار</h3>
             </div>
             <button onClick={() => { setShowRoleManagement(!showRoleManagement); if (!showRoleManagement) loadAdminUsers(); }}
@@ -319,8 +319,8 @@ export default function AdminSettings() {
                         ))}
                       </select>
                       <button onClick={() => handleRevokeAdmin(adminUser.id)}
-                        className="p-1.5 rounded-lg" style={{ background: 'rgba(230,0,0,0.08)' }}>
-                        <Trash2 size={12} color="#E60000" />
+                        className="p-1.5 rounded-lg" style={{ background: 'rgba(139,30,58,0.08)' }}>
+                        <Trash2 size={12} color="#8B1E3A" />
                       </button>
                     </div>
                   );
@@ -336,7 +336,7 @@ export default function AdminSettings() {
         <h3 className="text-sm font-bold mb-3" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>معلومات النظام</h3>
         <div className="space-y-3">
           {[
-            { icon: AlertTriangle, label: 'وضع الصيانة', value: appSettings.maintenanceMode ? 'مفعّل' : 'معطّل', color: appSettings.maintenanceMode ? '#E60000' : '#10B981' },
+            { icon: AlertTriangle, label: 'وضع الصيانة', value: appSettings.maintenanceMode ? 'مفعّل' : 'معطّل', color: appSettings.maintenanceMode ? '#8B1E3A' : '#10B981' },
             { icon: Clock, label: 'متوسط وقت التنفيذ', value: '5-30 دقيقة', color: '#3B82F6' },
             { icon: ShieldCheck, label: 'التحقق المطلوب', value: 'مفعّل', color: '#10B981' },
             { icon: Bell, label: 'الإشعارات', value: 'مفعّلة', color: '#EC4899' },
@@ -358,13 +358,13 @@ export default function AdminSettings() {
       {/* ===== Bulk Notification ===== */}
       <div className="rounded-2xl p-5" style={cardStyle}>
         <div className="flex items-center gap-2 mb-3">
-          <Send size={16} color="#E60000" />
+          <Send size={16} color="#8B1E3A" />
           <h3 className="text-sm font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>إرسال إشعار جماعي</h3>
         </div>
         <div className="space-y-2">
           <input type="text" placeholder="عنوان الإشعار" value={bulkNotif.title} onChange={e => setBulkNotif({ ...bulkNotif, title: e.target.value })} className="w-full px-3 py-2.5 rounded-xl text-sm outline-none" style={inputStyle} />
           <textarea placeholder="نص الإشعار" value={bulkNotif.body} onChange={e => setBulkNotif({ ...bulkNotif, body: e.target.value })} rows={3} className="w-full px-3 py-2.5 rounded-xl text-sm outline-none resize-none" style={inputStyle} />
-          <motion.button whileTap={{ scale: 0.95 }} onClick={onSendBulkNotif} disabled={!bulkNotif.title || !bulkNotif.body} className="w-full py-2.5 rounded-xl text-xs font-bold text-white disabled:opacity-50" style={{ background: '#E60000' }}>إرسال لجميع المستخدمين ({firebaseUsers.length})</motion.button>
+          <motion.button whileTap={{ scale: 0.95 }} onClick={onSendBulkNotif} disabled={!bulkNotif.title || !bulkNotif.body} className="w-full py-2.5 rounded-xl text-xs font-bold text-white disabled:opacity-50" style={{ background: '#8B1E3A' }}>إرسال لجميع المستخدمين ({firebaseUsers.length})</motion.button>
         </div>
       </div>
 
@@ -372,13 +372,13 @@ export default function AdminSettings() {
       {auditLog.length > 0 && (
         <div className="rounded-2xl p-5" style={cardStyle}>
           <div className="flex items-center gap-2 mb-3">
-            <FileText size={16} color="#E60000" />
+            <FileText size={16} color="#8B1E3A" />
             <h3 className="text-sm font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>سجل العمليات</h3>
           </div>
           <div className="space-y-2 max-h-64 overflow-y-auto scrollbar-thin">
             {auditLog.map((entry, i) => (
               <div key={i} className="flex items-start gap-2 p-2 rounded-lg" style={{ background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)' }}>
-                <div className="w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0" style={{ background: '#E60000' }} />
+                <div className="w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0" style={{ background: '#8B1E3A' }} />
                 <div className="flex-1">
                   <p className="text-xs" style={{ color: isDark ? '#CCC' : '#333' }}>{entry.action}</p>
                   <p className="text-[10px]" style={{ color: isDark ? '#555' : '#AAA' }}>{timeAgo(entry.time)}</p>
@@ -393,11 +393,11 @@ export default function AdminSettings() {
       <div className="rounded-2xl p-5" style={cardStyle}>
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
-            <Mail size={16} color="#E60000" />
+            <Mail size={16} color="#8B1E3A" />
             <h3 className="text-sm font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>طابور البريد الإلكتروني</h3>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-[10px] px-2 py-0.5 rounded-full font-bold" style={{ background: emailQueue.length > 0 ? 'rgba(230,0,0,0.1)' : 'rgba(16,185,129,0.1)', color: emailQueue.length > 0 ? '#E60000' : '#10B981' }}>
+            <span className="text-[10px] px-2 py-0.5 rounded-full font-bold" style={{ background: emailQueue.length > 0 ? 'rgba(139,30,58,0.1)' : 'rgba(16,185,129,0.1)', color: emailQueue.length > 0 ? '#8B1E3A' : '#10B981' }}>
               {formatNumber(emailQueue.length)} بريد
             </span>
             <button
@@ -419,7 +419,7 @@ export default function AdminSettings() {
               </div>
             ) : (
               emailQueue.map((email) => {
-                const statusColor = email.status === 'sent' ? '#10B981' : email.status === 'failed' ? '#E60000' : '#F59E0B';
+                const statusColor = email.status === 'sent' ? '#10B981' : email.status === 'failed' ? '#8B1E3A' : '#F59E0B';
                 const statusLabel = email.status === 'sent' ? 'مُرسل' : email.status === 'failed' ? 'فشل' : 'في الانتظار';
                 return (
                   <div key={email.id} className="p-2.5 rounded-xl" style={{ background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)' }}>
@@ -433,9 +433,9 @@ export default function AdminSettings() {
                         <button
                           onClick={() => email.id && deleteEmailFromQueue(email.id)}
                           className="p-1 rounded"
-                          style={{ background: 'rgba(230,0,0,0.08)' }}
+                          style={{ background: 'rgba(139,30,58,0.08)' }}
                         >
-                          <Trash2 size={10} color="#E60000" />
+                          <Trash2 size={10} color="#8B1E3A" />
                         </button>
                       </div>
                     </div>

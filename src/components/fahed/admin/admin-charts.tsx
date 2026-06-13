@@ -45,11 +45,13 @@ export default function AdminCharts() {
       const catId = provider?.categoryId || 'other';
       if (!cats[catId]) {
         const catNames: Record<string, string> = {
-          telecom: 'الاتصالات', internet: 'الإنترنت', entertainment: 'الألعاب',
+          telecom: 'الاتصالات', internet: 'الإنترنت', 'wallet-services': 'خدمات المحفظة',
+          'service-providers': 'مزودين الخدمات', entertainment: 'الألعاب',
           cards: 'البطاقات', electricity: 'الكهرباء', government: 'حكومية', other: 'أخرى',
         };
         const catColors: Record<string, string> = {
-          telecom: '#E60000', internet: '#3B82F6', entertainment: '#F59E0B',
+          telecom: '#8B1E3A', internet: '#3B82F6', 'wallet-services': '#F59E0B',
+          'service-providers': '#6B7280', entertainment: '#F59E0B',
           cards: '#8B5CF6', electricity: '#10B981', government: '#6B7280', other: '#EC4899',
         };
         cats[catId] = { name: catNames[catId] || 'أخرى', count: 0, color: catColors[catId] || '#EC4899' };
@@ -100,7 +102,7 @@ export default function AdminCharts() {
     return [
       { name: 'مكتمل', count: completed, color: '#10B981', percent: (completed / total) * 100 },
       { name: 'قيد الانتظار', count: pending, color: '#F59E0B', percent: (pending / total) * 100 },
-      { name: 'ملغى', count: cancelled, color: '#E60000', percent: (cancelled / total) * 100 },
+      { name: 'ملغى', count: cancelled, color: '#8B1E3A', percent: (cancelled / total) * 100 },
     ];
   }, [allOrders]);
 
@@ -124,7 +126,7 @@ export default function AdminCharts() {
     <motion.div key="charts" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-4">
       {/* Period selector */}
       <div className="flex items-center gap-2">
-        <Calendar size={14} color="#E60000" />
+        <Calendar size={14} color="#8B1E3A" />
         <div className="flex gap-1.5">
           {periodOptions.map(opt => (
             <button
@@ -132,8 +134,8 @@ export default function AdminCharts() {
               onClick={() => setPeriod(opt.value)}
               className="px-3 py-1.5 rounded-lg text-[10px] font-medium transition-all"
               style={{
-                background: period === opt.value ? 'rgba(230,0,0,0.12)' : isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)',
-                color: period === opt.value ? '#E60000' : isDark ? '#AAA' : '#666',
+                background: period === opt.value ? 'rgba(139,30,58,0.12)' : isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)',
+                color: period === opt.value ? '#8B1E3A' : isDark ? '#AAA' : '#666',
               }}
             >
               {opt.label}
@@ -145,7 +147,7 @@ export default function AdminCharts() {
       {/* Revenue Trend Line Chart */}
       <div className="rounded-2xl p-4" style={cardStyle}>
         <div className="flex items-center gap-2 mb-4">
-          <TrendingUp size={16} color="#E60000" />
+          <TrendingUp size={16} color="#8B1E3A" />
           <h3 className="text-sm font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>اتجاه الإيرادات</h3>
           <span className="text-[10px] mr-auto" style={{ color: isDark ? '#666' : '#AAA' }}>ر.ي</span>
         </div>
@@ -172,8 +174,8 @@ export default function AdminCharts() {
             <svg className="absolute inset-0 w-full h-full" preserveAspectRatio="none">
               <defs>
                 <linearGradient id="revenueGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#E60000" stopOpacity="0.3" />
-                  <stop offset="100%" stopColor="#E60000" stopOpacity="0" />
+                  <stop offset="0%" stopColor="#8B1E3A" stopOpacity="0.3" />
+                  <stop offset="100%" stopColor="#8B1E3A" stopOpacity="0" />
                 </linearGradient>
               </defs>
               {revenueData.length > 1 && (
@@ -188,7 +190,7 @@ export default function AdminCharts() {
                   <path
                     d={`M 0,${((1 - revenueData[0].amount / maxRevenue) * 100)} ${revenueData.map((d, i) => `L ${(i / (revenueData.length - 1)) * 100},${((1 - d.amount / maxRevenue) * 100)}`).join(' ')}`}
                     fill="none"
-                    stroke="#E60000"
+                    stroke="#8B1E3A"
                     strokeWidth="2"
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -203,7 +205,7 @@ export default function AdminCharts() {
                   cx={`${(i / (revenueData.length - 1)) * 100}%`}
                   cy={`${(1 - d.amount / maxRevenue) * 100}%`}
                   r={hoveredLine === i ? 4 : 2.5}
-                  fill="#E60000"
+                  fill="#8B1E3A"
                   stroke={isDark ? '#1a1a1a' : '#FFF'}
                   strokeWidth="2"
                   style={{ transform: 'scaleY(0.85) translateY(10%)', transition: 'r 0.15s' }}
@@ -226,7 +228,7 @@ export default function AdminCharts() {
                   transform: 'translate(-50%, -120%)',
                 }}
               >
-                <p className="font-bold" style={{ color: '#E60000' }}>{formatNumber(revenueData[hoveredLine].amount)} ر.ي</p>
+                <p className="font-bold" style={{ color: '#8B1E3A' }}>{formatNumber(revenueData[hoveredLine].amount)} ر.ي</p>
                 <p style={{ color: isDark ? '#AAA' : '#666' }}>{revenueData[hoveredLine].label}</p>
               </div>
             )}
@@ -244,7 +246,7 @@ export default function AdminCharts() {
       {/* Order Volume Bar Chart by Category */}
       <div className="rounded-2xl p-4" style={cardStyle}>
         <div className="flex items-center gap-2 mb-4">
-          <BarChart3 size={16} color="#E60000" />
+          <BarChart3 size={16} color="#8B1E3A" />
           <h3 className="text-sm font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>حجم الطلبات حسب الفئة</h3>
         </div>
 
@@ -294,7 +296,7 @@ export default function AdminCharts() {
       {/* User Growth Area Chart */}
       <div className="rounded-2xl p-4" style={cardStyle}>
         <div className="flex items-center gap-2 mb-4">
-          <Activity size={16} color="#E60000" />
+          <Activity size={16} color="#8B1E3A" />
           <h3 className="text-sm font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>نمو المستخدمين</h3>
           <span className="text-[10px] mr-auto font-bold" style={{ color: '#10B981' }}>{formatNumber(firebaseUsers.length)} مستخدم</span>
         </div>
@@ -368,7 +370,7 @@ export default function AdminCharts() {
       {/* Transaction Distribution Donut Chart */}
       <div className="rounded-2xl p-4" style={cardStyle}>
         <div className="flex items-center gap-2 mb-4">
-          <PieChart size={16} color="#E60000" />
+          <PieChart size={16} color="#8B1E3A" />
           <h3 className="text-sm font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>توزيع الطلبات</h3>
         </div>
 

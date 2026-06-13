@@ -45,7 +45,7 @@ export default function AdminPromoCodes() {
     <motion.div key="codes" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-3">
       <motion.button whileTap={{ scale: 0.95 }} onClick={() => setShowAddCode(!showAddCode)}
         className="w-full py-3.5 rounded-2xl flex items-center justify-center gap-2 text-sm font-medium"
-        style={{ background: 'rgba(230,0,0,0.1)', color: '#E60000', border: '1px solid rgba(230,0,0,0.2)', backdropFilter: 'blur(20px)' }}>
+        style={{ background: 'rgba(139,30,58,0.1)', color: '#8B1E3A', border: '1px solid rgba(139,30,58,0.2)', backdropFilter: 'blur(20px)' }}>
         <Plus size={18} strokeWidth={1.5} /><span>إضافة كود خصم</span>
       </motion.button>
       <AnimatePresence>
@@ -65,7 +65,7 @@ export default function AdminPromoCodes() {
               <input type="number" placeholder="الحد الأقصى" value={newCode.maxUses || ''} onChange={e => setNewCode({ ...newCode, maxUses: parseInt(e.target.value) || 100 })} className="flex-1 px-3 py-2.5 rounded-xl text-sm outline-none" style={inputStyle} dir="ltr" />
             </div>
             <input type="date" value={newCode.expiresAt} onChange={e => setNewCode({ ...newCode, expiresAt: e.target.value })} className="w-full px-3 py-2.5 rounded-xl text-sm outline-none" style={inputStyle} />
-            <motion.button whileTap={{ scale: 0.95 }} onClick={onAddCode} className="w-full py-3 rounded-xl text-sm font-bold text-white" style={{ background: '#E60000' }}>إضافة الكود</motion.button>
+            <motion.button whileTap={{ scale: 0.95 }} onClick={onAddCode} className="w-full py-3 rounded-xl text-sm font-bold text-white" style={{ background: '#8B1E3A' }}>إضافة الكود</motion.button>
           </motion.div>
         )}
       </AnimatePresence>
@@ -73,8 +73,8 @@ export default function AdminPromoCodes() {
         <div key={c.id} className="rounded-2xl p-4" style={{ ...cardStyle, opacity: c.isActive ? 1 : 0.6 }}>
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
-              <span className="text-lg font-mono font-bold" style={{ color: '#E60000' }} dir="ltr">{c.code}</span>
-              <span className="text-[10px] px-2 py-0.5 rounded-full font-bold" style={{ background: 'rgba(230,0,0,0.15)', color: '#E60000' }}>
+              <span className="text-lg font-mono font-bold" style={{ color: '#8B1E3A' }} dir="ltr">{c.code}</span>
+              <span className="text-[10px] px-2 py-0.5 rounded-full font-bold" style={{ background: 'rgba(139,30,58,0.15)', color: '#8B1E3A' }}>
                 {c.type === 'percentage' ? `${c.discount}%` : `${c.discount} ${currencySymbols[c.currency]}`}
               </span>
             </div>
@@ -83,7 +83,7 @@ export default function AdminPromoCodes() {
                 {c.isActive ? <ToggleRight size={22} color="#10B981" /> : <ToggleLeft size={22} color={isDark ? '#444' : '#CCC'} />}
               </button>
               <button onClick={() => handleDeleteCode(c)}>
-                <Trash2 size={14} color="#E60000" />
+                <Trash2 size={14} color="#8B1E3A" />
               </button>
             </div>
           </div>
@@ -93,7 +93,7 @@ export default function AdminPromoCodes() {
             {c.expiresAt && <span className="text-[10px]" style={{ color: isDark ? '#666' : '#AAA' }}>ينتهي: {new Date(c.expiresAt).toLocaleDateString('ar-SA')}</span>}
           </div>
           <div className="mt-2 h-1.5 rounded-full overflow-hidden" style={{ background: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)' }}>
-            <div className="h-full rounded-full" style={{ width: `${Math.min((c.usedCount / c.maxUses) * 100, 100)}%`, background: '#E60000' }} />
+            <div className="h-full rounded-full" style={{ width: `${Math.min((c.usedCount / c.maxUses) * 100, 100)}%`, background: '#8B1E3A' }} />
           </div>
         </div>
       ))}

@@ -13,6 +13,7 @@ import { currencySymbols, currencyNames, currencyBadgeColors, formatNumber, form
 import { LOGO_BASE64 } from '@/lib/logo';
 import { ref, get, update } from 'firebase/database';
 import { database } from '@/lib/firebase';
+import { syncExchangeRatesFromApi, getExchangeRatesFromFirebase } from '@/lib/exchange-rate-sync';
 
 interface ConversionRecord {
   fromAmount: number;
@@ -112,19 +113,10 @@ export default function ExchangeScreen() {
   useEffect(() => {
     const fetchRates = async () => {
       try {
-        const snapshot = await get(ref(database, 'adminSettings/exchangeRates'));
-        if (snapshot.exists()) {
-          const data = snapshot.val();
-          const rates = {
-            YER: 1,
-            SAR: data.YER_SAR ?? defaultExchangeRates.SAR,
-            USD: data.YER_USD ?? defaultExchangeRates.USD,
-          };
-          setExchangeRates(rates);
-          if (typeof data.commission === 'number') {
-            setCommission(data.commission);
-          }
-        }
+        const ratesData = await getExchangeRatesFromFirebase();
+        setExchangeRates({ YER: ratesData.YER, SAR: ratesData.SAR, USD: ratesData.USD });
+        setCommission(ratesData.commission);
+        setLastUpdate(ratesData.lastSynced);
       } catch {
         // Fall back to default rates from store (already initialized)
       }
@@ -171,28 +163,30 @@ export default function ExchangeScreen() {
   const handleRefresh = async () => {
     setIsRefreshing(true);
     try {
-      const snapshot = await get(ref(database, 'adminSettings/exchangeRates'));
-      if (snapshot.exists()) {
-        const data = snapshot.val();
-        const newRates = {
-          YER: 1,
-          SAR: data.YER_SAR ?? exchangeRates.SAR,
-          USD: data.YER_USD ?? exchangeRates.USD,
-        };
-        setTrends({
-          'YER-SAR': newRates.SAR > exchangeRates.SAR ? 'up' : newRates.SAR < exchangeRates.SAR ? 'down' : 'stable',
-          'YER-USD': newRates.USD > exchangeRates.USD ? 'up' : newRates.USD < exchangeRates.USD ? 'down' : 'stable',
-          'SAR-USD': (newRates.USD / newRates.SAR) > (exchangeRates.USD / exchangeRates.SAR) ? 'up' : 'down',
-        });
-        setExchangeRates(newRates);
-        if (typeof data.commission === 'number') {
-          setCommission(data.commission);
-        }
+      // Try to sync from API first (updates Firebase + returns new rates)
+      let newRatesData;
+      try {
+        newRatesData = await syncExchangeRatesFromApi();
+      } catch {
+        // If API fails, fall back to reading from Firebase
+        newRatesData = await getExchangeRatesFromFirebase();
       }
+      const newRates = {
+        YER: newRatesData.YER,
+        SAR: newRatesData.SAR,
+        USD: newRatesData.USD,
+      };
+      setTrends({
+        'YER-SAR': newRates.SAR > exchangeRates.SAR ? 'up' : newRates.SAR < exchangeRates.SAR ? 'down' : 'stable',
+        'YER-USD': newRates.USD > exchangeRates.USD ? 'up' : newRates.USD < exchangeRates.USD ? 'down' : 'stable',
+        'SAR-USD': (newRates.USD / newRates.SAR) > (exchangeRates.USD / exchangeRates.SAR) ? 'up' : 'down',
+      });
+      setExchangeRates(newRates);
+      setCommission(newRatesData.commission);
+      setLastUpdate(newRatesData.lastSynced);
     } catch {
       // Keep existing rates on error
     }
-    setLastUpdate(new Date().toISOString());
     setTimeout(() => setIsRefreshing(false), 800);
   };
 
@@ -257,6 +251,26 @@ export default function ExchangeScreen() {
       };
 
       await update(ref(database), updates);
+
+      // Send FCM push notification for exchange
+      try {
+        const { sendNotificationToUser, sendNotificationToAdmin } = await import('@/lib/notifications');
+        await sendNotificationToUser(user.id, {
+          title: 'تم التبديل بنجاح',
+          body: `تم تبديل ${formatNumber(amount)} ${currencySymbols[fromCurrency]} إلى ${result < 1 ? result.toFixed(4) : formatNumber(parseFloat(result.toFixed(2)))} ${currencySymbols[toCurrency]}`,
+          type: 'transaction',
+          data: { action: 'exchange', amount: String(amount), currency: fromCurrency },
+        });
+        await sendNotificationToAdmin({
+          title: 'عملية تبديل عملات',
+          body: `${user.name} بدّل ${formatNumber(amount)} ${fromCurrency} إلى ${toCurrency}`,
+          type: 'transaction',
+          category: 'transactions',
+          data: { action: 'exchange', userId: user.id },
+        });
+      } catch (notifErr) {
+        console.warn('Exchange notification failed:', notifErr);
+      }
 
       // Generate voucher
       const refNum = generateReferenceNumber();
@@ -421,7 +435,7 @@ export default function ExchangeScreen() {
                       <div className="w-7 h-7 rounded-lg flex items-center justify-center text-[9px] font-bold" style={{ background: `${currencyBadgeColors[pair.from]}15`, color: currencyBadgeColors[pair.from] }}>
                         {pair.fromSymbol}
                       </div>
-                      <ArrowRightLeft size={10} color="#E60000" />
+                      <ArrowRightLeft size={10} color="#8B1E3A" />
                       <div className="w-7 h-7 rounded-lg flex items-center justify-center text-[9px] font-bold" style={{ background: `${currencyBadgeColors[pair.to]}15`, color: currencyBadgeColors[pair.to] }}>
                         {pair.toSymbol}
                       </div>
@@ -437,7 +451,7 @@ export default function ExchangeScreen() {
                       {pair.rate < 1 ? pair.rate.toFixed(4) : formatNumber(parseFloat(pair.rate.toFixed(2)))}
                     </span>
                     {trend === 'up' && <TrendingUp size={12} color="#10B981" />}
-                    {trend === 'down' && <TrendingDown size={12} color="#E60000" />}
+                    {trend === 'down' && <TrendingDown size={12} color="#8B1E3A" />}
                     {trend === 'stable' && <div className="w-1.5 h-1.5 rounded-full" style={{ background: isDark ? '#555' : '#CCC' }} />}
                   </div>
                 </div>
@@ -450,7 +464,7 @@ export default function ExchangeScreen() {
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
           className="rounded-2xl p-4" style={{ background: cardBg, backdropFilter: 'blur(20px)', border: isDark ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(0,0,0,0.06)' }}>
           <div className="flex items-center gap-2 mb-4">
-            <Calculator size={16} color="#E60000" />
+            <Calculator size={16} color="#8B1E3A" />
             <h3 className="text-sm font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>محول العملات</h3>
           </div>
 
@@ -476,8 +490,8 @@ export default function ExchangeScreen() {
             {/* Swap button */}
             <div className="flex justify-center">
               <motion.button whileTap={{ scale: 0.85, rotate: 180 }} onClick={handleSwap}
-                className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'rgba(230,0,0,0.15)' }}>
-                <ArrowRightLeft size={18} color="#E60000" />
+                className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'rgba(139,30,58,0.15)' }}>
+                <ArrowRightLeft size={18} color="#8B1E3A" />
               </motion.button>
             </div>
 
@@ -488,7 +502,7 @@ export default function ExchangeScreen() {
               </div>
               <div className="flex items-center gap-2 p-3 rounded-xl" style={{ background: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)' }}>
                 <motion.p key={result} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-                  className="flex-1 text-2xl font-bold" dir="ltr" style={{ color: '#E60000' }}>
+                  className="flex-1 text-2xl font-bold" dir="ltr" style={{ color: '#8B1E3A' }}>
                   {result < 0.01 && result > 0 ? result.toFixed(6) : result < 1 ? result.toFixed(4) : formatNumber(parseFloat(result.toFixed(2)))}
                 </motion.p>
                 <select value={toCurrency} onChange={e => setToCurrency(e.target.value as 'YER' | 'SAR' | 'USD')}
@@ -514,7 +528,7 @@ export default function ExchangeScreen() {
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-[11px]" style={{ color: isDark ? '#888' : '#AAA' }}>رسوم التبديل ({commission}%)</span>
-                <span className="text-[11px] font-bold" dir="ltr" style={{ color: '#E60000' }}>
+                <span className="text-[11px] font-bold" dir="ltr" style={{ color: '#8B1E3A' }}>
                   -{commissionAmount < 1 ? commissionAmount.toFixed(4) : formatNumber(parseFloat(commissionAmount.toFixed(2)))} {currencySymbols[toCurrency]}
                 </span>
               </div>
@@ -529,16 +543,16 @@ export default function ExchangeScreen() {
 
             {/* Insufficient balance warning */}
             {(parseFloat(fromAmount) || 0) > fromBalance && (
-              <div className="flex items-center gap-2 p-2.5 rounded-xl" style={{ background: 'rgba(230,0,0,0.1)', border: '1px solid rgba(230,0,0,0.2)' }}>
-                <Wallet size={14} color="#E60000" />
-                <span className="text-[11px] font-medium" style={{ color: '#E60000' }}>رصيدك غير كافي في {currencyNames[fromCurrency]}</span>
+              <div className="flex items-center gap-2 p-2.5 rounded-xl" style={{ background: 'rgba(139,30,58,0.1)', border: '1px solid rgba(139,30,58,0.2)' }}>
+                <Wallet size={14} color="#8B1E3A" />
+                <span className="text-[11px] font-medium" style={{ color: '#8B1E3A' }}>رصيدك غير كافي في {currencyNames[fromCurrency]}</span>
               </div>
             )}
 
             <motion.button whileTap={{ scale: 0.95 }} onClick={handleConfirmExchange}
               disabled={!fromAmount || result <= 0 || (parseFloat(fromAmount) || 0) > fromBalance || fromCurrency === toCurrency}
               className="w-full py-3.5 rounded-xl text-sm font-bold text-white transition-opacity"
-              style={{ background: (!fromAmount || result <= 0 || (parseFloat(fromAmount) || 0) > fromBalance || fromCurrency === toCurrency) ? '#555' : '#E60000' }}>
+              style={{ background: (!fromAmount || result <= 0 || (parseFloat(fromAmount) || 0) > fromBalance || fromCurrency === toCurrency) ? '#555' : '#8B1E3A' }}>
               {fromCurrency === toCurrency ? 'اختر عملتين مختلفتين' : 'تأكيد التبديل'}
             </motion.button>
           </div>
@@ -549,7 +563,7 @@ export default function ExchangeScreen() {
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
             className="rounded-2xl p-4" style={{ background: cardBg, backdropFilter: 'blur(20px)', border: isDark ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(0,0,0,0.06)' }}>
             <div className="flex items-center gap-2 mb-3">
-              <History size={16} color="#E60000" />
+              <History size={16} color="#8B1E3A" />
               <h3 className="text-sm font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>سجل التحويلات</h3>
             </div>
             <div className="space-y-2 max-h-64 overflow-y-auto scrollbar-thin">
@@ -594,8 +608,8 @@ export default function ExchangeScreen() {
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'rgba(230,0,0,0.1)' }}>
-                  <Shield size={20} strokeWidth={1.5} color="#E60000" />
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'rgba(139,30,58,0.1)' }}>
+                  <Shield size={20} strokeWidth={1.5} color="#8B1E3A" />
                 </div>
                 <div>
                   <h3 className="text-base font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>تأكيد التبديل</h3>
@@ -618,7 +632,7 @@ export default function ExchangeScreen() {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-xs" style={{ color: isDark ? '#888' : '#AAA' }}>العمولة</span>
-                  <span className="text-xs font-bold" style={{ color: '#E60000' }}>
+                  <span className="text-xs font-bold" style={{ color: '#8B1E3A' }}>
                     {commissionAmount < 1 ? commissionAmount.toFixed(4) : formatNumber(parseFloat(commissionAmount.toFixed(2)))} {currencySymbols[toCurrency]}
                   </span>
                 </div>
@@ -632,7 +646,7 @@ export default function ExchangeScreen() {
                 </motion.button>
                 <motion.button whileTap={{ scale: 0.95 }} onClick={handleSaveConversion} disabled={isProcessing}
                   className="flex-1 py-3 rounded-xl text-sm font-bold text-white"
-                  style={{ background: isProcessing ? '#555' : '#E60000' }}>
+                  style={{ background: isProcessing ? '#555' : '#8B1E3A' }}>
                   {isProcessing ? 'جارٍ التبديل...' : 'تأكيد'}
                 </motion.button>
               </div>
@@ -665,7 +679,7 @@ export default function ExchangeScreen() {
             >
               {/* Voucher Header */}
               <div className="relative px-5 pt-5 pb-4" style={{ background: 'linear-gradient(145deg, #1A1A1A 0%, #2A0A0A 50%, #0F0F0F 100%)' }}>
-                <div className="absolute inset-0 opacity-30" style={{ background: 'radial-gradient(circle at 80% 20%, rgba(230,0,0,0.15), transparent 50%)' }} />
+                <div className="absolute inset-0 opacity-30" style={{ background: 'radial-gradient(circle at 80% 20%, rgba(139,30,58,0.15), transparent 50%)' }} />
                 <div className="relative flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'rgba(16,185,129,0.2)' }}>
@@ -696,7 +710,7 @@ export default function ExchangeScreen() {
                   >
                     {/* Logo + Brand Row */}
                     <div className="flex items-center gap-3 p-4" style={{ borderBottom: `1px dashed ${voucherDividerColor}` }}>
-                      <div className="w-10 h-10 rounded-xl overflow-hidden flex items-center justify-center" style={{ background: 'rgba(230,0,0,0.1)' }}>
+                      <div className="w-10 h-10 rounded-xl overflow-hidden flex items-center justify-center" style={{ background: 'rgba(139,30,58,0.1)' }}>
                         <img src={LOGO_BASE64} alt="محفظة الجنوب" className="w-full h-full object-cover" />
                       </div>
                       <div className="flex-1">
@@ -713,7 +727,7 @@ export default function ExchangeScreen() {
                     <div className="p-4" style={{ borderBottom: `1px dashed ${voucherDividerColor}` }}>
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center gap-2">
-                          <FileText size={12} color="#E60000" />
+                          <FileText size={12} color="#8B1E3A" />
                           <span className="text-[10px] font-bold" style={{ color: isDark ? '#888' : '#999' }}>رقم السند</span>
                         </div>
                         <button onClick={handleCopyRef}
@@ -735,7 +749,7 @@ export default function ExchangeScreen() {
 
                     {/* Sender Info */}
                     <div className="p-4" style={{ borderBottom: `1px dashed ${voucherDividerColor}` }}>
-                      <p className="text-[10px] font-bold mb-2" style={{ color: '#E60000' }}>معلومات المرسل</p>
+                      <p className="text-[10px] font-bold mb-2" style={{ color: '#8B1E3A' }}>معلومات المرسل</p>
                       <div className="flex items-center justify-between mb-1.5">
                         <span className="text-[11px]" style={{ color: isDark ? '#888' : '#999' }}>اسم المرسل</span>
                         <span className="text-[11px] font-medium" style={{ color: isDark ? '#CCC' : '#444' }}>
@@ -767,8 +781,8 @@ export default function ExchangeScreen() {
                         </div>
 
                         {/* Arrow */}
-                        <div className="shrink-0 w-8 h-8 rounded-full flex items-center justify-center" style={{ background: 'rgba(230,0,0,0.1)' }}>
-                          <ArrowRightLeft size={14} color="#E60000" />
+                        <div className="shrink-0 w-8 h-8 rounded-full flex items-center justify-center" style={{ background: 'rgba(139,30,58,0.1)' }}>
+                          <ArrowRightLeft size={14} color="#8B1E3A" />
                         </div>
 
                         {/* To */}
@@ -802,7 +816,7 @@ export default function ExchangeScreen() {
                       </div>
                       <div className="flex items-center justify-between py-2.5" style={{ borderBottom: `1px solid ${voucherDividerColor}` }}>
                         <span className="text-xs" style={{ color: isDark ? '#888' : '#888' }}>العمولة ({voucherData.commission}%)</span>
-                        <span className="text-xs font-bold" dir="ltr" style={{ color: '#E60000' }}>
+                        <span className="text-xs font-bold" dir="ltr" style={{ color: '#8B1E3A' }}>
                           {voucherData.commissionAmount < 1 ? voucherData.commissionAmount.toFixed(4) : formatNumber(parseFloat(voucherData.commissionAmount.toFixed(2)))} {currencySymbols[voucherData.toCurrency]}
                         </span>
                       </div>
@@ -866,7 +880,7 @@ export default function ExchangeScreen() {
                 </div>
                 <motion.button whileTap={{ scale: 0.95 }} onClick={handleDownloadReceipt}
                   className="w-full mt-3 flex items-center justify-center gap-2 py-3.5 rounded-xl text-sm font-bold text-white"
-                  style={{ background: '#E60000' }}>
+                  style={{ background: '#8B1E3A' }}>
                   <Download size={16} />
                   تحميل السند
                 </motion.button>

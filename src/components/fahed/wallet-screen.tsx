@@ -48,7 +48,7 @@ function hexToRgb(hex: string): string {
 }
 
 const defaultBalanceCards: BalanceCard[] = [
-  { currency: 'YER', accentColor: '#E60000', accentColorEnd: '#8B0000', glowColor: 'rgba(230,0,0,0.35)', patternColor: 'rgba(255,255,255,0.06)' },
+  { currency: 'YER', accentColor: '#8B1E3A', accentColorEnd: '#4E0A19', glowColor: 'rgba(139,30,58,0.35)', patternColor: 'rgba(255,255,255,0.06)' },
   { currency: 'SAR', accentColor: '#059669', accentColorEnd: '#1B7A2B', glowColor: 'rgba(5,150,105,0.35)', patternColor: 'rgba(255,255,255,0.06)' },
   { currency: 'USD', accentColor: '#2563EB', accentColorEnd: '#0D47A1', glowColor: 'rgba(37,99,235,0.35)', patternColor: 'rgba(255,255,255,0.06)' },
 ];
@@ -65,8 +65,8 @@ const filterTabs: { id: FilterTab; label: string }[] = [
 const spendingCategories = [
   { key: 'recharge', label: 'شحن', color: '#8B5CF6', icon: Smartphone },
   { key: 'internet', label: 'إنترنت', color: '#3B82F6', icon: Wifi },
-  { key: 'games', label: 'ألعاب', color: '#F59E0B', icon: Gamepad2 },
-  { key: 'cards', label: 'بطاقات', color: '#14B8A6', icon: CreditCard },
+  { key: 'wallet-services', label: 'خدمات المحفظة', color: '#F59E0B', icon: Gamepad2 },
+  { key: 'service-providers', label: 'مزودين', color: '#14B8A6', icon: CreditCard },
 ];
 
 // Animated counter hook
@@ -164,7 +164,7 @@ export default function WalletScreen() {
       if (snapshot.exists()) {
         const data = snapshot.val();
         setCardColors({
-          YER: data.YER || { primary: '#E60000', gradient: '#8B0000' },
+          YER: data.YER || { primary: '#8B1E3A', gradient: '#4E0A19' },
           SAR: data.SAR || { primary: '#059669', gradient: '#1B7A2B' },
           USD: data.USD || { primary: '#2563EB', gradient: '#0D47A1' },
         });
@@ -231,17 +231,17 @@ export default function WalletScreen() {
           return oDate.getMonth() === now.getMonth() && oDate.getFullYear() === now.getFullYear();
         })
         .reduce((sum, o) => sum + (o.currency === 'YER' ? o.amount : 0), 0);
-    } else if (cat.key === 'games') {
+    } else if (cat.key === 'wallet-services') {
       amount = orders
-        .filter(o => (o.status === 'completed' || o.status === 'pending') && ['pubg', 'freefire', 'call-of-duty', 'fortnite', 'valorant', 'roblox', 'minecraft', 'clash-royale', 'clash-of-clans', 'apex-legends', 'ea-fc', 'steam', 'genshin-impact', 'honkai-star', 'league-legends'].includes(o.providerId))
+        .filter(o => (o.status === 'completed' || o.status === 'pending') && ['pubg', 'freefire', 'call-of-duty', 'fortnite', 'valorant', 'roblox', 'minecraft', 'clash-royale', 'clash-of-clans', 'apex-legends', 'ea-fc', 'steam', 'genshin-impact', 'honkai-star', 'league-legends', 'netflix', 'spotify', 'youtube-premium', 'google-play', 'apple-itunes', 'amazon-gift', 'psn-card', 'xbox-card', 'nintendo-card', 'visa-virtual', 'mastercard-virtual', 'paypal'].includes(o.providerId))
         .filter(o => {
           const oDate = new Date(o.createdAt);
           return oDate.getMonth() === now.getMonth() && oDate.getFullYear() === now.getFullYear();
         })
         .reduce((sum, o) => sum + (o.currency === 'YER' ? o.amount : 0), 0);
-    } else if (cat.key === 'cards') {
+    } else if (cat.key === 'service-providers') {
       amount = orders
-        .filter(o => (o.status === 'completed' || o.status === 'pending') && ['google-play', 'apple-itunes', 'amazon-gift', 'psn-card', 'xbox-card', 'nintendo-card', 'visa-virtual', 'mastercard-virtual', 'paypal'].includes(o.providerId))
+        .filter(o => (o.status === 'completed' || o.status === 'pending') && o.providerId?.startsWith('api-'))
         .filter(o => {
           const oDate = new Date(o.createdAt);
           return oDate.getMonth() === now.getMonth() && oDate.getFullYear() === now.getFullYear();
@@ -473,7 +473,7 @@ export default function WalletScreen() {
           <RefreshCw
             size={20}
             strokeWidth={1.5}
-            color="#E60000"
+            color="#8B1E3A"
             className={isRefreshing ? 'animate-spin' : ''}
             style={{ transform: `rotate(${pullDistance * 3}deg)` }}
           />
@@ -496,7 +496,7 @@ export default function WalletScreen() {
                 animate={{ width: '100%' }}
                 transition={{ delay: 0.3, duration: 0.6 }}
                 className="absolute -bottom-1 right-0 h-[3px] rounded-full"
-                style={{ background: '#E60000' }}
+                style={{ background: '#8B1E3A' }}
               />
             </motion.h1>
             <p className="text-[11px] mt-1.5" style={{ color: isDark ? '#555' : '#999' }}>
@@ -546,7 +546,7 @@ export default function WalletScreen() {
             style={{
               background: isDark ? '#1A1A1A' : '#FFFFFF',
               border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}`,
-              color: '#E60000',
+              color: '#8B1E3A',
             }}
           >
             <Upload size={15} strokeWidth={1.5} />
@@ -569,8 +569,8 @@ export default function WalletScreen() {
             }}
             className="flex-1 flex items-center justify-center gap-1.5 py-3 rounded-2xl font-bold text-sm text-white transition-all active:scale-[0.98]"
             style={{
-              background: 'linear-gradient(135deg, #E60000 0%, #CC0000 100%)',
-              boxShadow: '0 4px 12px rgba(230,0,0,0.3)',
+              background: 'linear-gradient(135deg, #8B1E3A 0%, #6B1528 100%)',
+              boxShadow: '0 4px 12px rgba(139,30,58,0.3)',
             }}
           >
             <ArrowUpRight size={15} strokeWidth={1.5} />
@@ -767,7 +767,7 @@ export default function WalletScreen() {
           }}
         >
           <div className="flex items-center gap-2 mb-3">
-            <Wallet size={14} strokeWidth={1.5} color="#E60000" />
+            <Wallet size={14} strokeWidth={1.5} color="#8B1E3A" />
             <h3 className="text-sm font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>ملخص الإنفاق هذا الشهر</h3>
           </div>
           <div className="space-y-3">
@@ -834,9 +834,9 @@ export default function WalletScreen() {
               whileTap={{ scale: 0.96 }}
               className="shrink-0 px-4 py-2 rounded-xl text-xs font-medium transition-all"
               style={{
-                background: activeFilter === tab.id ? '#E60000' : (isDark ? '#1A1A1A' : '#F5F5F5'),
+                background: activeFilter === tab.id ? '#8B1E3A' : (isDark ? '#1A1A1A' : '#F5F5F5'),
                 color: activeFilter === tab.id ? '#FFF' : (isDark ? '#AAA' : '#666'),
-                boxShadow: activeFilter === tab.id ? '0 2px 8px rgba(230,0,0,0.2)' : 'none',
+                boxShadow: activeFilter === tab.id ? '0 2px 8px rgba(139,30,58,0.2)' : 'none',
                 border: activeFilter !== tab.id ? `1px solid ${isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.05)'}` : 'none',
               }}
             >
@@ -874,7 +874,7 @@ export default function WalletScreen() {
           >
             {filteredTransactions.map((tx, index) => {
               const isIncoming = tx.toUserId === user?.id;
-              const txColor = transactionTypeColors[tx.type] || '#E60000';
+              const txColor = transactionTypeColors[tx.type] || '#8B1E3A';
               const Icon = getTransactionIcon(tx.type, isIncoming);
               return (
                 <motion.div
@@ -901,7 +901,7 @@ export default function WalletScreen() {
                     </p>
                   </div>
                   <div className="text-left shrink-0">
-                    <p className="text-sm font-bold" style={{ color: isIncoming ? '#10B981' : '#E60000' }}>
+                    <p className="text-sm font-bold" style={{ color: isIncoming ? '#10B981' : '#8B1E3A' }}>
                       {isIncoming ? '+' : '-'}{tx.amount.toLocaleString()}
                     </p>
                     <div className="flex justify-end mt-0.5">
@@ -932,7 +932,7 @@ export default function WalletScreen() {
           }}
         >
           <div className="flex items-center gap-2 mb-3">
-            <ArrowDownUp size={14} strokeWidth={1.5} color="#E60000" />
+            <ArrowDownUp size={14} strokeWidth={1.5} color="#8B1E3A" />
             <h3 className="text-sm font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>ملخص الشهر</h3>
           </div>
           <div className="grid grid-cols-3 gap-3">
@@ -944,18 +944,18 @@ export default function WalletScreen() {
               <p className="text-sm font-bold" style={{ color: '#10B981' }}>{formatNumber(monthlyIncome)}</p>
             </div>
             <div className="text-center">
-              <div className="w-10 h-10 rounded-xl mx-auto flex items-center justify-center mb-1" style={{ background: 'rgba(230,0,0,0.08)' }}>
-                <TrendingDown size={16} strokeWidth={1.5} color="#E60000" />
+              <div className="w-10 h-10 rounded-xl mx-auto flex items-center justify-center mb-1" style={{ background: 'rgba(139,30,58,0.08)' }}>
+                <TrendingDown size={16} strokeWidth={1.5} color="#8B1E3A" />
               </div>
               <p className="text-[10px]" style={{ color: isDark ? '#666' : '#AAA' }}>إجمالي الصادر</p>
-              <p className="text-sm font-bold" style={{ color: '#E60000' }}>{formatNumber(monthlyExpense)}</p>
+              <p className="text-sm font-bold" style={{ color: '#8B1E3A' }}>{formatNumber(monthlyExpense)}</p>
             </div>
             <div className="text-center">
-              <div className="w-10 h-10 rounded-xl mx-auto flex items-center justify-center mb-1" style={{ background: `${netThisMonth >= 0 ? 'rgba(16,185,129,0.08)' : 'rgba(230,0,0,0.08)'}` }}>
-                <Wallet size={16} strokeWidth={1.5} color={netThisMonth >= 0 ? '#10B981' : '#E60000'} />
+              <div className="w-10 h-10 rounded-xl mx-auto flex items-center justify-center mb-1" style={{ background: `${netThisMonth >= 0 ? 'rgba(16,185,129,0.08)' : 'rgba(139,30,58,0.08)'}` }}>
+                <Wallet size={16} strokeWidth={1.5} color={netThisMonth >= 0 ? '#10B981' : '#8B1E3A'} />
               </div>
               <p className="text-[10px]" style={{ color: isDark ? '#666' : '#AAA' }}>صافي الشهر</p>
-              <p className="text-sm font-bold" style={{ color: netThisMonth >= 0 ? '#10B981' : '#E60000' }}>
+              <p className="text-sm font-bold" style={{ color: netThisMonth >= 0 ? '#10B981' : '#8B1E3A' }}>
                 {netThisMonth >= 0 ? '+' : ''}{formatNumber(netThisMonth)}
               </p>
             </div>

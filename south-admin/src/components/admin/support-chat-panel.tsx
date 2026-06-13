@@ -1,10 +1,10 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { ref, onValue, push, update, off, set, get } from 'firebase/database';
+import { ref, onValue, push, update, off } from 'firebase/database';
 import { database } from '@/lib/firebase';
 import { useAdminStore } from '@/lib/store';
-import { sendFCMDirect } from '@/lib/fcm-sender';
+
 import { timeAgo } from '@/lib/utils';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -159,6 +159,18 @@ function TicketsPanel({ adminUser, showToast }: { adminUser: any; showToast: (ms
       await update(ref(database, `support-tickets/${selectedTicketId}`), {
         messages: updatedMessages,
       });
+
+      // Notify user about ticket reply
+      try {
+        const { sendNotificationToUser } = await import('@/lib/notifications');
+        await sendNotificationToUser(ticket.userId, {
+          title: 'رد على تذكرتك',
+          body: messageText.trim().substring(0, 100),
+          type: 'info',
+          data: { action: 'ticket_reply', ticketId: ticket.id },
+        });
+      } catch (e) { console.warn('Ticket reply notification failed:', e); }
+
       setMessageText('');
     } catch (e) {
       showToast('حدث خطأ في إرسال الرسالة', 'error');
@@ -168,9 +180,45 @@ function TicketsPanel({ adminUser, showToast }: { adminUser: any; showToast: (ms
   const changeStatus = async (newStatus: SupportTicket['status']) => {
     if (!selectedTicketId) return;
     try {
-      await update(ref(database, `support-tickets/${selectedTicketId}`), {
+      const ticket = tickets.find(t => t.id === selectedTicketId);
+      const updates: Record<string, any> = {
         status: newStatus,
-      });
+      };
+      // Add resolved/closed metadata
+      if (newStatus === 'closed' || newStatus === 'resolved') {
+        updates.resolvedAt = new Date().toISOString();
+        updates.resolvedBy = adminUser?.displayName || 'المدير';
+      }
+      // Use set() on the status field to avoid listener overwrites
+      await set(ref(database, `support-tickets/${selectedTicketId}/status`), newStatus);
+      if (updates.resolvedAt) {
+        await set(ref(database, `support-tickets/${selectedTicketId}/resolvedAt`), updates.resolvedAt);
+        await set(ref(database, `support-tickets/${selectedTicketId}/resolvedBy`), updates.resolvedBy);
+      }
+
+      // Notify user about ticket status change
+      if (ticket?.userId) {
+        try {
+          const { sendNotificationToUser } = await import('@/lib/notifications');
+          const statusLabels: Record<string, string> = {
+            open: 'مفتوحة',
+            in_progress: 'قيد المتابعة',
+            resolved: 'تم الحل',
+            closed: 'مغلقة',
+          };
+          await sendNotificationToUser(ticket.userId, {
+            title: `تذكرتك أصبحت ${statusLabels[newStatus] || newStatus}`,
+            body: newStatus === 'closed'
+              ? 'تم إغلاق تذكرتك. شكراً لتواصلك معنا!'
+              : newStatus === 'resolved'
+              ? 'تم حل مشكلتك. يمكنك إعادة فتح التذكرة إذا لزم الأمر.'
+              : `تم تحديث حالة تذكرتك إلى: ${statusLabels[newStatus] || newStatus}`,
+            type: 'info',
+            data: { action: 'ticket_status', ticketId: selectedTicketId, status: newStatus },
+          });
+        } catch (e) { console.warn('Ticket status notification failed:', e); }
+      }
+
       showToast('تم تحديث حالة التذكرة', 'success');
     } catch (e) {
       showToast('حدث خطأ في تحديث الحالة', 'error');
@@ -196,7 +244,7 @@ function TicketsPanel({ adminUser, showToast }: { adminUser: any; showToast: (ms
 
   if (loading) return (
     <div className="flex items-center justify-center min-h-[400px]">
-      <Loader2 className="w-8 h-8 text-purple-500 animate-spin" />
+      <Loader2 className="w-8 h-8 text-[#8B1E3A] animate-spin" />
     </div>
   );
 
@@ -210,11 +258,11 @@ function TicketsPanel({ adminUser, showToast }: { adminUser: any; showToast: (ms
             <Input placeholder="بحث بالاسم أو الموضوع..." value={search} onChange={(e) => setSearch(e.target.value)} className="pr-10 h-9" />
           </div>
           <div className="flex gap-1 flex-wrap">
-            <Badge variant="outline" className={`cursor-pointer text-xs ${filterStatus === 'all' ? 'bg-purple-500/10' : ''}`} onClick={() => setFilterStatus('all')}>
+            <Badge variant="outline" className={`cursor-pointer text-xs ${filterStatus === 'all' ? 'bg-[#8B1E3A]/10' : ''}`} onClick={() => setFilterStatus('all')}>
               الكل ({tickets.length})
             </Badge>
             {Object.entries(statusConfig).map(([key, cfg]) => (
-              <Badge key={key} variant="outline" className={`cursor-pointer text-xs ${filterStatus === key ? 'bg-purple-500/10' : ''}`} onClick={() => setFilterStatus(key as any)}>
+              <Badge key={key} variant="outline" className={`cursor-pointer text-xs ${filterStatus === key ? 'bg-[#8B1E3A]/10' : ''}`} onClick={() => setFilterStatus(key as any)}>
                 {cfg.label} ({statusCounts[key as keyof typeof statusCounts]})
               </Badge>
             ))}
@@ -235,11 +283,11 @@ function TicketsPanel({ adminUser, showToast }: { adminUser: any; showToast: (ms
               <div
                 key={ticket.id}
                 onClick={() => setSelectedTicketId(ticket.id)}
-                className={`p-3 border-b border-border cursor-pointer hover:bg-muted/50 transition-colors ${selectedTicketId === ticket.id ? 'bg-purple-500/10' : ''}`}
+                className={`p-3 border-b border-border cursor-pointer hover:bg-muted/50 transition-colors ${selectedTicketId === ticket.id ? 'bg-[#8B1E3A]/10' : ''}`}
               >
                 <div className="flex items-center justify-between mb-1">
                   <div className="flex items-center gap-2 min-w-0 flex-1">
-                    <div className="w-8 h-8 rounded-full bg-purple-500/10 flex items-center justify-center text-xs font-bold text-purple-600 shrink-0">
+                    <div className="w-8 h-8 rounded-full bg-[#8B1E3A]/10 flex items-center justify-center text-xs font-bold text-[#8B1E3A] shrink-0">
                       {(ticket.userName || '?')[0]}
                     </div>
                     <div className="min-w-0 flex-1">
@@ -272,7 +320,7 @@ function TicketsPanel({ adminUser, showToast }: { adminUser: any; showToast: (ms
             <div className="p-3 border-b border-border">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2 min-w-0 flex-1">
-                  <Ticket className="w-5 h-5 text-purple-500 shrink-0" />
+                  <Ticket className="w-5 h-5 text-[#8B1E3A] shrink-0" />
                   <span className="font-medium text-sm truncate">{selectedTicket.subject}</span>
                   <span className="text-[10px] px-1.5 py-0.5 rounded-full shrink-0" style={{ background: categoryConfig[selectedTicket.category]?.bg, color: categoryConfig[selectedTicket.category]?.color }}>
                     {categoryConfig[selectedTicket.category]?.label}
@@ -325,13 +373,13 @@ function TicketsPanel({ adminUser, showToast }: { adminUser: any; showToast: (ms
                 <div key={i} className={`flex ${msg.sender === 'support' ? 'justify-start' : 'justify-end'}`}>
                   <div className={`max-w-[75%] p-3 rounded-2xl text-sm ${
                     msg.sender === 'support'
-                      ? 'bg-purple-600/20 text-foreground rounded-bl-sm'
+                      ? 'bg-[#7B1A30]/20 text-foreground rounded-bl-sm'
                       : 'bg-muted text-foreground rounded-br-sm'
                   }`}>
                     {msg.sender === 'support' && (
                       <div className="flex items-center gap-1.5 mb-1">
-                        <Headphones className="w-3 h-3 text-purple-500" />
-                        <span className="text-xs text-purple-500 font-medium">فريق الدعم</span>
+                        <Headphones className="w-3 h-3 text-[#8B1E3A]" />
+                        <span className="text-xs text-[#8B1E3A] font-medium">فريق الدعم</span>
                       </div>
                     )}
                     {msg.image && (
@@ -452,32 +500,16 @@ function LiveChatPanel({ adminUser, showToast }: { adminUser: any; showToast: (m
         unreadUser: currentUnreadUser + 1,
       });
 
-      // Send push notification to the user about admin reply
+      // Notify user about admin chat reply
       try {
-        const userFcmToken = (await get(ref(database, `users/${selectedUserId}/fcmToken`))).val();
-        if (userFcmToken) {
-          await sendFCMDirect(
-            [userFcmToken],
-            'رد من الدعم',
-            replyText.substring(0, 100),
-            'general',
-            { action: 'support_chat_reply', adminName: adminUser?.displayName || 'المدير' },
-          );
-        }
-        // Also write in-app notification
-        const notifId = `chat_reply_${Date.now()}`;
-        await set(ref(database, `notifications/${selectedUserId}/${notifId}`), {
-          id: notifId,
-          title: 'رد من الدعم',
-          body: replyText.substring(0, 100),
+        const { sendNotificationToUser } = await import('@/lib/notifications');
+        await sendNotificationToUser(selectedUserId, {
+          title: 'رسالة جديدة من الدعم الفني',
+          body: replyText.substring(0, 50),
           type: 'info',
-          isRead: false,
-          createdAt: new Date().toISOString(),
-          data: { action: 'support_chat_reply' },
+          data: { action: 'support_chat', userId: selectedUserId },
         });
-      } catch (notifErr) {
-        console.warn('Failed to notify user about chat reply:', notifErr);
-      }
+      } catch (e) { console.warn('Chat notification failed:', e); }
 
       setMessageText('');
     } catch (e) {
@@ -488,11 +520,22 @@ function LiveChatPanel({ adminUser, showToast }: { adminUser: any; showToast: (m
   const resolveConversation = async () => {
     if (!selectedUserId) return;
     try {
-      await update(ref(database, `supportChat/${selectedUserId}`), {
-        status: 'resolved',
-        resolvedAt: new Date().toISOString(),
-        resolvedBy: adminUser?.displayName || 'المدير',
-      });
+      // Use set() on individual paths to avoid listener overwrites
+      await set(ref(database, `supportChat/${selectedUserId}/status`), 'resolved');
+      await set(ref(database, `supportChat/${selectedUserId}/resolvedAt`), new Date().toISOString());
+      await set(ref(database, `supportChat/${selectedUserId}/resolvedBy`), adminUser?.displayName || 'المدير');
+
+      // Notify user about conversation resolved
+      try {
+        const { sendNotificationToUser } = await import('@/lib/notifications');
+        await sendNotificationToUser(selectedUserId, {
+          title: 'تم إغلاق المحادثة',
+          body: 'تم حل مشكلتك. شكراً لتواصلك معنا!',
+          type: 'info',
+          data: { action: 'chat_status', status: 'resolved', userId: selectedUserId },
+        });
+      } catch (e) { console.warn('Chat status notification failed:', e); }
+
       showToast('تم إغلاق المحادثة', 'success');
     } catch (e) {
       showToast('حدث خطأ', 'error');
@@ -502,11 +545,22 @@ function LiveChatPanel({ adminUser, showToast }: { adminUser: any; showToast: (m
   const reopenConversation = async () => {
     if (!selectedUserId) return;
     try {
-      await update(ref(database, `supportChat/${selectedUserId}`), {
-        status: 'open',
-        resolvedAt: null,
-        resolvedBy: null,
-      });
+      // Use set() on individual paths to avoid listener overwrites
+      await set(ref(database, `supportChat/${selectedUserId}/status`), 'open');
+      await set(ref(database, `supportChat/${selectedUserId}/resolvedAt`), null);
+      await set(ref(database, `supportChat/${selectedUserId}/resolvedBy`), null);
+
+      // Notify user about conversation reopened
+      try {
+        const { sendNotificationToUser } = await import('@/lib/notifications');
+        await sendNotificationToUser(selectedUserId, {
+          title: 'تم إعادة فتح المحادثة',
+          body: 'تم إعادة فتح محادثتك مع الدعم الفني',
+          type: 'info',
+          data: { action: 'chat_status', status: 'reopened', userId: selectedUserId },
+        });
+      } catch (e) { console.warn('Chat status notification failed:', e); }
+
       showToast('تم إعادة فتح المحادثة', 'success');
     } catch (e) {
       showToast('حدث خطأ', 'error');
@@ -526,7 +580,7 @@ function LiveChatPanel({ adminUser, showToast }: { adminUser: any; showToast: (m
 
   if (loading) return (
     <div className="flex items-center justify-center min-h-[400px]">
-      <Loader2 className="w-8 h-8 text-purple-500 animate-spin" />
+      <Loader2 className="w-8 h-8 text-[#8B1E3A] animate-spin" />
     </div>
   );
 
@@ -540,7 +594,7 @@ function LiveChatPanel({ adminUser, showToast }: { adminUser: any; showToast: (m
             <Input placeholder="بحث..." value={search} onChange={(e) => setSearch(e.target.value)} className="pr-10 h-9" />
           </div>
           <div className="flex gap-1">
-            <Badge variant="outline" className={`cursor-pointer ${filterStatus === 'all' ? 'bg-purple-500/10' : ''}`} onClick={() => setFilterStatus('all')}>
+            <Badge variant="outline" className={`cursor-pointer ${filterStatus === 'all' ? 'bg-[#8B1E3A]/10' : ''}`} onClick={() => setFilterStatus('all')}>
               الكل ({conversations.length})
             </Badge>
             <Badge variant="outline" className={`cursor-pointer ${filterStatus === 'open' ? 'bg-green-500/10' : ''}`} onClick={() => setFilterStatus('open')}>
@@ -562,11 +616,11 @@ function LiveChatPanel({ adminUser, showToast }: { adminUser: any; showToast: (m
             <div
               key={conv.userId}
               onClick={() => setSelectedUserId(conv.userId)}
-              className={`p-3 border-b border-border cursor-pointer hover:bg-muted/50 transition-colors ${selectedUserId === conv.userId ? 'bg-purple-500/10' : ''}`}
+              className={`p-3 border-b border-border cursor-pointer hover:bg-muted/50 transition-colors ${selectedUserId === conv.userId ? 'bg-[#8B1E3A]/10' : ''}`}
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-full bg-purple-500/10 flex items-center justify-center text-xs font-bold text-purple-600">
+                  <div className="w-8 h-8 rounded-full bg-[#8B1E3A]/10 flex items-center justify-center text-xs font-bold text-[#8B1E3A]">
                     {(conv.userName || '?')[0]}
                   </div>
                   <div>
@@ -594,7 +648,7 @@ function LiveChatPanel({ adminUser, showToast }: { adminUser: any; showToast: (m
           <>
             <div className="p-3 border-b border-border flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <MessageCircle className="w-5 h-5 text-purple-500" />
+                <MessageCircle className="w-5 h-5 text-[#8B1E3A]" />
                 <span className="font-medium text-sm">{selectedConv?.userName || 'مستخدم'}</span>
                 <Badge className={selectedConv?.status === 'open' ? 'bg-green-500/20 text-green-600 text-xs' : 'bg-gray-500/20 text-gray-500 text-xs'}>
                   {selectedConv?.status === 'open' ? 'نشطة' : 'مغلقة'}
@@ -614,16 +668,16 @@ function LiveChatPanel({ adminUser, showToast }: { adminUser: any; showToast: (m
             </div>
             <div className="flex-1 overflow-y-auto p-4 space-y-3 scrollbar-thin">
               {messages.map((msg) => (
-                <div key={msg.id} className={`flex ${msg.sender === 'admin' ? 'justify-start' : 'justify-end'}`}>
+                <div key={msg.id} className={`flex ${msg.sender === 'user' ? 'justify-start' : 'justify-end'}`}>
                   <div className={`max-w-[75%] p-3 rounded-2xl text-sm ${
                     msg.sender === 'admin'
-                      ? 'bg-purple-600/20 text-foreground rounded-bl-sm'
+                      ? 'bg-[#7B1A30]/20 text-foreground rounded-bl-sm'
                       : 'bg-muted text-foreground rounded-br-sm'
                   }`}>
                     {msg.sender === 'admin' && msg.adminName && (
                       <div className="flex items-center gap-1.5 mb-1">
-                        <Headphones className="w-3 h-3 text-purple-500" />
-                        <span className="text-xs text-purple-500 font-medium">{msg.adminName}</span>
+                        <Headphones className="w-3 h-3 text-[#8B1E3A]" />
+                        <span className="text-xs text-[#8B1E3A] font-medium">{msg.adminName}</span>
                       </div>
                     )}
                     {msg.type === 'image' && msg.imageUrl ? (

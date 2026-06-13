@@ -162,8 +162,8 @@ export default function WalletTransferScreen() {
             <h1 className="text-xl font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>تحويل لمحافظ يمنية</h1>
             <p className="text-[10px]" style={{ color: subTextColor }}>فلوسك، جيب، تمنية وأكثر</p>
           </div>
-          <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'rgba(230,0,0,0.12)' }}>
-            <ArrowRightLeft size={18} color="#E60000" strokeWidth={1.5} />
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'rgba(139,30,58,0.12)' }}>
+            <ArrowRightLeft size={18} color="#8B1E3A" strokeWidth={1.5} />
           </div>
         </div>
       </motion.div>
@@ -175,7 +175,7 @@ export default function WalletTransferScreen() {
             <motion.div key="select-wallet" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>
               <div className="rounded-2xl p-4" style={glassCard}>
                 <div className="flex items-center gap-2 mb-4">
-                  <Smartphone size={16} color="#E60000" strokeWidth={1.5} />
+                  <Smartphone size={16} color="#8B1E3A" strokeWidth={1.5} />
                   <span className="text-sm font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>اختر المحفظة الوجهة</span>
                 </div>
                 <div className="space-y-2">
@@ -251,7 +251,7 @@ export default function WalletTransferScreen() {
                   {[1000, 2000, 5000, 10000].map(a => (
                     <button key={a} onClick={() => setAmount(String(a))}
                       className="flex-1 py-2 rounded-xl text-[11px] font-bold transition-all"
-                      style={{ background: amount === String(a) ? '#E60000' : innerBg, color: amount === String(a) ? '#FFF' : (isDark ? '#CCC' : '#666') }}>
+                      style={{ background: amount === String(a) ? '#8B1E3A' : innerBg, color: amount === String(a) ? '#FFF' : (isDark ? '#CCC' : '#666') }}>
                       {a.toLocaleString()}
                     </button>
                   ))}
@@ -268,12 +268,12 @@ export default function WalletTransferScreen() {
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-xs" style={{ color: subTextColor }}>العمولة ({feePercent}%)</span>
-                      <span className="text-xs font-medium" style={{ color: '#E60000' }}>{formatNumber(feeAmount)} {currencySymbols[currency]}</span>
+                      <span className="text-xs font-medium" style={{ color: '#8B1E3A' }}>{formatNumber(feeAmount)} {currencySymbols[currency]}</span>
                     </div>
                     <div className="h-px" style={{ background: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)' }} />
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>الإجمالي</span>
-                      <span className="text-sm font-bold" style={{ color: '#E60000' }}>{formatNumber(totalAmount)} {currencySymbols[currency]}</span>
+                      <span className="text-sm font-bold" style={{ color: '#8B1E3A' }}>{formatNumber(totalAmount)} {currencySymbols[currency]}</span>
                     </div>
                     <div className="flex items-center justify-between mt-1">
                       <span className="text-[10px]" style={{ color: subTextColor }}>رصيدك الحالي</span>
@@ -281,15 +281,15 @@ export default function WalletTransferScreen() {
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-[10px]" style={{ color: subTextColor }}>الرصيد بعد التحويل</span>
-                      <span className="text-[10px] font-bold" style={{ color: balanceAfter >= 0 ? '#10B981' : '#E60000' }}>
+                      <span className="text-[10px] font-bold" style={{ color: balanceAfter >= 0 ? '#10B981' : '#8B1E3A' }}>
                         {formatNumber(Math.max(0, balanceAfter))} {currencySymbols[currency]}
                       </span>
                     </div>
                   </div>
                   {balanceAfter < 0 && (
-                    <div className="flex items-center gap-2 mt-2 p-2 rounded-xl" style={{ background: 'rgba(230,0,0,0.08)' }}>
-                      <AlertTriangle size={12} color="#E60000" />
-                      <span className="text-[10px]" style={{ color: '#E60000' }}>الرصيد غير كافي</span>
+                    <div className="flex items-center gap-2 mt-2 p-2 rounded-xl" style={{ background: 'rgba(139,30,58,0.08)' }}>
+                      <AlertTriangle size={12} color="#8B1E3A" />
+                      <span className="text-[10px]" style={{ color: '#8B1E3A' }}>الرصيد غير كافي</span>
                     </div>
                   )}
                 </motion.div>
@@ -309,7 +309,7 @@ export default function WalletTransferScreen() {
                 onClick={handleProceedToConfirm}
                 disabled={!amountNum || amountNum <= 0 || !recipientPhone || balanceAfter < 0}
                 className="w-full py-4 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 transition-all"
-                style={{ background: amountNum > 0 && recipientPhone && balanceAfter >= 0 ? '#E60000' : (isDark ? '#1A1A1A' : '#EEE'), color: amountNum > 0 && recipientPhone && balanceAfter >= 0 ? '#FFF' : (isDark ? '#444' : '#AAA'), boxShadow: amountNum > 0 ? '0 4px 16px rgba(230,0,0,0.3)' : 'none' }}>
+                style={{ background: amountNum > 0 && recipientPhone && balanceAfter >= 0 ? '#8B1E3A' : (isDark ? '#1A1A1A' : '#EEE'), color: amountNum > 0 && recipientPhone && balanceAfter >= 0 ? '#FFF' : (isDark ? '#444' : '#AAA'), boxShadow: amountNum > 0 ? '0 4px 16px rgba(139,30,58,0.3)' : 'none' }}>
                 <Send size={16} strokeWidth={2} /> متابعة
               </button>
             </motion.div>
@@ -318,7 +318,7 @@ export default function WalletTransferScreen() {
           {/* Step 3: Confirmation */}
           {step === 'confirm' && selectedWallet && (
             <motion.div key="confirm" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="space-y-3">
-              <div className="rounded-2xl p-4" style={{ background: 'linear-gradient(145deg, #E60000 0%, #8B0000 100%)' }}>
+              <div className="rounded-2xl p-4" style={{ background: 'linear-gradient(145deg, #8B1E3A 0%, #4E0A19 100%)' }}>
                 <div className="text-center">
                   <p className="text-white/50 text-[10px]">المبلغ الإجمالي</p>
                   <p className="text-white text-3xl font-bold">{formatNumber(totalAmount)} {currencySymbols[currency]}</p>
@@ -346,7 +346,7 @@ export default function WalletTransferScreen() {
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-xs" style={{ color: subTextColor }}>العمولة</span>
-                    <span className="text-xs font-medium" style={{ color: '#E60000' }}>{formatNumber(feeAmount)} {currencySymbols[currency]}</span>
+                    <span className="text-xs font-medium" style={{ color: '#8B1E3A' }}>{formatNumber(feeAmount)} {currencySymbols[currency]}</span>
                   </div>
                   <div className="h-px" style={{ background: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)' }} />
                   <div className="flex items-center justify-between">
@@ -362,7 +362,7 @@ export default function WalletTransferScreen() {
                 </button>
                 <button onClick={handleConfirmTransfer} disabled={isProcessing}
                   className="flex-1 py-4 rounded-2xl text-sm font-bold text-white flex items-center justify-center gap-2"
-                  style={{ background: '#E60000', boxShadow: '0 4px 16px rgba(230,0,0,0.3)' }}>
+                  style={{ background: '#8B1E3A', boxShadow: '0 4px 16px rgba(139,30,58,0.3)' }}>
                   {isProcessing ? (
                     <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                   ) : (
@@ -419,7 +419,7 @@ export default function WalletTransferScreen() {
                 </div>
               </div>
 
-              <button onClick={handleReset} className="w-full py-4 rounded-2xl text-sm font-bold text-white" style={{ background: '#E60000', boxShadow: '0 4px 16px rgba(230,0,0,0.3)' }}>
+              <button onClick={handleReset} className="w-full py-4 rounded-2xl text-sm font-bold text-white" style={{ background: '#8B1E3A', boxShadow: '0 4px 16px rgba(139,30,58,0.3)' }}>
                 تحويل آخر
               </button>
             </motion.div>

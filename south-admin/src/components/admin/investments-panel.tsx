@@ -207,7 +207,7 @@ export default function InvestmentsPanel() {
     cancelled: 'bg-red-500/20 text-red-600 dark:text-red-400',
   };
 
-  if (loading) return <div className="flex items-center justify-center min-h-[400px]"><div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" /></div>;
+  if (loading) return <div className="flex items-center justify-center min-h-[400px]"><div className="w-8 h-8 border-2 border-[#8B1E3A] border-t-transparent rounded-full animate-spin" /></div>;
 
   return (
     <div className="space-y-6">
@@ -223,7 +223,7 @@ export default function InvestmentsPanel() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
           { icon: TrendingUp, color: 'text-green-500', bg: 'bg-green-500/10', value: activeInvestments.length, label: 'استثمارات نشطة' },
-          { icon: DollarSign, color: 'text-purple-500', bg: 'bg-purple-500/10', value: totalInvested, label: 'إجمالي المستثمر' },
+          { icon: DollarSign, color: 'text-[#8B1E3A]', bg: 'bg-[#8B1E3A]/10', value: totalInvested, label: 'إجمالي المستثمر' },
           { icon: BarChart3, color: 'text-blue-500', bg: 'bg-blue-500/10', value: totalProfitsPaid, label: 'أرباح مدفوعة' },
           { icon: CheckCircle, color: 'text-teal-500', bg: 'bg-teal-500/10', value: completedInvestments.length, label: 'مكتملة' },
         ].map((card, index) => (

@@ -185,7 +185,7 @@ export default function EditProfileScreen() {
 
   const inputErrorStyle = (field: string) =>
     errors[field]
-      ? { border: '1px solid #E60000', boxShadow: '0 0 0 2px rgba(230,0,0,0.1)' }
+      ? { border: '1px solid #8B1E3A', boxShadow: '0 0 0 2px rgba(139,30,58,0.1)' }
       : {};
 
   // Frozen field renderer - for verified users
@@ -278,8 +278,8 @@ export default function EditProfileScreen() {
               onClick={() => fileRef.current?.click()}
               className="absolute bottom-0 left-0 w-8 h-8 rounded-full flex items-center justify-center"
               style={{
-                background: '#E60000',
-                boxShadow: '0 2px 8px rgba(230,0,0,0.4)',
+                background: '#8B1E3A',
+                boxShadow: '0 2px 8px rgba(139,30,58,0.4)',
               }}
             >
               <Camera size={14} strokeWidth={1.5} color="#FFF" />
@@ -332,7 +332,7 @@ export default function EditProfileScreen() {
                   الاسم الأول
                 </label>
                 <div className="flex items-center gap-2 px-4 py-3.5 rounded-2xl" style={{ ...inputContainerStyle, ...inputErrorStyle('firstName') }}>
-                  <User size={18} strokeWidth={1.5} color="#E60000" />
+                  <User size={18} strokeWidth={1.5} color="#8B1E3A" />
                   <input
                     type="text"
                     placeholder="الاسم الأول"
@@ -345,7 +345,7 @@ export default function EditProfileScreen() {
                     style={{ color: isDark ? '#FFF' : '#1a1a1a' }}
                   />
                 </div>
-                {errors.firstName && <p className="text-[10px] mt-1" style={{ color: '#E60000' }}>{errors.firstName}</p>}
+                {errors.firstName && <p className="text-[10px] mt-1" style={{ color: '#8B1E3A' }}>{errors.firstName}</p>}
               </>
             )}
           </motion.div>
@@ -420,7 +420,7 @@ export default function EditProfileScreen() {
                   اسم العائلة
                 </label>
                 <div className="flex items-center gap-2 px-4 py-3.5 rounded-2xl" style={{ ...inputContainerStyle, ...inputErrorStyle('familyName') }}>
-                  <User size={18} strokeWidth={1.5} color="#E60000" />
+                  <User size={18} strokeWidth={1.5} color="#8B1E3A" />
                   <input
                     type="text"
                     placeholder="اسم العائلة"
@@ -433,7 +433,7 @@ export default function EditProfileScreen() {
                     style={{ color: isDark ? '#FFF' : '#1a1a1a' }}
                   />
                 </div>
-                {errors.familyName && <p className="text-[10px] mt-1" style={{ color: '#E60000' }}>{errors.familyName}</p>}
+                {errors.familyName && <p className="text-[10px] mt-1" style={{ color: '#8B1E3A' }}>{errors.familyName}</p>}
               </>
             )}
           </motion.div>
@@ -452,7 +452,7 @@ export default function EditProfileScreen() {
                   رقم الهاتف
                 </label>
                 <div className="flex items-center gap-2 px-4 py-3.5 rounded-2xl" style={{ ...inputContainerStyle, ...inputErrorStyle('phone') }}>
-                  <Phone size={18} strokeWidth={1.5} color="#E60000" />
+                  <Phone size={18} strokeWidth={1.5} color="#8B1E3A" />
                   <YemenFlagIndicator />
                   <span className="text-sm font-medium shrink-0" style={{ color: isDark ? '#AAA' : '#888' }} dir="ltr">+967</span>
                   <div className="w-px h-5 shrink-0" style={{ background: isDark ? '#444' : '#DDD' }} />
@@ -466,7 +466,7 @@ export default function EditProfileScreen() {
                     dir="ltr"
                   />
                 </div>
-                {errors.phone && <p className="text-[10px] mt-1" style={{ color: '#E60000' }}>{errors.phone}</p>}
+                {errors.phone && <p className="text-[10px] mt-1" style={{ color: '#8B1E3A' }}>{errors.phone}</p>}
               </>
             )}
           </motion.div>
@@ -491,7 +491,7 @@ export default function EditProfileScreen() {
                 opacity: 0.6,
               }}
             >
-              <Mail size={18} strokeWidth={1.5} color="#E60000" />
+              <Mail size={18} strokeWidth={1.5} color="#8B1E3A" />
               <input
                 type="email"
                 value={email}
@@ -522,7 +522,7 @@ export default function EditProfileScreen() {
                   <Lock size={10} strokeWidth={1.5} color={isDark ? '#555' : '#CCC'} />
                 </label>
                 <div className="flex items-center gap-2 px-4 py-3.5 rounded-2xl" style={{ ...inputContainerStyle, opacity: 0.6 }}>
-                  <CreditCard size={18} strokeWidth={1.5} color="#E60000" />
+                  <CreditCard size={18} strokeWidth={1.5} color="#8B1E3A" />
                   <input
                     type="text"
                     value={nationalId}
@@ -557,7 +557,7 @@ export default function EditProfileScreen() {
               style={{ ...inputContainerStyle, ...inputErrorStyle('governorate') }}
             >
               <div className="flex items-center gap-2 px-4 py-2">
-                <MapPin size={18} strokeWidth={1.5} color="#E60000" />
+                <MapPin size={18} strokeWidth={1.5} color="#8B1E3A" />
                 <select
                   value={selectedGovernorate}
                   onChange={(e) => {
@@ -583,7 +583,7 @@ export default function EditProfileScreen() {
               </div>
             </div>
             {errors.governorate && (
-              <p className="text-[10px] mt-1" style={{ color: '#E60000' }}>{errors.governorate}</p>
+              <p className="text-[10px] mt-1" style={{ color: '#8B1E3A' }}>{errors.governorate}</p>
             )}
           </motion.div>
         </div>
@@ -600,8 +600,8 @@ export default function EditProfileScreen() {
             disabled={isLoading}
             className="w-full py-4 rounded-2xl flex items-center justify-center gap-2 font-bold text-white text-sm transition-all active:scale-[0.98] disabled:opacity-50"
             style={{
-              background: 'linear-gradient(135deg, #E60000 0%, #B30000 100%)',
-              boxShadow: '0 4px 16px rgba(230,0,0,0.3)',
+              background: 'linear-gradient(135deg, #8B1E3A 0%, #5C1225 100%)',
+              boxShadow: '0 4px 16px rgba(139,30,58,0.3)',
             }}
           >
             {isLoading ? (

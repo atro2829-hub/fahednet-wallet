@@ -161,13 +161,13 @@ export default function ConnectionErrorScreen() {
           {/* Pulse circles */}
           <motion.div
             className="absolute inset-0 rounded-full"
-            style={{ background: 'rgba(230,0,0,0.08)' }}
+            style={{ background: 'rgba(139,30,58,0.08)' }}
             animate={{ scale: [1, 1.5, 1], opacity: [0.5, 0, 0.5] }}
             transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
           />
           <motion.div
             className="absolute inset-0 rounded-full"
-            style={{ background: 'rgba(230,0,0,0.05)' }}
+            style={{ background: 'rgba(139,30,58,0.05)' }}
             animate={{ scale: [1, 1.8, 1], opacity: [0.3, 0, 0.3] }}
             transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut', delay: 0.5 }}
           />
@@ -177,9 +177,9 @@ export default function ConnectionErrorScreen() {
             className="relative w-28 h-28 rounded-full flex items-center justify-center"
             style={{
               background: isDark
-                ? 'linear-gradient(145deg, rgba(230,0,0,0.15) 0%, rgba(139,0,0,0.1) 100%)'
-                : 'linear-gradient(145deg, rgba(230,0,0,0.1) 0%, rgba(139,0,0,0.06) 100%)',
-              border: `2px solid ${isDark ? 'rgba(230,0,0,0.2)' : 'rgba(230,0,0,0.15)'}`,
+                ? 'linear-gradient(145deg, rgba(139,30,58,0.15) 0%, rgba(139,0,0,0.1) 100%)'
+                : 'linear-gradient(145deg, rgba(139,30,58,0.1) 0%, rgba(139,0,0,0.06) 100%)',
+              border: `2px solid ${isDark ? 'rgba(139,30,58,0.2)' : 'rgba(139,30,58,0.15)'}`,
             }}
             animate={isOnline ? { scale: [1, 1.05, 1] } : {}}
             transition={{ duration: 1.5, repeat: Infinity }}
@@ -187,7 +187,7 @@ export default function ConnectionErrorScreen() {
             {isOnline ? (
               <CheckCircle2 size={48} strokeWidth={1.2} color="#10B981" />
             ) : (
-              <WifiOff size={48} strokeWidth={1.2} color="#E60000" />
+              <WifiOff size={48} strokeWidth={1.2} color="#8B1E3A" />
             )}
           </motion.div>
         </motion.div>
@@ -237,8 +237,8 @@ export default function ConnectionErrorScreen() {
             disabled={isRetrying}
             className="flex items-center gap-2 px-8 py-3.5 rounded-2xl mb-6 active:scale-95 transition-transform disabled:opacity-50"
             style={{
-              background: 'linear-gradient(145deg, #E60000 0%, #8B0000 100%)',
-              boxShadow: '0 4px 12px rgba(230,0,0,0.3)',
+              background: 'linear-gradient(145deg, #8B1E3A 0%, #4E0A19 100%)',
+              boxShadow: '0 4px 12px rgba(139,30,58,0.3)',
             }}
           >
             <RefreshCw
@@ -271,8 +271,8 @@ export default function ConnectionErrorScreen() {
                 </>
               ) : (
                 <>
-                  <AlertCircle size={16} color="#E60000" />
-                  <span className="text-sm font-medium" style={{ color: '#E60000' }}>
+                  <AlertCircle size={16} color="#8B1E3A" />
+                  <span className="text-sm font-medium" style={{ color: '#8B1E3A' }}>
                     فشل الاتصال
                   </span>
                 </>
@@ -289,12 +289,12 @@ export default function ConnectionErrorScreen() {
               animate={{ opacity: 1, scale: 1 }}
               className="flex items-center gap-2 px-4 py-2 rounded-full"
               style={{
-                background: isDark ? 'rgba(230,0,0,0.08)' : 'rgba(230,0,0,0.06)',
-                border: '1px solid rgba(230,0,0,0.15)',
+                background: isDark ? 'rgba(139,30,58,0.08)' : 'rgba(139,30,58,0.06)',
+                border: '1px solid rgba(139,30,58,0.15)',
               }}
             >
-              <AlertCircle size={14} strokeWidth={1.5} color="#E60000" />
-              <span className="text-xs font-medium" style={{ color: '#E60000' }}>
+              <AlertCircle size={14} strokeWidth={1.5} color="#8B1E3A" />
+              <span className="text-xs font-medium" style={{ color: '#8B1E3A' }}>
                 مدة الانقطاع: {formatOfflineDuration()}
               </span>
             </motion.div>
@@ -330,7 +330,7 @@ export default function ConnectionErrorScreen() {
             }}
           >
             <div className="flex items-center gap-2 mb-3">
-              <Wallet size={16} strokeWidth={1.5} color="#E60000" />
+              <Wallet size={16} strokeWidth={1.5} color="#8B1E3A" />
               <span className="text-xs font-bold" style={{ color: secondaryText }}>
                 الرصيد الأخير (غير محدث)
               </span>
@@ -382,7 +382,7 @@ export default function ConnectionErrorScreen() {
               <button
                 onClick={handleClearPending}
                 className="text-[10px] font-bold"
-                style={{ color: '#E60000' }}
+                style={{ color: '#8B1E3A' }}
               >
                 مسح الكل
               </button>

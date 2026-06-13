@@ -43,13 +43,15 @@ import RequestMoneyModal from '@/components/fahed/request-money-modal';
 import OrderBottomSheet from '@/components/fahed/order-bottom-sheet';
 import SplashScreen from '@/components/fahed/splash-screen';
 import PinScreen from '@/components/fahed/pin-screen';
+import PinSetupScreen from '@/components/fahed/pin-setup-screen';
 import { useFirebaseSync } from '@/lib/use-firebase-sync';
 import { useAdminSettings } from '@/lib/use-admin-settings';
+import { LOGO_BASE64 } from '@/lib/logo';
 
 type AppPhase = 'splash' | 'pin' | 'main';
 
 function AppContent() {
-  const { user, isAuthenticated, activeTab, activeScreen, setActiveScreen, theme: storeTheme, pinCode, selectedCategory } = useAppStore();
+  const { user, isAuthenticated, activeTab, activeScreen, setActiveScreen, theme: storeTheme, pinCode, selectedCategory, featureFlags } = useAppStore();
   const { theme } = useTheme();
   const isDark = theme === 'dark';
   const { setTheme } = useTheme();
@@ -65,6 +67,66 @@ function AppContent() {
   // Sync user data from Firebase (real-time + on focus + on mount)
   useFirebaseSync();
   const { maintenance, forceUpdate } = useAdminSettings();
+
+  // Android back button handler via @capacitor/app
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    let backPressedCount = 0;
+    let listener: any = null;
+
+    const setupBackButton = async () => {
+      try {
+        const win = window as unknown as { Capacitor?: { isNativePlatform?: () => boolean } };
+        const isNative = win.Capacitor && win.Capacitor.isNativePlatform && win.Capacitor.isNativePlatform();
+        if (!isNative) return;
+
+        const { App } = await import('@capacitor/app');
+        listener = await App.addListener('backButton', () => {
+          const state = useAppStore.getState();
+
+          // If any modal is open, close it first
+          if (state.isTransferOpen) { state.setTransferOpen(false); return; }
+          if (state.isOrderOpen) { state.setOrderOpen(false); return; }
+          if (state.isDrawerOpen) { state.setDrawerOpen(false); return; }
+          if (state.isRequestMoneyOpen) { state.setRequestMoneyOpen(false); return; }
+
+          // If on an overlay screen, go back to main
+          if (state.activeScreen && state.activeScreen !== 'main') {
+            state.setActiveScreen('main');
+            return;
+          }
+
+          // If on a non-home tab, go to home tab
+          if (state.activeTab !== 'home') {
+            state.setActiveTab('home');
+            return;
+          }
+
+          // On home tab - double press to exit
+          if (backPressedCount === 0) {
+            backPressedCount = 1;
+            showToast('info', 'اضغط مرة أخرى للخروج', '');
+            setTimeout(() => { backPressedCount = 0; }, 2000);
+          } else if (backPressedCount === 1) {
+            App.exitApp();
+          }
+        });
+      } catch (e) {
+        // Not running in Capacitor native - ignore
+      }
+    };
+
+    setupBackButton();
+
+    return () => {
+      if (listener && typeof listener.then === 'function') {
+        listener.then((l: any) => l?.remove?.()).catch(() => {});
+      } else if (listener?.remove) {
+        listener.remove();
+      }
+    };
+  }, [isAuthenticated, showToast]);
 
   // Show KYC verification toast as a floating notification
   useEffect(() => {
@@ -425,10 +487,10 @@ function AppContent() {
           animate={{ scale: 1, opacity: 1 }}
           className="flex flex-col items-center"
         >
-          <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-4 overflow-hidden" style={{ background: 'linear-gradient(145deg, #E60000 0%, #8B0000 100%)', boxShadow: '0 8px 24px rgba(230,0,0,0.3)' }}>
+          <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-4 overflow-hidden" style={{ background: 'linear-gradient(145deg, #8B1E3A 0%, #4E0A19 100%)', boxShadow: '0 8px 24px rgba(139,30,58,0.3)' }}>
             <span className="text-white text-sm font-bold">الجنوب</span>
           </div>
-          <div className="w-8 h-8 border-2 border-[#E60000]/30 border-t-[#E60000] rounded-full animate-spin" />
+          <div className="w-8 h-8 border-2 border-[#8B1E3A]/30 border-t-[#8B1E3A] rounded-full animate-spin" />
         </motion.div>
       </div>
     );
@@ -453,30 +515,32 @@ function AppContent() {
           animate={{ scale: 1, opacity: 1 }}
           className="flex flex-col items-center"
         >
-          <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-4 overflow-hidden" style={{ background: 'linear-gradient(145deg, #E60000 0%, #8B0000 100%)', boxShadow: '0 8px 24px rgba(230,0,0,0.3)' }}>
+          <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-4 overflow-hidden" style={{ background: 'linear-gradient(145deg, #8B1E3A 0%, #4E0A19 100%)', boxShadow: '0 8px 24px rgba(139,30,58,0.3)' }}>
             <span className="text-white text-sm font-bold">الجنوب</span>
           </div>
-          <div className="w-8 h-8 border-2 border-[#E60000]/30 border-t-[#E60000] rounded-full animate-spin" />
+          <div className="w-8 h-8 border-2 border-[#8B1E3A]/30 border-t-[#8B1E3A] rounded-full animate-spin" />
         </motion.div>
       </div>
     );
   }
 
-  if (!isAuthenticated || !user) {
-    return <AuthScreen />;
-  }
-
-  // Maintenance mode check
-  if (maintenance?.active) {
+  // ─── Maintenance mode check (BEFORE auth check — locks ALL users) ──────
+  // This must come before the authentication check so that maintenance mode
+  // locks the entire app even for users who aren't logged in yet.
+  // Works in real-time: if admin activates maintenance while a user is in the
+  // app, the maintenance screen appears immediately.
+  // Check both the legacy maintenance object and the featureFlags.maintenanceMode
+  if (maintenance?.active || featureFlags.maintenanceMode) {
+    const maintenanceMessage = featureFlags.maintenanceMessage || maintenance?.message || '';
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: 'linear-gradient(145deg, #E60000 0%, #8B0000 60%, #5C0000 100%)' }}>
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'linear-gradient(145deg, #8B1E3A 0%, #4E0A19 60%, #3A0812 100%)' }}>
         <div className="flex flex-col items-center px-8 text-center">
           <div className="w-20 h-20 rounded-3xl overflow-hidden flex items-center justify-center mb-6" style={{ background: 'rgba(255,255,255,0.15)' }}>
             <img src={LOGO_BASE64} alt="الجنوب" className="w-14 h-14 object-cover" />
           </div>
           <h1 className="text-2xl font-bold text-white mb-3">صيانة مجدولة</h1>
-          <p className="text-white/70 text-sm leading-relaxed mb-2">{maintenance.message || 'التطبيق حالياً في وضع الصيانة'}</p>
-          {maintenance.estimatedTime && (
+          <p className="text-white/70 text-sm leading-relaxed mb-2">{maintenanceMessage || 'التطبيق حالياً في وضع الصيانة'}</p>
+          {maintenance?.estimatedTime && (
             <p className="text-white/50 text-xs">الوقت المتوقع للعودة: {maintenance.estimatedTime}</p>
           )}
         </div>
@@ -484,7 +548,7 @@ function AppContent() {
     );
   }
 
-  // Force update check
+  // ─── Force update check (BEFORE auth check — applies to ALL users) ─────
   if (forceUpdate?.active) {
     const currentVersion = '0.4.6.5';
     const minVersion = forceUpdate.minVersion || '0.0.0';
@@ -504,7 +568,7 @@ function AppContent() {
                 target="_blank"
                 rel="noopener noreferrer"
                 className="px-8 py-3 rounded-xl text-white font-bold text-sm"
-                style={{ background: '#E60000' }}
+                style={{ background: '#8B1E3A' }}
               >
                 تحديث الآن
               </a>
@@ -513,6 +577,10 @@ function AppContent() {
         </div>
       );
     }
+  }
+
+  if (!isAuthenticated || !user) {
+    return <AuthScreen />;
   }
 
   // Full-screen overlays
@@ -536,6 +604,7 @@ function AppContent() {
     legal: LegalScreen,
     investment: InvestmentScreen,
     'gift-vouchers': GiftVoucherScreen,
+    'pin-setup': PinSetupScreen,
   };
 
   if (activeScreen in overlayScreens) {

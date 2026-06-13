@@ -62,6 +62,18 @@ export default function UserGiftCodesPanel() {
         cancelledAt: new Date().toISOString(),
         cancelReason: cancelReason || 'إلغاء بواسطة الإدارة',
       });
+
+      // Notify user about gift code cancellation
+      try {
+        const { sendNotificationToUser } = await import('@/lib/notifications');
+        await sendNotificationToUser(selectedCode.createdBy, {
+          title: 'تم إلغاء قسيمة الهدية',
+          body: 'تم إلغاء قسيمة الهدية الخاصة بك وإرجاع المبلغ إلى رصيدك',
+          type: 'transaction',
+          data: { action: 'gift_code_cancelled', codeId: selectedCode.id },
+        });
+      } catch (e) { console.warn('Gift code cancel notification failed:', e); }
+
       showToast('تم إلغاء القسيمة', 'success');
       setCancelDialog(false);
       setCancelReason('');
@@ -98,7 +110,7 @@ export default function UserGiftCodesPanel() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-[#8B1E3A] border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -115,7 +127,7 @@ export default function UserGiftCodesPanel() {
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
           <Card className="admin-card border-0 shadow-none">
             <CardContent className="p-4 text-center">
-              <Gift className="w-6 h-6 mx-auto mb-2 text-purple-500" />
+              <Gift className="w-6 h-6 mx-auto mb-2 text-[#8B1E3A]" />
               <p className="text-xl font-bold">{formatNumber(codes.length)}</p>
               <p className="text-xs text-muted-foreground">إجمالي القسائم</p>
             </CardContent>
@@ -175,8 +187,8 @@ export default function UserGiftCodesPanel() {
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-purple-500/10 flex items-center justify-center">
-                      <Gift className="w-5 h-5 text-purple-500" />
+                    <div className="w-10 h-10 rounded-lg bg-[#8B1E3A]/10 flex items-center justify-center">
+                      <Gift className="w-5 h-5 text-[#8B1E3A]" />
                     </div>
                     <div>
                       <p className="font-mono text-sm font-bold" dir="ltr">{c.code}</p>

@@ -296,7 +296,7 @@ export function getRoleDisplayInfo(role: UserRole): { label: string; color: stri
     case 'owner':
       return { label: 'مالك المشروع', color: '#8B5CF6', description: 'تحكم كامل بالمحفظة والإعدادات والبنية التحتية' };
     case 'super_admin':
-      return { label: 'مدير أعلى', color: '#E60000', description: 'صلاحيات كاملة' };
+      return { label: 'مدير أعلى', color: '#8B1E3A', description: 'صلاحيات كاملة' };
     case 'admin':
       return { label: 'مدير', color: '#F59E0B', description: 'جميع الصلاحيات ما عدا الإعدادات وإدارة الأدوار' };
     case 'moderator':

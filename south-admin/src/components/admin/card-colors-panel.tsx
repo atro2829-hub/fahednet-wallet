@@ -114,7 +114,7 @@ export default function CardColorsPanel() {
   const handleReset = () => setColors(defaultColors);
   const handleResetCurrency = (currency: keyof CardColors) => setColors((prev) => ({ ...prev, [currency]: defaultColors[currency] }));
 
-  if (loading) return <div className="flex items-center justify-center min-h-[400px]"><div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" /></div>;
+  if (loading) return <div className="flex items-center justify-center min-h-[400px]"><div className="w-8 h-8 border-2 border-[#8B1E3A] border-t-transparent rounded-full animate-spin" /></div>;
 
   return (
     <div className="space-y-6">
@@ -129,7 +129,7 @@ export default function CardColorsPanel() {
             اختبار
           </Button>
           <Button variant="outline" onClick={handleReset} size="sm"><RotateCcw className="w-4 h-4 ml-1" /> إعادة تعيين</Button>
-          <Button onClick={handleSave} disabled={saving} size="sm" className="bg-purple-600 hover:bg-purple-700">
+          <Button onClick={handleSave} disabled={saving} size="sm" className="bg-[#7B1A30] hover:bg-[#5C1225]">
             {saving ? <Loader2 className="w-4 h-4 ml-1 animate-spin" /> : <Save className="w-4 h-4 ml-1" />}
             حفظ التغييرات
           </Button>

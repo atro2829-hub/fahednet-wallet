@@ -22,7 +22,7 @@ type OrderTab = 'all' | 'pending' | 'completed' | 'cancelled';
 
 const orderCategories = [
   { id: 'orders-list', label: 'قائمة الطلبات', icon: ClipboardCheck, color: '#10B981', desc: 'جميع طلباتك' },
-  { id: 'invoices', label: 'فواتير', icon: Receipt, color: '#E60000', desc: 'فواتير الشراء' },
+  { id: 'invoices', label: 'فواتير', icon: Receipt, color: '#8B1E3A', desc: 'فواتير الشراء' },
   { id: 'requests', label: 'طلبات', icon: FileText, color: '#F59E0B', desc: 'الطلبات المعلقة' },
   { id: 'seller-requests', label: 'طلبات البائع', icon: ShoppingBag, color: '#2563EB', desc: 'طلبات الشراء من البائعين' },
 ];
@@ -40,7 +40,7 @@ export default function OrdersScreen() {
     switch (status) {
       case 'pending': return <Clock size={14} strokeWidth={1.5} color="#F59E0B" />;
       case 'completed': return <CheckCircle2 size={14} strokeWidth={1.5} color="#10B981" />;
-      case 'cancelled': return <XCircle size={14} strokeWidth={1.5} color="#E60000" />;
+      case 'cancelled': return <XCircle size={14} strokeWidth={1.5} color="#8B1E3A" />;
       default: return <AlertCircle size={14} strokeWidth={1.5} color="#666" />;
     }
   };
@@ -49,7 +49,7 @@ export default function OrdersScreen() {
     switch (status) {
       case 'pending': return '#F59E0B';
       case 'completed': return '#10B981';
-      case 'cancelled': return '#E60000';
+      case 'cancelled': return '#8B1E3A';
       default: return '#666';
     }
   };

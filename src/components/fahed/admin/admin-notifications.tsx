@@ -56,7 +56,7 @@ type NotifType = 'info' | 'transaction' | 'security' | 'promo';
 // ─── Notification type configuration ───
 const notifTypeConfig: Record<NotifType, { icon: typeof Info; color: string; labelKey: string }> = {
   info: { icon: Info, color: '#2563EB', labelKey: 'admin.typeInfo' },
-  transaction: { icon: ShoppingCart, color: '#E60000', labelKey: 'admin.typeTransaction' },
+  transaction: { icon: ShoppingCart, color: '#8B1E3A', labelKey: 'admin.typeTransaction' },
   security: { icon: Shield, color: '#F59E0B', labelKey: 'admin.typeSecurity' },
   promo: { icon: Sparkles, color: '#8B5CF6', labelKey: 'admin.typePromo' },
 };
@@ -304,8 +304,8 @@ export default function AdminNotifications() {
               {t('admin.manageSystem')}
             </p>
           </div>
-          <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'rgba(230,0,0,0.1)' }}>
-            <Megaphone size={18} color="#E60000" />
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'rgba(139,30,58,0.1)' }}>
+            <Megaphone size={18} color="#8B1E3A" />
           </div>
         </div>
       </motion.div>
@@ -320,7 +320,7 @@ export default function AdminNotifications() {
         >
           <div className="grid grid-cols-3 gap-2">
             {[
-              { icon: Send, label: t('admin.sentHistory'), value: totalSent, color: '#E60000' },
+              { icon: Send, label: t('admin.sentHistory'), value: totalSent, color: '#8B1E3A' },
               { icon: CheckCircle2, label: t('admin.delivered'), value: totalDelivered, color: '#10B981' },
               { icon: Clock, label: t('status.scheduled'), value: scheduledCount, color: '#F59E0B' },
             ].map((stat, i) => {
@@ -357,9 +357,9 @@ export default function AdminNotifications() {
               onClick={() => setActiveTab(tab)}
               className="flex-1 py-2.5 rounded-xl text-sm font-medium transition-all flex items-center justify-center gap-2"
               style={{
-                background: activeTab === tab ? 'rgba(230,0,0,0.12)' : isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)',
-                color: activeTab === tab ? '#E60000' : isDark ? '#888' : '#888',
-                border: activeTab === tab ? '1.5px solid rgba(230,0,0,0.3)' : '1.5px solid transparent',
+                background: activeTab === tab ? 'rgba(139,30,58,0.12)' : isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)',
+                color: activeTab === tab ? '#8B1E3A' : isDark ? '#888' : '#888',
+                border: activeTab === tab ? '1.5px solid rgba(139,30,58,0.3)' : '1.5px solid transparent',
               }}
             >
               {tab === 'compose' ? <Send size={14} /> : <Clock size={14} />}
@@ -375,7 +375,7 @@ export default function AdminNotifications() {
             {/* ─── Templates ─── */}
             <div className="rounded-2xl p-4" style={{ background: cardBg, border: `1px solid ${borderColor}` }}>
               <h3 className="text-sm font-bold mb-3 flex items-center gap-2" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>
-                <FileText size={16} color="#E60000" />
+                <FileText size={16} color="#8B1E3A" />
                 {t('admin.template')}
               </h3>
               <div className="grid grid-cols-2 gap-2">
@@ -385,9 +385,9 @@ export default function AdminNotifications() {
                     onClick={() => handleApplyTemplate(tpl.id)}
                     className="py-2.5 px-3 rounded-xl text-xs font-medium transition-all flex items-center gap-2"
                     style={{
-                      background: selectedTemplate === tpl.id ? 'rgba(230,0,0,0.12)' : isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)',
-                      border: selectedTemplate === tpl.id ? '1.5px solid rgba(230,0,0,0.3)' : '1.5px solid transparent',
-                      color: selectedTemplate === tpl.id ? '#E60000' : isDark ? '#CCC' : '#666',
+                      background: selectedTemplate === tpl.id ? 'rgba(139,30,58,0.12)' : isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)',
+                      border: selectedTemplate === tpl.id ? '1.5px solid rgba(139,30,58,0.3)' : '1.5px solid transparent',
+                      color: selectedTemplate === tpl.id ? '#8B1E3A' : isDark ? '#CCC' : '#666',
                     }}
                   >
                     <span className="text-base">{tpl.emoji}</span>
@@ -400,7 +400,7 @@ export default function AdminNotifications() {
             {/* ─── Recipients ─── */}
             <div className="rounded-2xl p-4" style={{ background: cardBg, border: `1px solid ${borderColor}` }}>
               <h3 className="text-sm font-bold mb-3 flex items-center gap-2" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>
-                <Users size={16} color="#E60000" />
+                <Users size={16} color="#8B1E3A" />
                 {t('admin.recipients')}
               </h3>
               <div className="space-y-2">
@@ -417,16 +417,16 @@ export default function AdminNotifications() {
                       onClick={() => setSendMode(item.mode)}
                       className="w-full flex items-center gap-3 py-2.5 px-3 rounded-xl transition-all"
                       style={{
-                        background: isActive ? 'rgba(230,0,0,0.1)' : isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)',
-                        border: isActive ? '1.5px solid rgba(230,0,0,0.25)' : '1.5px solid transparent',
+                        background: isActive ? 'rgba(139,30,58,0.1)' : isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)',
+                        border: isActive ? '1.5px solid rgba(139,30,58,0.25)' : '1.5px solid transparent',
                       }}
                     >
-                      <Icon size={16} color={isActive ? '#E60000' : isDark ? '#888' : '#AAA'} />
-                      <span className="flex-1 text-right text-sm" style={{ color: isActive ? '#E60000' : isDark ? '#CCC' : '#666' }}>
+                      <Icon size={16} color={isActive ? '#8B1E3A' : isDark ? '#888' : '#AAA'} />
+                      <span className="flex-1 text-right text-sm" style={{ color: isActive ? '#8B1E3A' : isDark ? '#CCC' : '#666' }}>
                         {t(item.labelKey)}
                       </span>
                       {item.showCount && (
-                        <span className="text-[10px] px-2 py-0.5 rounded-lg font-bold" style={{ background: 'rgba(230,0,0,0.12)', color: '#E60000' }}>
+                        <span className="text-[10px] px-2 py-0.5 rounded-lg font-bold" style={{ background: 'rgba(139,30,58,0.12)', color: '#8B1E3A' }}>
                           {firebaseUsers.length}
                         </span>
                       )}
@@ -463,7 +463,7 @@ export default function AdminNotifications() {
                     </div>
                   )}
                   {targetUser && (
-                    <p className="text-[11px] mt-1.5" style={{ color: '#E60000' }}>
+                    <p className="text-[11px] mt-1.5" style={{ color: '#8B1E3A' }}>
                       {targetUsers.length} {t('admin.users')}
                     </p>
                   )}
@@ -484,12 +484,12 @@ export default function AdminNotifications() {
                         key={cat.id}
                         onClick={() => setTargetCategory(cat.id)}
                         className="w-full flex items-center gap-3 py-2.5 px-3 rounded-xl transition-all"
-                        style={{ background: isActive ? 'rgba(230,0,0,0.1)' : isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)', border: isActive ? '1.5px solid rgba(230,0,0,0.25)' : '1.5px solid transparent' }}
+                        style={{ background: isActive ? 'rgba(139,30,58,0.1)' : isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)', border: isActive ? '1.5px solid rgba(139,30,58,0.25)' : '1.5px solid transparent' }}
                       >
-                        <span className="flex-1 text-right text-sm" style={{ color: isActive ? '#E60000' : isDark ? '#CCC' : '#666' }}>
+                        <span className="flex-1 text-right text-sm" style={{ color: isActive ? '#8B1E3A' : isDark ? '#CCC' : '#666' }}>
                           {t(cat.labelKey)}
                         </span>
-                        <span className="text-[10px] px-2 py-0.5 rounded-lg font-bold" style={{ background: 'rgba(230,0,0,0.12)', color: '#E60000' }}>
+                        <span className="text-[10px] px-2 py-0.5 rounded-lg font-bold" style={{ background: 'rgba(139,30,58,0.12)', color: '#8B1E3A' }}>
                           {catUsers.length}
                         </span>
                       </button>
@@ -502,7 +502,7 @@ export default function AdminNotifications() {
             {/* ─── Composer ─── */}
             <div className="rounded-2xl p-4" style={{ background: cardBg, border: `1px solid ${borderColor}` }}>
               <h3 className="text-sm font-bold mb-3 flex items-center gap-2" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>
-                <Bell size={16} color="#E60000" />
+                <Bell size={16} color="#8B1E3A" />
                 {t('admin.notificationContent')}
               </h3>
 
@@ -549,13 +549,13 @@ export default function AdminNotifications() {
               {/* Schedule toggle */}
               <div className="flex items-center justify-between mt-3 mb-2">
                 <span className="text-xs font-medium flex items-center gap-1.5" style={{ color: isDark ? '#CCC' : '#666' }}>
-                  <Calendar size={14} color="#E60000" />
+                  <Calendar size={14} color="#8B1E3A" />
                   {t('admin.scheduleLater')}
                 </span>
                 <button
                   onClick={() => setScheduleEnabled(!scheduleEnabled)}
                   className="w-11 h-6 rounded-full flex items-center transition-all duration-200 px-0.5"
-                  style={{ background: scheduleEnabled ? '#E60000' : isDark ? '#333' : '#DDD', justifyContent: scheduleEnabled ? 'flex-end' : 'flex-start' }}
+                  style={{ background: scheduleEnabled ? '#8B1E3A' : isDark ? '#333' : '#DDD', justifyContent: scheduleEnabled ? 'flex-end' : 'flex-start' }}
                 >
                   <div className="w-5 h-5 rounded-full bg-white" style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.2)' }} />
                 </button>
@@ -575,7 +575,7 @@ export default function AdminNotifications() {
             <div className="rounded-2xl p-4" style={{ background: cardBg, border: `1px solid ${borderColor}` }}>
               <div className="flex items-center justify-between mb-3">
                 <span className="text-xs" style={{ color: isDark ? '#888' : '#AAA' }}>{t('admin.willBeSentTo')}</span>
-                <span className="text-sm font-bold" style={{ color: '#E60000' }}>
+                <span className="text-sm font-bold" style={{ color: '#8B1E3A' }}>
                   {sendMode === 'all' ? firebaseUsers.length : targetUsers.length} {t('admin.users')}
                 </span>
               </div>
@@ -583,7 +583,7 @@ export default function AdminNotifications() {
                 onClick={handleSend}
                 disabled={isSending || !notifTitle.trim() || !notifBody.trim()}
                 className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-bold text-white transition-all"
-                style={{ background: isSending || !notifTitle.trim() || !notifBody.trim() ? 'rgba(230,0,0,0.3)' : 'linear-gradient(135deg, #E60000 0%, #8B0000 100%)', boxShadow: !isSending && notifTitle.trim() && notifBody.trim() ? '0 4px 16px rgba(230,0,0,0.3)' : 'none' }}
+                style={{ background: isSending || !notifTitle.trim() || !notifBody.trim() ? 'rgba(139,30,58,0.3)' : 'linear-gradient(135deg, #8B1E3A 0%, #4E0A19 100%)', boxShadow: !isSending && notifTitle.trim() && notifBody.trim() ? '0 4px 16px rgba(139,30,58,0.3)' : 'none' }}
               >
                 {isSending ? (
                   <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -607,8 +607,8 @@ export default function AdminNotifications() {
             <div className="rounded-2xl overflow-hidden" style={{ background: cardBg, border: `1px solid ${borderColor}` }}>
               {sentNotifications.length === 0 ? (
                 <div className="p-8 text-center">
-                  <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-3" style={{ background: 'rgba(230,0,0,0.08)' }}>
-                    <Bell size={28} strokeWidth={1.5} color="#E60000" />
+                  <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-3" style={{ background: 'rgba(139,30,58,0.08)' }}>
+                    <Bell size={28} strokeWidth={1.5} color="#8B1E3A" />
                   </div>
                   <p className="text-sm font-medium" style={{ color: isDark ? '#666' : '#AAA' }}>{t('admin.noSentNotifications')}</p>
                 </div>
@@ -636,7 +636,7 @@ export default function AdminNotifications() {
                               </div>
                               <p className="text-xs mt-0.5 truncate" style={{ color: isDark ? '#999' : '#666' }}>{notif.body}</p>
                               <div className="flex items-center gap-3 mt-1.5">
-                                <span className="text-[10px] px-2 py-0.5 rounded-lg" style={{ background: 'rgba(230,0,0,0.08)', color: '#E60000' }}>
+                                <span className="text-[10px] px-2 py-0.5 rounded-lg" style={{ background: 'rgba(139,30,58,0.08)', color: '#8B1E3A' }}>
                                   {notif.target === 'all' ? t('admin.all') : notif.target === 'user' ? t('admin.user') : t('admin.category')}
                                 </span>
                                 <span className="text-[10px]" style={{ color: isDark ? '#555' : '#BBB' }}>{timeAgo(notif.sentAt)}</span>
@@ -713,8 +713,8 @@ export default function AdminNotifications() {
                     <p className="text-lg font-bold" style={{ color: '#10B981' }}>{viewNotifDetail.deliveredCount}</p>
                     <p className="text-[9px]" style={{ color: isDark ? '#888' : '#AAA' }}>{t('admin.delivered')}</p>
                   </div>
-                  <div className="rounded-xl p-3 text-center" style={{ background: 'rgba(230,0,0,0.08)' }}>
-                    <p className="text-lg font-bold" style={{ color: '#E60000' }}>
+                  <div className="rounded-xl p-3 text-center" style={{ background: 'rgba(139,30,58,0.08)' }}>
+                    <p className="text-lg font-bold" style={{ color: '#8B1E3A' }}>
                       {viewNotifDetail.recipientCount > 0 ? Math.round((viewNotifDetail.deliveredCount / viewNotifDetail.recipientCount) * 100) : 0}%
                     </p>
                     <p className="text-[9px]" style={{ color: isDark ? '#888' : '#AAA' }}>{t('admin.deliveryStats')}</p>

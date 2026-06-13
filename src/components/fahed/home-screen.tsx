@@ -81,14 +81,9 @@ function hexToRgb(hex: string): string {
 
 // Services with custom SVG icons - each maps to a category-detail screen
 const homeServices = [
-  { id: 'telecom', label: 'الاتصالات', iconKey: 'telecom-category' },
-  { id: 'entertainment', label: 'خدمات ترفيهية', iconKey: 'entertainment-category' },
-  { id: 'cards', label: 'بطاقات رقمية', iconKey: 'cards-category' },
+  { id: 'telecom', label: 'الاتصالات والشحن', iconKey: 'recharge' },
+  { id: 'service-providers', label: 'مزودين الخدمات', iconKey: 'providers-category' },
   { id: 'transfer', label: 'تحويل الأموال', iconKey: 'transfer' },
-  { id: 'recharge', label: 'شحن رصيد', iconKey: 'recharge' },
-  { id: 'electricity', label: 'الكهرباء والماء', iconKey: 'electricity-category' },
-  { id: 'government', label: 'خدمات حكومية', iconKey: 'government-category' },
-  { id: 'internet', label: 'الإنترنت', iconKey: 'internet-category' },
   { id: 'digital-wallet', label: 'المحفظة الرقمية', iconKey: 'digital-wallet' },
   { id: 'crypto', label: '\u0627\u0644\u0643\u0631\u064A\u0628\u062A\u0648', iconKey: 'crypto-category' },
   { id: 'crypto-invest', label: '\u0627\u0633\u062A\u062B\u0645\u0627\u0631 \u0627\u0644\u0643\u0631\u064A\u0628\u062A\u0648', iconKey: 'crypto-invest-category' },
@@ -200,6 +195,7 @@ export default function HomeScreen() {
     setOrderOpen,
     savingsGoals,
     cardColors,
+    featureFlags,
   } = useAppStore();
 
   const { refreshAll } = useAdminSettings();
@@ -513,9 +509,12 @@ export default function HomeScreen() {
       case 'currency-exchange':
         setActiveScreen('exchange');
         break;
+      case 'telecom':
+        setActiveScreen('recharge');
+        break;
       default: {
         // Other category services navigate to their dedicated screen
-        const categoryIds = ['telecom', 'entertainment', 'cards', 'electricity', 'government', 'internet'];
+        const categoryIds = ['service-providers'];
         if (categoryIds.includes(serviceId)) {
           useAppStore.getState().setSelectedCategory(serviceId);
           useAppStore.getState().setActiveScreen('category-detail');
@@ -555,7 +554,7 @@ export default function HomeScreen() {
           <div className="flex items-center gap-3">
             <div
               className="w-10 h-10 rounded-xl overflow-hidden flex items-center justify-center"
-              style={{ background: isDark ? 'rgba(230,0,0,0.08)' : 'rgba(230,0,0,0.06)', boxShadow: '0 2px 8px rgba(230,0,0,0.15)' }}
+              style={{ background: isDark ? 'rgba(139,30,58,0.08)' : 'rgba(139,30,58,0.06)', boxShadow: '0 2px 8px rgba(139,30,58,0.15)' }}
             >
               <img src={LOGO_BASE64} alt="الجنوب" className="w-full h-full object-cover" style={{ filter: RED_LOGO_FILTER }} />
             </div>
@@ -572,10 +571,10 @@ export default function HomeScreen() {
             <button
               onClick={() => setActiveScreen('promo')}
               className="w-10 h-10 rounded-xl flex items-center justify-center active:scale-95 transition-transform"
-              style={{ background: 'rgba(230,0,0,0.08)' }}
+              style={{ background: 'rgba(139,30,58,0.08)' }}
               title="كود هدية"
             >
-              <Gift size={20} strokeWidth={1.5} color="#E60000" />
+              <Gift size={20} strokeWidth={1.5} color="#8B1E3A" />
             </button>
             <button
               onClick={() => setActiveScreen('notifications')}
@@ -586,7 +585,7 @@ export default function HomeScreen() {
               {unreadNotifCount > 0 && (
                 <span
                   className="absolute -top-0.5 -right-0.5 min-w-[16px] h-[16px] rounded-full flex items-center justify-center text-[9px] font-bold text-white px-1"
-                  style={{ background: '#E60000' }}
+                  style={{ background: '#8B1E3A' }}
                 >
                   {unreadNotifCount}
                 </span>
@@ -789,7 +788,7 @@ export default function HomeScreen() {
             style={{
               height: 110,
               borderRadius: 16,
-              boxShadow: '0 4px 16px rgba(230,0,0,0.2)',
+              boxShadow: '0 4px 16px rgba(139,30,58,0.2)',
             }}
             onClick={() => handleBannerClick(banners[bannerIndex])}
           >
@@ -806,8 +805,8 @@ export default function HomeScreen() {
               className="absolute inset-0"
               style={{
                 background: banners[bannerIndex]?.imageUrl
-                  ? 'linear-gradient(145deg, rgba(230,0,0,0.85) 0%, rgba(139,0,0,0.75) 60%, rgba(92,0,0,0.65) 100%)'
-                  : 'linear-gradient(145deg, #E60000 0%, #8B0000 60%, #5C0000 100%)',
+                  ? 'linear-gradient(145deg, rgba(139,30,58,0.85) 0%, rgba(139,0,0,0.75) 60%, rgba(92,0,0,0.65) 100%)'
+                  : 'linear-gradient(145deg, #8B1E3A 0%, #4E0A19 60%, #3A0812 100%)',
               }}
             />
             <div className="absolute -top-8 -right-8 w-28 h-28 rounded-full" style={{ background: 'rgba(255,255,255,0.06)' }} />
@@ -857,9 +856,9 @@ export default function HomeScreen() {
             className="rounded-2xl relative overflow-hidden"
             style={{
               height: 90,
-              background: 'linear-gradient(145deg, #E60000 0%, #8B0000 60%, #5C0000 100%)',
+              background: 'linear-gradient(145deg, #8B1E3A 0%, #4E0A19 60%, #3A0812 100%)',
               borderRadius: 16,
-              boxShadow: '0 4px 16px rgba(230,0,0,0.2)',
+              boxShadow: '0 4px 16px rgba(139,30,58,0.2)',
             }}
           >
             <div className="absolute -top-8 -right-8 w-28 h-28 rounded-full" style={{ background: 'rgba(255,255,255,0.06)' }} />
@@ -920,7 +919,7 @@ export default function HomeScreen() {
           <button
             onClick={() => useAppStore.getState().setActiveTab('services')}
             className="text-xs font-medium flex items-center gap-0.5"
-            style={{ color: '#E60000' }}
+            style={{ color: '#8B1E3A' }}
           >
             المزيد
             <ChevronLeft size={14} strokeWidth={1.5} />
@@ -928,7 +927,18 @@ export default function HomeScreen() {
         </div>
 
         <div className="grid grid-cols-3 gap-3">
-          {homeServices.filter(service => visibilitySettings.sections[service.id] !== false).map((service, index) => {
+          {homeServices.filter(service => {
+            // Hide if visibility settings hide it
+            if (visibilitySettings.sections[service.id] === false) return false;
+            // Hide if feature flag disables it
+            if (service.id === 'transfer' && !featureFlags.transfersEnabled) return false;
+            if (service.id === 'telecom' && !featureFlags.rechargeEnabled) return false;
+            if (service.id === 'crypto' && !featureFlags.cryptoEnabled) return false;
+            if (service.id === 'crypto-invest' && !featureFlags.investmentEnabled) return false;
+            if (service.id === 'currency-exchange' && !featureFlags.exchangeEnabled) return false;
+
+            return true;
+          }).map((service, index) => {
             const iconSrc = productIcons[service.iconKey] || serviceIcons[service.iconKey];
             return (
               <motion.button
@@ -983,7 +993,7 @@ export default function HomeScreen() {
           <button
             onClick={() => useAppStore.getState().setActiveTab('wallet')}
             className="text-xs font-medium flex items-center gap-0.5"
-            style={{ color: '#E60000' }}
+            style={{ color: '#8B1E3A' }}
           >
             عرض الكل
             <ChevronLeft size={14} strokeWidth={1.5} />
@@ -1015,7 +1025,7 @@ export default function HomeScreen() {
           >
             {recentTx.map((tx, index) => {
               const isIncoming = tx.toUserId === user?.id;
-              const txColor = transactionTypeColors[tx.type] || '#E60000';
+              const txColor = transactionTypeColors[tx.type] || '#8B1E3A';
               return (
                 <motion.div
                   key={tx.id}
@@ -1033,7 +1043,7 @@ export default function HomeScreen() {
                     {isIncoming ? (
                       <ArrowDownLeft size={18} strokeWidth={1.5} color="#10B981" />
                     ) : (
-                      <ArrowUpRight size={18} strokeWidth={1.5} color="#E60000" />
+                      <ArrowUpRight size={18} strokeWidth={1.5} color="#8B1E3A" />
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
@@ -1045,7 +1055,7 @@ export default function HomeScreen() {
                     </p>
                   </div>
                   <div className="text-left shrink-0">
-                    <p className="text-sm font-bold" style={{ color: isIncoming ? '#10B981' : '#E60000' }}>
+                    <p className="text-sm font-bold" style={{ color: isIncoming ? '#10B981' : '#8B1E3A' }}>
                       {isIncoming ? '+' : '-'}{tx.amount.toLocaleString()}
                     </p>
                     <div className="flex justify-end mt-0.5">
@@ -1102,8 +1112,8 @@ export default function HomeScreen() {
                 <div
                   className="w-12 h-12 rounded-full flex items-center justify-center"
                   style={{
-                    background: 'linear-gradient(135deg, #E60000 0%, #8B0000 100%)',
-                    boxShadow: '0 4px 12px rgba(230,0,0,0.4)',
+                    background: 'linear-gradient(135deg, #8B1E3A 0%, #4E0A19 100%)',
+                    boxShadow: '0 4px 12px rgba(139,30,58,0.4)',
                   }}
                 >
                   <Send size={20} color="#FFF" />
@@ -1182,8 +1192,8 @@ export default function HomeScreen() {
           onClick={() => setFabOpen(!fabOpen)}
           className="w-14 h-14 rounded-full flex items-center justify-center z-50 relative"
           style={{
-            background: fabOpen ? (isDark ? '#333' : '#444') : 'linear-gradient(135deg, #E60000 0%, #8B0000 100%)',
-            boxShadow: fabOpen ? '0 4px 12px rgba(0,0,0,0.3)' : '0 6px 20px rgba(230,0,0,0.5)',
+            background: fabOpen ? (isDark ? '#333' : '#444') : 'linear-gradient(135deg, #8B1E3A 0%, #4E0A19 100%)',
+            boxShadow: fabOpen ? '0 4px 12px rgba(0,0,0,0.3)' : '0 6px 20px rgba(139,30,58,0.5)',
             transition: 'all 0.3s ease',
           }}
         >

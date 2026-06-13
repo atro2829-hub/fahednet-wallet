@@ -12,12 +12,10 @@ import { ref, onValue } from 'firebase/database';
 
 // ─── Category display names ─────────────────────────────────────────
 const categoryNames: Record<string, string> = {
+  'service-providers': 'مزودين الخدمات',
   entertainment: 'خدمات ترفيهية',
   cards: 'بطاقات رقمية',
   telecom: 'خدمات الاتصالات',
-  electricity: 'الكهرباء والماء',
-  government: 'خدمات حكومية',
-  internet: 'الإنترنت',
   crypto: 'الكريبتو',
   'crypto-invest': 'استثمار الكريبتو',
 };
@@ -34,11 +32,6 @@ const subSectionIcons: Record<string, string> = {
   'payment-cards': 'visa-virtual',
   recharge: 'yemen-mobile',
   'internet-packages': 'yemen-net',
-  elec: 'electricity',
-  water: 'water',
-  identity: 'civil-registry',
-  'traffic-municipal': 'traffic',
-  providers: 'yemen-net',
   'buy-sell': 'bitcoin',
   'usdt-plans': 'usdt',
 };
@@ -54,10 +47,11 @@ interface SubSection {
 }
 
 const categorySubSections: Record<string, SubSection[]> = {
+  'service-providers': [],
   entertainment: [
     { id: 'shooting', name: 'ألعاب إطلاق النار', description: 'ببجي، فري فاير، فالورانت والمزيد', providerIds: ['pubg', 'freefire', 'call-of-duty', 'fortnite', 'valorant', 'apex-legends'], iconKey: 'pubg', color: '#F59E0B' },
     { id: 'strategy', name: 'ألعاب الاستراتيجية', description: 'كلاش رويال، كلاش اوف كلانس والمزيد', providerIds: ['clash-royale', 'clash-of-clans', 'league-legends'], iconKey: 'clash-royale', color: '#3B82F6' },
-    { id: 'adventure', name: 'ألعاب المغامرات', description: 'روبلوكس، ماينكرافت، جينشين والمزيد', providerIds: ['roblox', 'minecraft', 'genshin-impact', 'honkai-star'], iconKey: 'roblox', color: '#E60000' },
+    { id: 'adventure', name: 'ألعاب المغامرات', description: 'روبلوكس، ماينكرافت، جينشين والمزيد', providerIds: ['roblox', 'minecraft', 'genshin-impact', 'honkai-star'], iconKey: 'roblox', color: '#8B1E3A' },
     { id: 'platforms', name: 'منصات الألعاب', description: 'ستيم، EA FC والمزيد', providerIds: ['steam', 'ea-fc'], iconKey: 'steam', color: '#1B2838' },
     { id: 'streaming', name: 'خدمات البث', description: 'نتفلكس، سبوتيفاي، يوتيوب بريميوم', providerIds: ['netflix', 'spotify', 'youtube-premium'], iconKey: 'netflix', color: '#E50914' },
   ],
@@ -70,17 +64,7 @@ const categorySubSections: Record<string, SubSection[]> = {
     { id: 'recharge', name: 'شحن رصيد', description: 'يمن موبايل، يو، سبأفون، واي', providerIds: ['yemen-mobile', 'yo', 'sabafon', 'y'], iconKey: 'yemen-mobile', color: '#C41E3A' },
     { id: 'internet-packages', name: 'باقات الإنترنت', description: 'يمن نت، واي نت، سبأفون نت', providerIds: ['yemen-net', 'y-net-internet', 'sabafon-internet'], iconKey: 'yemen-net', color: '#8B5CF6' },
   ],
-  electricity: [
-    { id: 'elec', name: 'الكهرباء', description: 'دفع فواتير الكهرباء', providerIds: ['elec-sanaa', 'elec-aden'], iconKey: 'electricity', color: '#F59E0B' },
-    { id: 'water', name: 'المياه', description: 'دفع فواتير المياه', providerIds: ['water-sanaa', 'water-aden'], iconKey: 'water', color: '#06B6D4' },
-  ],
-  government: [
-    { id: 'identity', name: 'الأوراق الثبوتية', description: 'السجل المدني، جواز السفر', providerIds: ['civil-registry', 'passport'], iconKey: 'civil-registry', color: '#6B7280' },
-    { id: 'traffic-municipal', name: 'المرور والبلدية', description: 'خدمات المرور والبلدية', providerIds: ['traffic', 'municipal'], iconKey: 'traffic', color: '#DC2626' },
-  ],
-  internet: [
-    { id: 'providers', name: 'مزودي الإنترنت', description: 'يمن نت، واي نت، سبأفون نت', providerIds: ['yemen-net', 'y-net-internet', 'sabafon-internet'], iconKey: 'yemen-net', color: '#8B5CF6' },
-  ],
+
   crypto: [
     { id: 'buy-sell', name: 'شراء وبيع', description: 'بيتكوين، إيثريوم، USDT والمزيد', providerIds: ['bitcoin', 'ethereum', 'usdt', 'bnb', 'solana', 'tron'], iconKey: 'bitcoin', color: '#F7931A' },
   ],
@@ -425,7 +409,7 @@ export default function CategoryDetailScreen() {
                   autoFocus
                 />
                 {searchQuery && (
-                  <button onClick={() => setSearchQuery('')} className="text-xs font-medium" style={{ color: '#E60000' }}>
+                  <button onClick={() => setSearchQuery('')} className="text-xs font-medium" style={{ color: '#8B1E3A' }}>
                     مسح
                   </button>
                 )}
@@ -560,9 +544,9 @@ export default function CategoryDetailScreen() {
                       }}
                       className="shrink-0 px-3.5 py-1.5 rounded-full text-[11px] font-bold transition-all active:scale-95"
                       style={{
-                        background: selectedSubSection === sub.id ? '#E60000' : isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)',
+                        background: selectedSubSection === sub.id ? '#8B1E3A' : isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)',
                         color: selectedSubSection === sub.id ? '#FFFFFF' : secondaryTextColor,
-                        boxShadow: selectedSubSection === sub.id ? '0 2px 8px rgba(230,0,0,0.3)' : 'none',
+                        boxShadow: selectedSubSection === sub.id ? '0 2px 8px rgba(139,30,58,0.3)' : 'none',
                       }}
                     >
                       {sub.name}
@@ -626,7 +610,7 @@ export default function CategoryDetailScreen() {
                             {startingPrice > 0 && (
                               <span
                                 className="text-[10px] font-bold"
-                                style={{ color: '#E60000' }}
+                                style={{ color: '#8B1E3A' }}
                               >
                                 من {formatPrice(startingPrice)} ر.ي
                               </span>
@@ -698,7 +682,7 @@ export default function CategoryDetailScreen() {
                               {provider.name}
                             </span>
                             {startingPrice > 0 && (
-                              <span className="text-[10px] font-bold" style={{ color: '#E60000' }}>
+                              <span className="text-[10px] font-bold" style={{ color: '#8B1E3A' }}>
                                 من {formatPrice(startingPrice)} ر.ي
                               </span>
                             )}

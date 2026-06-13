@@ -34,7 +34,7 @@ export default function AdminOrders() {
         {(['all', 'pending', 'completed', 'cancelled'] as const).map((filter) => (
           <motion.button key={filter} whileTap={{ scale: 0.95 }} onClick={() => setOrderFilter(filter)}
             className="px-3 py-2 rounded-xl text-xs font-medium whitespace-nowrap"
-            style={{ background: orderFilter === filter ? 'rgba(230,0,0,0.2)' : isDark ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.8)', color: orderFilter === filter ? '#FFF' : isDark ? '#BBB' : '#666', border: orderFilter === filter ? '1px solid rgba(230,0,0,0.3)' : isDark ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(0,0,0,0.06)' }}>
+            style={{ background: orderFilter === filter ? 'rgba(139,30,58,0.2)' : isDark ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.8)', color: orderFilter === filter ? '#FFF' : isDark ? '#BBB' : '#666', border: orderFilter === filter ? '1px solid rgba(139,30,58,0.3)' : isDark ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(0,0,0,0.06)' }}>
             {filter === 'all' ? 'الكل' : filter === 'pending' ? 'قيد الانتظار' : filter === 'completed' ? 'مكتمل' : 'ملغى'}
           </motion.button>
         ))}
@@ -55,8 +55,8 @@ export default function AdminOrders() {
                   {provider?.icon && provider.icon.startsWith('data:') ? (
                     <img src={provider.icon} alt={provider.name} className="w-8 h-8 rounded-lg object-cover" />
                   ) : (
-                    <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: `${provider?.color || '#E60000'}18` }}>
-                      <span className="font-bold text-xs" style={{ color: provider?.color || '#E60000' }}>{(provider?.name || order.providerName)?.charAt(0)}</span>
+                    <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: `${provider?.color || '#8B1E3A'}18` }}>
+                      <span className="font-bold text-xs" style={{ color: provider?.color || '#8B1E3A' }}>{(provider?.name || order.providerName)?.charAt(0)}</span>
                     </div>
                   )}
                   <div>
@@ -68,7 +68,7 @@ export default function AdminOrders() {
                   </div>
                 </div>
                 <div className="text-left">
-                  <p className="text-sm font-bold" style={{ color: '#E60000' }}>{order.amount.toLocaleString()} {currencySymbols[order.currency]}</p>
+                  <p className="text-sm font-bold" style={{ color: '#8B1E3A' }}>{order.amount.toLocaleString()} {currencySymbols[order.currency]}</p>
                   <p className="text-[10px]" style={{ color: isDark ? '#666' : '#AAA' }}>{timeAgo(order.createdAt)}</p>
                 </div>
               </div>
@@ -88,7 +88,7 @@ export default function AdminOrders() {
                   <motion.button whileTap={{ scale: 0.95 }} onClick={() => handleCompleteOrder(order)} className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-bold text-white" style={{ background: '#10B981' }}>
                     <CheckCircle2 size={14} /> تم الشحن
                   </motion.button>
-                  <motion.button whileTap={{ scale: 0.95 }} onClick={() => handleCancelOrder(order)} className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-bold" style={{ background: 'rgba(230,0,0,0.1)', color: '#E60000' }}>
+                  <motion.button whileTap={{ scale: 0.95 }} onClick={() => handleCancelOrder(order)} className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-bold" style={{ background: 'rgba(139,30,58,0.1)', color: '#8B1E3A' }}>
                     <RotateCcw size={14} /> إلغاء وإعادة
                   </motion.button>
                 </div>

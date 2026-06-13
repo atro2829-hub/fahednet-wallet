@@ -69,7 +69,7 @@ export default function YemeniPhoneInput({
         style={{
           background: isDark ? '#1A1A1A' : '#F8F8F8',
           border: hasError
-            ? '1px solid #E60000'
+            ? '1px solid #8B1E3A'
             : isValid
             ? '1px solid #10B981'
             : isDark
@@ -125,7 +125,7 @@ export default function YemeniPhoneInput({
           isValid ? (
             <CheckCircle2 size={16} color="#10B981" className="shrink-0" />
           ) : (
-            <AlertCircle size={16} color="#E60000" className="shrink-0" />
+            <AlertCircle size={16} color="#8B1E3A" className="shrink-0" />
           )
         )}
       </div>
@@ -136,11 +136,11 @@ export default function YemeniPhoneInput({
           {isValid ? (
             <CheckCircle2 size={10} color="#10B981" />
           ) : hasError ? (
-            <AlertCircle size={10} color="#E60000" />
+            <AlertCircle size={10} color="#8B1E3A" />
           ) : null}
           <span
             className="text-[10px]"
-            style={{ color: isValid ? '#10B981' : hasError ? '#E60000' : isDark ? '#888' : '#AAA' }}
+            style={{ color: isValid ? '#10B981' : hasError ? '#8B1E3A' : isDark ? '#888' : '#AAA' }}
           >
             {validationMsg}
           </span>
@@ -149,7 +149,7 @@ export default function YemeniPhoneInput({
 
       {/* External error */}
       {externalError && (
-        <p className="text-[10px] mt-1 px-1" style={{ color: '#E60000' }}>{externalError}</p>
+        <p className="text-[10px] mt-1 px-1" style={{ color: '#8B1E3A' }}>{externalError}</p>
       )}
     </div>
   );

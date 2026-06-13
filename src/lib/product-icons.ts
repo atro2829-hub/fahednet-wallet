@@ -19,11 +19,11 @@ const yemenMobileSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="48" heigh
   <rect x="16" y="10" width="16" height="28" rx="3" stroke="#1a1a1a" stroke-width="1.8" fill="none"/>
   <line x1="21" y1="12" x2="27" y2="12" stroke="#1a1a1a" stroke-width="1.5" stroke-linecap="round"/>
   <circle cx="24" cy="34" r="1.5" fill="#1a1a1a"/>
-  <text x="24" y="27" text-anchor="middle" font-family="Arial,sans-serif" font-weight="bold" font-size="8" fill="#E60000">YM</text>
-  <path d="M10 14C8.5 16 8 18 8 20" stroke="#E60000" stroke-width="1.8" stroke-linecap="round" fill="none"/>
-  <path d="M7 11C5 14 4.5 17 4 20" stroke="#E60000" stroke-width="1.8" stroke-linecap="round" fill="none"/>
-  <path d="M38 14C39.5 16 40 18 40 20" stroke="#E60000" stroke-width="1.8" stroke-linecap="round" fill="none"/>
-  <path d="M41 11C43 14 43.5 17 44 20" stroke="#E60000" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+  <text x="24" y="27" text-anchor="middle" font-family="Arial,sans-serif" font-weight="bold" font-size="8" fill="#8B1E3A">YM</text>
+  <path d="M10 14C8.5 16 8 18 8 20" stroke="#8B1E3A" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+  <path d="M7 11C5 14 4.5 17 4 20" stroke="#8B1E3A" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+  <path d="M38 14C39.5 16 40 18 40 20" stroke="#8B1E3A" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+  <path d="M41 11C43 14 43.5 17 44 20" stroke="#8B1E3A" stroke-width="1.8" stroke-linecap="round" fill="none"/>
 </svg>`;
 
 const yoSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" fill="none">
@@ -117,8 +117,8 @@ const clashOfClansSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="48" heig
 const robloxSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" fill="none">
   <rect x="2" y="2" width="44" height="44" rx="12" fill="white"/>
   <rect x="10" y="10" width="28" height="28" rx="3" stroke="#1a1a1a" stroke-width="1.8" fill="none"/>
-  <rect x="14" y="14" width="20" height="20" rx="2" fill="#E60000" fill-opacity="0.15" stroke="#E60000" stroke-width="1.5"/>
-  <text x="24" y="29" text-anchor="middle" font-family="Arial,sans-serif" font-weight="bold" font-size="16" fill="#E60000">R</text>
+  <rect x="14" y="14" width="20" height="20" rx="2" fill="#8B1E3A" fill-opacity="0.15" stroke="#8B1E3A" stroke-width="1.5"/>
+  <text x="24" y="29" text-anchor="middle" font-family="Arial,sans-serif" font-weight="bold" font-size="16" fill="#8B1E3A">R</text>
 </svg>`;
 
 const fortniteSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" fill="none">
@@ -578,6 +578,29 @@ export const productIcons: Record<string, string> = {
   'y-net-internet': svgToDataUrl(yNetInternetSvg),
   'sabafon-internet': svgToDataUrl(sabafonInternetSvg),
   'gift-cards': svgToDataUrl(giftCardsProductSvg),
+
+  // New Category Icons
+  'providers-category': svgToDataUrl(`<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" fill="none">
+  <rect x="2" y="2" width="44" height="44" rx="12" fill="white"/>
+  <rect x="8" y="12" width="32" height="24" rx="3" stroke="#1a1a1a" stroke-width="1.8" fill="none"/>
+  <circle cx="18" cy="22" r="4" stroke="#1a1a1a" stroke-width="1.5" fill="none"/>
+  <path d="M12 32C12 28 14.5 26 18 26C21.5 26 24 28 24 32" stroke="#1a1a1a" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+  <circle cx="30" cy="22" r="4" stroke="#8B1E3A" stroke-width="1.5" fill="none"/>
+  <path d="M24 32C24 28 26.5 26 30 26C33.5 26 36 28 36 32" stroke="#8B1E3A" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+  <path d="M18 10V14" stroke="#1a1a1a" stroke-width="1.5" stroke-linecap="round"/>
+  <path d="M30 10V14" stroke="#8B1E3A" stroke-width="1.5" stroke-linecap="round"/>
+</svg>`),
+  'wallet-services-category': svgToDataUrl(`<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48" fill="none">
+  <rect x="2" y="2" width="44" height="44" rx="12" fill="white"/>
+  <rect x="8" y="16" width="28" height="20" rx="3" stroke="#1a1a1a" stroke-width="1.8" fill="none"/>
+  <path d="M8 22H36" stroke="#1a1a1a" stroke-width="1.5"/>
+  <rect x="28" y="24" width="8" height="6" rx="2" stroke="#1a1a1a" stroke-width="1.5" fill="none"/>
+  <circle cx="32" cy="27" r="1.2" fill="#1a1a1a"/>
+  <path d="M12 10H20" stroke="#8B1E3A" stroke-width="1.8" stroke-linecap="round"/>
+  <path d="M16 7V13" stroke="#8B1E3A" stroke-width="1.8" stroke-linecap="round"/>
+  <circle cx="36" cy="12" r="3" stroke="#8B1E3A" stroke-width="1.5" fill="none"/>
+  <path d="M35 12H37" stroke="#8B1E3A" stroke-width="1.2" stroke-linecap="round"/>
+</svg>`),
 };
 
 /**

@@ -69,11 +69,11 @@ interface Section {
 const accountSections: Section[] = [
   {
     id: 'account',
-    title: 'إعدادات الحساب والملف الشخصي',
+    title: 'الملف الشخصي',
     icon: User,
-    iconColor: '#E60000',
+    iconColor: '#8B1E3A',
     items: [
-      { id: 'profile', label: 'الحساب الشخصي', icon: Heart, color: '#E60000', screen: 'edit-profile' },
+      { id: 'profile', label: 'الحساب الشخصي', icon: Heart, color: '#8B1E3A', screen: 'edit-profile' },
       { id: 'my-data', label: 'بياناتي', icon: User, color: '#2563EB', screen: 'kyc' },
       { id: 'gift-vouchers', label: 'قسائم الهدية', icon: Gift, color: '#10B981', screen: 'gift-vouchers' },
       { id: 'my-investments', label: 'استثماراتي', icon: TrendingUp, color: '#8B5CF6', screen: 'investment' },
@@ -83,22 +83,21 @@ const accountSections: Section[] = [
     id: 'privacy',
     title: 'الخصوصية والأمان',
     icon: Shield,
-    iconColor: '#E60000',
+    iconColor: '#8B1E3A',
     items: [
-      { id: 'auto-login', label: 'تسجيل الدخول تلقائياً', icon: Shield, color: '#10B981', toggle: true },
-      { id: 'change-password', label: 'تغيير كلمة المرور', icon: Lock, color: '#E60000' },
+      { id: 'change-password', label: 'تغيير كلمة المرور', icon: Lock, color: '#8B1E3A' },
       { id: 'notifications-settings', label: 'الإشعارات والتنبيهات', icon: Bell, color: '#2563EB', screen: 'notifications' },
     ],
   },
   {
     id: 'app-settings',
-    title: 'إعدادات التطبيق',
+    title: 'التطبيق',
     icon: Settings,
     iconColor: '#666',
     items: [
-      { id: 'general-settings', label: 'الإعدادات العامة', icon: Settings, color: '#666' },
-      { id: 'terms', label: 'الشروط والأحكام', icon: FileText, color: '#2563EB' },
-      { id: 'privacy-policy', label: 'سياسة الخصوصية', icon: Shield, color: '#8B5CF6' },
+      { id: 'general-settings', label: 'الإعدادات', icon: Settings, color: '#666', screen: 'settings' },
+      { id: 'terms', label: 'الشروط والأحكام', icon: FileText, color: '#2563EB', screen: 'legal' },
+      { id: 'privacy-policy', label: 'سياسة الخصوصية', icon: Shield, color: '#8B5CF6', screen: 'legal' },
       { id: 'share-app', label: 'مشاركة التطبيق', icon: Share2, color: '#10B981' },
     ],
   },
@@ -297,8 +296,8 @@ export default function AccountScreen() {
             <div
               className="w-16 h-16 rounded-2xl flex items-center justify-center overflow-hidden shrink-0 relative"
               style={{
-                background: user?.avatar ? 'transparent' : 'linear-gradient(135deg, #E60000 0%, #8B0000 100%)',
-                boxShadow: '0 4px 12px rgba(230,0,0,0.2)',
+                background: user?.avatar ? 'transparent' : 'linear-gradient(135deg, #8B1E3A 0%, #4E0A19 100%)',
+                boxShadow: '0 4px 12px rgba(139,30,58,0.2)',
               }}
             >
               {user?.avatar ? (
@@ -328,14 +327,14 @@ export default function AccountScreen() {
                 )}
               </div>
               <div className="flex items-center gap-2 mt-1">
-                <Phone size={12} strokeWidth={1.5} color="#E60000" />
-                <span className="text-sm font-medium" style={{ color: '#E60000' }} dir="ltr">
+                <Phone size={12} strokeWidth={1.5} color="#8B1E3A" />
+                <span className="text-sm font-medium" style={{ color: '#8B1E3A' }} dir="ltr">
                   {user?.phone || '+967 7XX XXX XXX'}
                 </span>
               </div>
               <div className="flex items-center gap-2 mt-0.5">
-                <CreditCard size={12} strokeWidth={1.5} color="#E60000" />
-                <span className="text-sm font-medium" style={{ color: '#E60000' }} dir="ltr">
+                <CreditCard size={12} strokeWidth={1.5} color="#8B1E3A" />
+                <span className="text-sm font-medium" style={{ color: '#8B1E3A' }} dir="ltr">
                   {user?.userId || '------'}
                 </span>
               </div>
@@ -375,7 +374,7 @@ export default function AccountScreen() {
                 <button
                   onClick={() => setActiveScreen('kyc')}
                   className="text-[10px] px-2 py-1 rounded-lg font-bold"
-                  style={{ background: 'rgba(230,0,0,0.1)', color: '#E60000' }}
+                  style={{ background: 'rgba(139,30,58,0.1)', color: '#8B1E3A' }}
                 >
                   توثيق
                 </button>
@@ -401,11 +400,11 @@ export default function AccountScreen() {
               onClick={handleShareProfile}
               className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl"
               style={{
-                background: 'rgba(230,0,0,0.08)',
+                background: 'rgba(139,30,58,0.08)',
               }}
             >
-              <Share2 size={16} strokeWidth={1.5} color="#E60000" />
-              <span className="text-xs font-medium" style={{ color: '#E60000' }}>
+              <Share2 size={16} strokeWidth={1.5} color="#8B1E3A" />
+              <span className="text-xs font-medium" style={{ color: '#8B1E3A' }}>
                 مشاركة الملف
               </span>
             </button>
@@ -443,9 +442,9 @@ export default function AccountScreen() {
           <div className="flex items-center gap-3 p-4">
             <div
               className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-              style={{ background: 'rgba(230,0,0,0.1)' }}
+              style={{ background: 'rgba(139,30,58,0.1)' }}
             >
-              <QrCode size={20} strokeWidth={1.5} color="#E60000" />
+              <QrCode size={20} strokeWidth={1.5} color="#8B1E3A" />
             </div>
             <div className="flex-1 text-right">
               <h3 className="text-sm font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>رمز الاستقبال</h3>
@@ -471,8 +470,8 @@ export default function AccountScreen() {
               <div
                 className="mt-2 rounded-2xl overflow-hidden"
                 style={{
-                  background: 'linear-gradient(135deg, #8B0000 0%, #E60000 50%, #B91C1C 100%)',
-                  boxShadow: '0 8px 32px rgba(230,0,0,0.25)',
+                  background: 'linear-gradient(135deg, #4E0A19 0%, #8B1E3A 50%, #B91C1C 100%)',
+                  boxShadow: '0 8px 32px rgba(139,30,58,0.25)',
                 }}
               >
                 {/* Card Header with branding */}
@@ -535,7 +534,7 @@ export default function AccountScreen() {
                     </p>
                     <button
                       onClick={() => setActiveScreen('qr')}
-                      className="mt-2 px-3 py-1.5 rounded-lg text-[10px] font-bold text-[#E60000]"
+                      className="mt-2 px-3 py-1.5 rounded-lg text-[10px] font-bold text-[#8B1E3A]"
                       style={{ background: 'rgba(255,255,255,0.9)' }}
                     >
                       عرض رمز QR الكامل
@@ -608,9 +607,9 @@ export default function AccountScreen() {
           >
             <div
               className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
-              style={{ background: 'rgba(230,0,0,0.1)' }}
+              style={{ background: 'rgba(139,30,58,0.1)' }}
             >
-              <Bell size={18} strokeWidth={1.5} color="#E60000" />
+              <Bell size={18} strokeWidth={1.5} color="#8B1E3A" />
             </div>
             <span className="flex-1 text-right text-sm" style={{ color: isDark ? '#DDD' : '#444' }}>
               الإشعارات
@@ -618,7 +617,7 @@ export default function AccountScreen() {
             <div
               className="w-11 h-6 rounded-full flex items-center transition-all duration-200 px-0.5"
               style={{
-                background: toggleStates['notifications-toggle'] ? '#E60000' : (isDark ? '#333' : '#DDD'),
+                background: toggleStates['notifications-toggle'] ? '#8B1E3A' : (isDark ? '#333' : '#DDD'),
                 justifyContent: toggleStates['notifications-toggle'] ? 'flex-end' : 'flex-start',
               }}
             >
@@ -665,9 +664,9 @@ export default function AccountScreen() {
             <div className="flex items-center gap-3 mb-3">
               <div
                 className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-                style={{ background: 'rgba(230,0,0,0.1)' }}
+                style={{ background: 'rgba(139,30,58,0.1)' }}
               >
-                <Gift size={20} strokeWidth={1.5} color="#E60000" />
+                <Gift size={20} strokeWidth={1.5} color="#8B1E3A" />
               </div>
               <div className="flex-1">
                 <h3 className="text-sm font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>شارك كود هدية</h3>
@@ -681,7 +680,7 @@ export default function AccountScreen() {
               style={{ background: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)', border: `1px dashed ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}` }}
             >
               <span className="text-[11px]" style={{ color: isDark ? '#888' : '#999' }}>كود الدعوة:</span>
-              <span className="flex-1 text-sm font-mono font-bold text-center" style={{ color: '#E60000' }} dir="ltr">
+              <span className="flex-1 text-sm font-mono font-bold text-center" style={{ color: '#8B1E3A' }} dir="ltr">
                 {user?.userId || '------'}
               </span>
               <button
@@ -691,9 +690,9 @@ export default function AccountScreen() {
                   setTimeout(() => setCopiedReferral(false), 2000);
                 }}
                 className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 active:scale-95 transition-transform"
-                style={{ background: 'rgba(230,0,0,0.1)' }}
+                style={{ background: 'rgba(139,30,58,0.1)' }}
               >
-                {copiedReferral ? <Check size={14} color="#10B981" /> : <Copy size={14} color="#E60000" />}
+                {copiedReferral ? <Check size={14} color="#10B981" /> : <Copy size={14} color="#8B1E3A" />}
               </button>
             </div>
 
@@ -719,10 +718,10 @@ export default function AccountScreen() {
                   });
                 }}
                 className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl active:scale-95 transition-transform"
-                style={{ background: 'rgba(230,0,0,0.08)' }}
+                style={{ background: 'rgba(139,30,58,0.08)' }}
               >
-                <Share2 size={16} color="#E60000" />
-                <span className="text-xs font-medium" style={{ color: '#E60000' }}>مشاركة</span>
+                <Share2 size={16} color="#8B1E3A" />
+                <span className="text-xs font-medium" style={{ color: '#8B1E3A' }}>مشاركة</span>
               </button>
             </div>
           </div>
@@ -804,7 +803,7 @@ export default function AccountScreen() {
                             <div
                               className="w-11 h-6 rounded-full flex items-center transition-all duration-200 px-0.5"
                               style={{
-                                background: toggleStates[item.id] ? '#E60000' : (isDark ? '#333' : '#DDD'),
+                                background: toggleStates[item.id] ? '#8B1E3A' : (isDark ? '#333' : '#DDD'),
                                 justifyContent: toggleStates[item.id] ? 'flex-end' : 'flex-start',
                               }}
                             >
@@ -842,9 +841,9 @@ export default function AccountScreen() {
             <div className="flex items-center gap-3 px-4 py-3.5">
               <div
                 className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
-                style={{ background: 'rgba(230,0,0,0.1)' }}
+                style={{ background: 'rgba(139,30,58,0.1)' }}
               >
-                <Globe size={18} strokeWidth={1.5} color="#E60000" />
+                <Globe size={18} strokeWidth={1.5} color="#8B1E3A" />
               </div>
               <span className="flex-1 text-right text-sm font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>
                 تواصل معنا
@@ -924,9 +923,9 @@ export default function AccountScreen() {
                 <a
                   href={`mailto:${socialLinks.supportEmail}`}
                   className="w-11 h-11 rounded-xl flex items-center justify-center"
-                  style={{ background: 'rgba(230,0,0,0.12)' }}
+                  style={{ background: 'rgba(139,30,58,0.12)' }}
                 >
-                  <Mail size={20} strokeWidth={1.5} color="#E60000" />
+                  <Mail size={20} strokeWidth={1.5} color="#8B1E3A" />
                 </a>
               )}
               {socialLinks.contactAdmin && (
@@ -968,8 +967,8 @@ export default function AccountScreen() {
               style={{ background: isDark ? '#0F0F0F' : '#F5F5F5' }}
               onClick={(e) => e.stopPropagation()}>
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'rgba(230,0,0,0.1)' }}>
-                  <Lock size={20} color="#E60000" />
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'rgba(139,30,58,0.1)' }}>
+                  <Lock size={20} color="#8B1E3A" />
                 </div>
                 <div>
                   <h3 className="text-base font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>تغيير كلمة المرور</h3>
@@ -1025,7 +1024,7 @@ export default function AccountScreen() {
                     <motion.button whileTap={{ scale: 0.95 }} onClick={handleChangePassword}
                       disabled={isChangingPassword || !currentPassword || !newPassword || !confirmPassword}
                       className="flex-1 py-3 rounded-xl text-sm font-bold text-white"
-                      style={{ background: (isChangingPassword || !currentPassword || !newPassword || !confirmPassword) ? '#555' : '#E60000' }}>
+                      style={{ background: (isChangingPassword || !currentPassword || !newPassword || !confirmPassword) ? '#555' : '#8B1E3A' }}>
                       {isChangingPassword ? 'جارٍ التغيير...' : 'تغيير كلمة المرور'}
                     </motion.button>
                   </div>
@@ -1049,7 +1048,7 @@ export default function AccountScreen() {
           style={{
             background: isDark ? '#1A1A1A' : '#FFFFFF',
             border: `1px solid ${isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.05)'}`,
-            color: '#E60000',
+            color: '#8B1E3A',
           }}
         >
           <LogOut size={18} strokeWidth={1.5} />

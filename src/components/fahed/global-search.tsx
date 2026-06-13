@@ -41,6 +41,8 @@ interface SearchGroup {
 
 // ─── Category icons map ───
 const categoryIconMap: Record<string, string> = {
+  'service-providers': 'providers-category',
+  'wallet-services': 'wallet-services-category',
   'telecom': 'telecom-category',
   'entertainment': 'entertainment-category',
   'cards': 'cards-category',
@@ -50,6 +52,8 @@ const categoryIconMap: Record<string, string> = {
 };
 
 const categoryLabels: Record<string, string> = {
+  'service-providers': 'مزودين الخدمات',
+  'wallet-services': 'خدمات المحفظة',
   telecom: 'الاتصالات',
   entertainment: 'خدمات ترفيهية',
   cards: 'بطاقات رقمية',
@@ -436,8 +440,8 @@ export default function GlobalSearch({ isOpen, onClose }: GlobalSearchProps) {
                   className="flex-1 flex items-center gap-2 px-4 py-3 rounded-2xl"
                   style={{
                     background: inputBg,
-                    border: `1px solid ${isListening ? '#E60000' : borderColor}`,
-                    boxShadow: isListening ? '0 0 0 2px rgba(230,0,0,0.2)' : 'none',
+                    border: `1px solid ${isListening ? '#8B1E3A' : borderColor}`,
+                    boxShadow: isListening ? '0 0 0 2px rgba(139,30,58,0.2)' : 'none',
                   }}
                 >
                   {isListening ? (
@@ -445,7 +449,7 @@ export default function GlobalSearch({ isOpen, onClose }: GlobalSearchProps) {
                       animate={{ scale: [1, 1.2, 1] }}
                       transition={{ duration: 0.8, repeat: Infinity }}
                     >
-                      <Mic size={18} strokeWidth={1.5} color="#E60000" />
+                      <Mic size={18} strokeWidth={1.5} color="#8B1E3A" />
                     </motion.div>
                   ) : (
                     <Search size={18} strokeWidth={1.5} color={subtleText} />
@@ -476,11 +480,11 @@ export default function GlobalSearch({ isOpen, onClose }: GlobalSearchProps) {
                     onClick={isListening ? stopVoice : startVoiceSearch}
                     className="w-11 h-11 rounded-xl flex items-center justify-center active:scale-95 transition-transform"
                     style={{
-                      background: isListening ? 'rgba(230,0,0,0.15)' : isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)',
+                      background: isListening ? 'rgba(139,30,58,0.15)' : isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)',
                     }}
                   >
                     {isListening ? (
-                      <MicOff size={18} strokeWidth={1.5} color="#E60000" />
+                      <MicOff size={18} strokeWidth={1.5} color="#8B1E3A" />
                     ) : (
                       <Mic size={18} strokeWidth={1.5} color={subtleText} />
                     )}
@@ -509,7 +513,7 @@ export default function GlobalSearch({ isOpen, onClose }: GlobalSearchProps) {
                     {[0, 1, 2, 3, 4].map((i) => (
                       <motion.div
                         key={i}
-                        className="w-1 rounded-full bg-[#E60000]"
+                        className="w-1 rounded-full bg-[#8B1E3A]"
                         animate={{
                           height: [4, Math.random() * 16 + 4, 4],
                         }}
@@ -521,7 +525,7 @@ export default function GlobalSearch({ isOpen, onClose }: GlobalSearchProps) {
                       />
                     ))}
                   </div>
-                  <span className="text-xs font-medium" style={{ color: '#E60000' }}>
+                  <span className="text-xs font-medium" style={{ color: '#8B1E3A' }}>
                     جاري الاستماع...
                   </span>
                 </motion.div>
@@ -544,15 +548,15 @@ export default function GlobalSearch({ isOpen, onClose }: GlobalSearchProps) {
                       >
                         {/* Group header */}
                         <div className="flex items-center gap-2 mb-2 px-1">
-                          <span style={{ color: '#E60000' }}>{group.icon}</span>
+                          <span style={{ color: '#8B1E3A' }}>{group.icon}</span>
                           <span className="text-xs font-bold" style={{ color: secondaryText }}>
                             {group.label}
                           </span>
                           <span
                             className="text-[10px] px-1.5 py-0.5 rounded-full font-bold"
                             style={{
-                              background: isDark ? 'rgba(230,0,0,0.1)' : 'rgba(230,0,0,0.08)',
-                              color: '#E60000',
+                              background: isDark ? 'rgba(139,30,58,0.1)' : 'rgba(139,30,58,0.08)',
+                              color: '#8B1E3A',
                             }}
                           >
                             {group.results.length}
@@ -669,15 +673,15 @@ export default function GlobalSearch({ isOpen, onClose }: GlobalSearchProps) {
                       onClick={startVoiceSearch}
                       className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl mb-4 active:scale-[0.98] transition-transform"
                       style={{
-                        background: 'linear-gradient(145deg, rgba(230,0,0,0.1) 0%, rgba(139,0,0,0.08) 100%)',
-                        border: '1px solid rgba(230,0,0,0.15)',
+                        background: 'linear-gradient(145deg, rgba(139,30,58,0.1) 0%, rgba(139,0,0,0.08) 100%)',
+                        border: '1px solid rgba(139,30,58,0.15)',
                       }}
                     >
                       <div
                         className="w-10 h-10 rounded-xl flex items-center justify-center"
-                        style={{ background: 'rgba(230,0,0,0.15)' }}
+                        style={{ background: 'rgba(139,30,58,0.15)' }}
                       >
-                        <Mic size={20} strokeWidth={1.5} color="#E60000" />
+                        <Mic size={20} strokeWidth={1.5} color="#8B1E3A" />
                       </div>
                       <div className="flex-1 text-right">
                         <p className="text-sm font-bold" style={{ color: textColor }}>
@@ -706,7 +710,7 @@ export default function GlobalSearch({ isOpen, onClose }: GlobalSearchProps) {
                             setRecentSearches([]);
                           }}
                           className="text-[10px] font-bold"
-                          style={{ color: '#E60000' }}
+                          style={{ color: '#8B1E3A' }}
                         >
                           مسح الكل
                         </button>
@@ -738,7 +742,7 @@ export default function GlobalSearch({ isOpen, onClose }: GlobalSearchProps) {
                   {/* Suggested Searches */}
                   <div>
                     <div className="flex items-center gap-1.5 mb-2 px-1">
-                      <Sparkles size={12} strokeWidth={1.5} color="#E60000" />
+                      <Sparkles size={12} strokeWidth={1.5} color="#8B1E3A" />
                       <span className="text-xs font-bold" style={{ color: secondaryText }}>
                         خدمات مقترحة
                       </span>

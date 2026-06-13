@@ -73,7 +73,7 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
       {phase !== 'exiting' ? (
         <motion.div
           className="fixed inset-0 flex flex-col items-center justify-center overflow-hidden"
-          style={{ background: 'linear-gradient(145deg, #E60000 0%, #8B0000 60%, #5C0000 100%)' }}
+          style={{ background: 'linear-gradient(145deg, #8B1E3A 0%, #4E0A19 60%, #3A0812 100%)' }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.5, ease: 'easeInOut' }}
         >
@@ -249,7 +249,7 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
       ) : (
         <motion.div
           className="fixed inset-0"
-          style={{ background: 'linear-gradient(145deg, #E60000 0%, #8B0000 60%, #5C0000 100%)' }}
+          style={{ background: 'linear-gradient(145deg, #8B1E3A 0%, #4E0A19 60%, #3A0812 100%)' }}
           initial={{ opacity: 1 }}
           animate={{ opacity: 0 }}
           transition={{ duration: 0.5, ease: 'easeInOut' }}

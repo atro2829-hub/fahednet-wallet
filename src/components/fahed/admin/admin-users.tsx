@@ -49,12 +49,12 @@ export default function AdminUsers() {
         return (
           <div key={u.id} className="rounded-2xl p-4" style={{
             ...cardStyle,
-            borderRight: u.isBlocked ? '3px solid #E60000' : undefined,
+            borderRight: u.isBlocked ? '3px solid #8B1E3A' : undefined,
           }}>
             <div className="flex items-start justify-between mb-3">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'rgba(230,0,0,0.1)' }}>
-                  <span className="font-bold text-sm" style={{ color: '#E60000' }}>{u.name?.charAt(0) || '?'}</span>
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'rgba(139,30,58,0.1)' }}>
+                  <span className="font-bold text-sm" style={{ color: '#8B1E3A' }}>{u.name?.charAt(0) || '?'}</span>
                 </div>
                 <div>
                   <p className="text-sm font-bold" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>{u.name || 'بدون اسم'}</p>
@@ -66,7 +66,7 @@ export default function AdminUsers() {
                 <span className="text-[10px] font-mono px-2 py-0.5 rounded" style={{ background: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)', color: isDark ? '#AAA' : '#888' }} dir="ltr">{u.userId}</span>
                 <span className="text-[10px] px-2 py-0.5 rounded-full font-medium" style={{ background: kyc.bg, color: kyc.color }}>{kyc.label}</span>
                 {u.isBlocked && (
-                  <span className="text-[10px] px-2 py-0.5 rounded-full font-medium" style={{ background: 'rgba(230,0,0,0.15)', color: '#E60000' }}>محظور</span>
+                  <span className="text-[10px] px-2 py-0.5 rounded-full font-medium" style={{ background: 'rgba(139,30,58,0.15)', color: '#8B1E3A' }}>محظور</span>
                 )}
               </div>
             </div>
@@ -81,7 +81,7 @@ export default function AdminUsers() {
             <div className="flex items-center gap-2">
               <motion.button whileTap={{ scale: 0.95 }} onClick={() => handleToggleBlock(u)}
                 className="flex items-center gap-1 px-3 py-2 rounded-xl text-xs font-medium"
-                style={{ background: u.isBlocked ? 'rgba(16,185,129,0.15)' : 'rgba(230,0,0,0.1)', color: u.isBlocked ? '#10B981' : '#E60000' }}>
+                style={{ background: u.isBlocked ? 'rgba(16,185,129,0.15)' : 'rgba(139,30,58,0.1)', color: u.isBlocked ? '#10B981' : '#8B1E3A' }}>
                 {u.isBlocked ? <Unlock size={12} /> : <Lock size={12} />}
                 <span>{u.isBlocked ? 'إلغاء الحظر' : 'حظر'}</span>
               </motion.button>
@@ -121,7 +121,7 @@ export default function AdminUsers() {
                       onClick={() => onBalanceAdjust(u)}
                       disabled={adjustLoading}
                       className="w-full px-3 py-2 rounded-lg text-xs font-bold text-white disabled:opacity-50"
-                      style={{ background: '#E60000' }}
+                      style={{ background: '#8B1E3A' }}
                     >
                       {adjustLoading ? 'جاري التنفيذ...' : 'تطبيق'}
                     </motion.button>

@@ -57,7 +57,7 @@ export default function AdminBanners() {
     <motion.div key="banners" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="space-y-3">
       <motion.button whileTap={{ scale: 0.95 }} onClick={() => setShowAddBanner(!showAddBanner)}
         className="w-full py-3.5 rounded-2xl flex items-center justify-center gap-2 text-sm font-medium"
-        style={{ background: 'rgba(230,0,0,0.1)', color: '#E60000', border: '1px solid rgba(230,0,0,0.2)', backdropFilter: 'blur(20px)' }}>
+        style={{ background: 'rgba(139,30,58,0.1)', color: '#8B1E3A', border: '1px solid rgba(139,30,58,0.2)', backdropFilter: 'blur(20px)' }}>
         <Plus size={18} strokeWidth={1.5} /><span>إضافة بانر</span>
       </motion.button>
 
@@ -94,7 +94,7 @@ export default function AdminBanners() {
               <span className="text-xs" style={{ color: isDark ? '#AAA' : '#888' }}>ترتيب العرض</span>
               <input type="number" value={newBanner.order || ''} onChange={e => setNewBanner({ ...newBanner, order: parseInt(e.target.value) || 0 })} className="w-20 px-3 py-2.5 rounded-xl text-sm outline-none text-center" style={inputStyle} dir="ltr" />
             </div>
-            <motion.button whileTap={{ scale: 0.95 }} onClick={onAddBanner} className="w-full py-3 rounded-xl text-sm font-bold text-white" style={{ background: '#E60000' }}>إضافة البانر</motion.button>
+            <motion.button whileTap={{ scale: 0.95 }} onClick={onAddBanner} className="w-full py-3 rounded-xl text-sm font-bold text-white" style={{ background: '#8B1E3A' }}>إضافة البانر</motion.button>
           </motion.div>
         )}
       </AnimatePresence>
@@ -158,21 +158,21 @@ export default function AdminBanners() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <h4 className="text-sm font-bold truncate" style={{ color: isDark ? '#FFF' : '#1a1a1a' }}>{banner.title}</h4>
-                    <span className="text-[10px] px-1.5 py-0.5 rounded-full font-bold flex-shrink-0" style={{ background: 'rgba(230,0,0,0.15)', color: '#E60000' }}>#{banner.order}</span>
+                    <span className="text-[10px] px-1.5 py-0.5 rounded-full font-bold flex-shrink-0" style={{ background: 'rgba(139,30,58,0.15)', color: '#8B1E3A' }}>#{banner.order}</span>
                   </div>
                   {banner.description && <p className="text-xs mt-0.5 line-clamp-2" style={{ color: isDark ? '#888' : '#888' }}>{banner.description}</p>}
                   {!banner.isActive && (
-                    <span className="text-[10px] px-2 py-0.5 rounded-full font-medium mt-1 inline-block" style={{ background: 'rgba(230,0,0,0.1)', color: '#E60000' }}>معطّل</span>
+                    <span className="text-[10px] px-2 py-0.5 rounded-full font-medium mt-1 inline-block" style={{ background: 'rgba(139,30,58,0.1)', color: '#8B1E3A' }}>معطّل</span>
                   )}
                   <div className="flex items-center gap-2 mt-2 flex-wrap">
                     <motion.button whileTap={{ scale: 0.95 }} onClick={() => setEditingBanner(banner.id)} className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[10px] font-medium" style={{ background: 'rgba(59,130,246,0.1)', color: '#3B82F6' }}>
                       تعديل
                     </motion.button>
-                    <motion.button whileTap={{ scale: 0.95 }} onClick={() => handleToggleBanner(banner)} className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[10px] font-medium" style={{ background: banner.isActive ? 'rgba(230,0,0,0.1)' : 'rgba(16,185,129,0.1)', color: banner.isActive ? '#E60000' : '#10B981' }}>
+                    <motion.button whileTap={{ scale: 0.95 }} onClick={() => handleToggleBanner(banner)} className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[10px] font-medium" style={{ background: banner.isActive ? 'rgba(139,30,58,0.1)' : 'rgba(16,185,129,0.1)', color: banner.isActive ? '#8B1E3A' : '#10B981' }}>
                       {banner.isActive ? <ToggleRight size={12} /> : <ToggleLeft size={12} />}
                       {banner.isActive ? 'تعطيل' : 'تفعيل'}
                     </motion.button>
-                    <motion.button whileTap={{ scale: 0.95 }} onClick={() => handleDeleteBanner(banner)} className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[10px] font-medium" style={{ background: 'rgba(230,0,0,0.1)', color: '#E60000' }}>
+                    <motion.button whileTap={{ scale: 0.95 }} onClick={() => handleDeleteBanner(banner)} className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[10px] font-medium" style={{ background: 'rgba(139,30,58,0.1)', color: '#8B1E3A' }}>
                       <Trash2 size={10} /> حذف
                     </motion.button>
                     {/* Reorder buttons */}

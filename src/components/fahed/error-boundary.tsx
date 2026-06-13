@@ -46,9 +46,9 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
           >
             <div
               className="w-20 h-20 rounded-2xl flex items-center justify-center mb-6"
-              style={{ background: 'rgba(230,0,0,0.1)' }}
+              style={{ background: 'rgba(139,30,58,0.1)' }}
             >
-              <AlertTriangle size={40} strokeWidth={1.5} color="#E60000" />
+              <AlertTriangle size={40} strokeWidth={1.5} color="#8B1E3A" />
             </div>
             <h2 className="text-lg font-bold text-white mb-2">حدث خطأ غير متوقع</h2>
             <p className="text-sm text-gray-400 mb-6 leading-relaxed">
@@ -62,7 +62,7 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
             <button
               onClick={this.handleReset}
               className="flex items-center gap-2 px-6 py-3 rounded-2xl font-bold text-white"
-              style={{ background: 'linear-gradient(135deg, #E60000 0%, #8B0000 100%)', boxShadow: '0 4px 16px rgba(230,0,0,0.3)' }}
+              style={{ background: 'linear-gradient(135deg, #8B1E3A 0%, #4E0A19 100%)', boxShadow: '0 4px 16px rgba(139,30,58,0.3)' }}
             >
               <RefreshCw size={18} strokeWidth={1.5} />
               إعادة تشغيل التطبيق

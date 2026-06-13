@@ -80,7 +80,7 @@ export default function QuickActionDrawer({ isOpen, onClose }: QuickActionDrawer
                     {/* Line icon with light background + red accent dot */}
                     <div className="relative w-14 h-14 bg-[#F8F8F8] rounded-2xl flex items-center justify-center">
                       <action.icon className="w-7 h-7 text-[#1a1a1a] stroke-[1.5px]" />
-                      <div className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-[#E60000] rounded-full border border-white" />
+                      <div className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-[#8B1E3A] rounded-full border border-white" />
                     </div>
                     <span className="text-xs font-bold text-[#1a1a1a] text-center leading-tight">
                       {action.label}

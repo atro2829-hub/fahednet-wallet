@@ -14,7 +14,7 @@ import { motion } from 'framer-motion';
 
 export default function ExchangeRatesPanel() {
   const { adminUser, showToast } = useAdminStore();
-  const [rates, setRates] = useState({ YER: 1, SAR: 410, USD: 1550 });
+  const [rates, setRates] = useState({ YER: 1, SAR: 410, USD: 1558 });
   const [commission, setCommission] = useState({ percentage: 2, minAmount: 100, maxAmount: 500000 });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -23,7 +23,7 @@ export default function ExchangeRatesPanel() {
     const ratesRef = ref(database, 'adminSettings/exchangeRates');
     const unsub1 = onValue(ratesRef, (snapshot) => {
       const data = snapshot.val();
-      if (data) setRates({ YER: data.YER || 1, SAR: data.SAR || 410, USD: data.USD || 1550 });
+      if (data) setRates({ YER: data.YER || 1, SAR: data.SAR || 410, USD: data.USD || 1558 });
     });
     const commRef = ref(database, 'adminSettings/commissions');
     const unsub2 = onValue(commRef, (snapshot) => {
@@ -47,7 +47,7 @@ export default function ExchangeRatesPanel() {
     }
   };
 
-  if (loading) return <div className="flex items-center justify-center min-h-[400px]"><div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" /></div>;
+  if (loading) return <div className="flex items-center justify-center min-h-[400px]"><div className="w-8 h-8 border-2 border-[#8B1E3A] border-t-transparent rounded-full animate-spin" /></div>;
 
   return (
     <div className="space-y-6">
@@ -95,7 +95,7 @@ export default function ExchangeRatesPanel() {
               </div>
             </div>
 
-            <Button onClick={handleSave} disabled={saving} className="w-full bg-purple-600 hover:bg-purple-700">
+            <Button onClick={handleSave} disabled={saving} className="w-full bg-[#7B1A30] hover:bg-[#5C1225]">
               {saving ? <Loader2 className="w-4 h-4 ml-2 animate-spin" /> : <Save className="w-4 h-4 ml-2" />}
               حفظ الإعدادات
             </Button>
