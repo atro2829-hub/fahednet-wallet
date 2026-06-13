@@ -618,3 +618,31 @@ Stage Summary:
 - 9 deprecated sections permanently removed from user app UI code
 - Firebase Realtime Database cleaned up (visibility/sections entries deleted)
 - All remaining sections preserved: service-providers, telecom, transfer, recharge, digital-wallet, crypto, crypto-invest, currency-exchange, entertainment, cards
+
+---
+Task ID: 3-7
+Agent: Main Agent
+Task: Delete deprecated sections, redesign telecom, replace icons, build both apps
+
+Work Log:
+- Removed 9 deprecated sections from user app (government, electricity, internet, wallet-services, health, education, food, travel, shopping)
+- Removed same sections from admin sections-panel defaults
+- Cleaned Firebase visibility entries for all removed sections
+- Redesigned telecom/recharge screen with AdenCash-style UI:
+  - Carrier logos at top with auto-highlight
+  - Phone number input with +967 prefix and real-time carrier detection
+  - Three recharge type tabs (شحن عادي, شحن فوري, شحن باقة)
+  - Prefix hint badges showing carrier-prefix mapping
+- Merged telecom and recharge into single "الاتصالات والشحن" service on home screen
+- Replaced app icon with uploaded golden geometric design for both apps
+- Updated all Android mipmap icons, PWA icons, splash screens
+- Fixed GitHub Actions workflows: added API route removal step for static export
+- Fixed Gradle duplicate resource conflicts (ic_notification.xml vs .png)
+- All 3 apps (User, Admin, Dev) built successfully
+
+Stage Summary:
+- User app APK: ✅ Built successfully
+- Admin app APK: ✅ Built successfully
+- Dev app APK: ✅ Built successfully
+- Firebase cleaned: 9 deprecated section visibility entries removed
+- Key design: Telecom section now uses prefix-based carrier detection (AdenCash style)
